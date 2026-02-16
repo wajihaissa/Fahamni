@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Tutors - FAHIMNI</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/matching.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html"><h2>FAHIMNI</h2></a>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="articles.html" class="nav-link">Articles</a>
+                <a href="matching.html" class="nav-link active">Find Tutors</a>
+                <a href="calendar.html" class="nav-link">Calendar</a>
+                <a href="messages.html" class="nav-link">Messages</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="matching-main">
+        <div class="container">
+            <div class="matching-header">
+                <h1>Find Your Perfect Tutor</h1>
+                <p>Connect with expert tutors tailored to your learning needs</p>
+            </div>
+
+            <div class="search-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by subject, tutor name, or keyword...">
+                    <button class="search-btn" id="searchBtn">🔍</button>
+                </div>
+                
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="subjectFilter">Subject</label>
+                        <select id="subjectFilter">
+                            <option value="">All Subjects</option>
+                            <option value="mathematics">Mathematics</option>
+                            <option value="physics">Physics</option>
+                            <option value="chemistry">Chemistry</option>
+                            <option value="biology">Biology</option>
+                            <option value="computer-science">Computer Science</option>
+                            <option value="english">English</option>
+                            <option value="history">History</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="ratingFilter">Rating</label>
+                        <select id="ratingFilter">
+                            <option value="">Any Rating</option>
+                            <option value="4.5">4.5+ Stars</option>
+                            <option value="4.0">4.0+ Stars</option>
+                            <option value="3.5">3.5+ Stars</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="priceFilter">Price Range</label>
+                        <select id="priceFilter">
+                            <option value="">Any Price</option>
+                            <option value="0-25">$0 - $25/hour</option>
+                            <option value="25-50">$25 - $50/hour</option>
+                            <option value="50-100">$50 - $100/hour</option>
+                            <option value="100+">$100+/hour</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="availabilityFilter">Availability</label>
+                        <select id="availabilityFilter">
+                            <option value="">Any Time</option>
+                            <option value="morning">Morning</option>
+                            <option value="afternoon">Afternoon</option>
+                            <option value="evening">Evening</option>
+                            <option value="weekend">Weekend</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="results-header">
+                    <h2>Available Tutors</h2>
+                    <div class="sort-options">
+                        <label for="sortBy">Sort by:</label>
+                        <select id="sortBy">
+                            <option value="relevance">Relevance</option>
+                            <option value="rating">Highest Rated</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="newest">Newest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="tutors-grid" id="tutorsGrid">
+                    <!-- Featured Tutor -->
+                    <div class="tutor-card featured" data-subject="mathematics" data-rating="4.9" data-price="45">
+                        <div class="tutor-badge">⭐ Top Rated</div>
+                        <div class="tutor-avatar">DR</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Dr. Sarah Roberts</h3>
+                            <p class="tutor-title">Mathematics Professor</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★★</div>
+                                <span class="rating-text">4.9 (127 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Calculus</span>
+                                <span class="subject-tag">Algebra</span>
+                                <span class="subject-tag">Statistics</span>
+                            </div>
+                            <p class="tutor-bio">PhD in Mathematics with 10+ years of teaching experience. Specializes in making complex concepts simple and engaging.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">10+ years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">500+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$45/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+
+                    <!-- Regular Tutors -->
+                    <div class="tutor-card" data-subject="computer-science" data-rating="4.8" data-price="40">
+                        <div class="tutor-avatar">AL</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Alex Liu</h3>
+                            <p class="tutor-title">Software Engineer & CS Tutor</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★★</div>
+                                <span class="rating-text">4.8 (89 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Programming</span>
+                                <span class="subject-tag">Algorithms</span>
+                                <span class="subject-tag">Data Structures</span>
+                            </div>
+                            <p class="tutor-bio">Senior software engineer with expertise in algorithms and programming languages. Makes coding accessible and fun.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">8 years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">300+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$40/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+
+                    <div class="tutor-card" data-subject="chemistry" data-rating="4.7" data-price="50">
+                        <div class="tutor-avatar">MJ</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Prof. Mike Johnson</h3>
+                            <p class="tutor-title">Chemistry Department Head</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★★</div>
+                                <span class="rating-text">4.7 (156 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Organic Chemistry</span>
+                                <span class="subject-tag">Biochemistry</span>
+                                <span class="subject-tag">Lab Techniques</span>
+                            </div>
+                            <p class="tutor-bio">University professor specializing in organic chemistry and biochemistry. Excellent at explaining reaction mechanisms.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">15+ years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">600+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$50/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+
+                    <div class="tutor-card" data-subject="physics" data-rating="4.6" data-price="35">
+                        <div class="tutor-avatar">EW</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Emma Wilson</h3>
+                            <p class="tutor-title">Physics Graduate Student</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★☆</div>
+                                <span class="rating-text">4.6 (67 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Mechanics</span>
+                                <span class="subject-tag">Thermodynamics</span>
+                                <span class="subject-tag">Quantum Physics</span>
+                            </div>
+                            <p class="tutor-bio">PhD candidate in Physics with a passion for teaching. Great at breaking down complex physics concepts.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">5 years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">200+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$35/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+
+                    <div class="tutor-card" data-subject="biology" data-rating="4.9" data-price="42">
+                        <div class="tutor-avatar">LP</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Dr. Lisa Park</h3>
+                            <p class="tutor-title">Biology & Pre-Med Specialist</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★★</div>
+                                <span class="rating-text">4.9 (134 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Cell Biology</span>
+                                <span class="subject-tag">Genetics</span>
+                                <span class="subject-tag">MCAT Prep</span>
+                            </div>
+                            <p class="tutor-bio">Former medical school professor with extensive experience in biology and pre-med preparation.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">12 years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">450+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$42/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+
+                    <div class="tutor-card" data-subject="english" data-rating="4.5" data-price="30">
+                        <div class="tutor-avatar">RG</div>
+                        <div class="tutor-info">
+                            <h3 class="tutor-name">Robert Garcia</h3>
+                            <p class="tutor-title">English & Writing Coach</p>
+                            <div class="tutor-rating">
+                                <div class="stars">★★★★☆</div>
+                                <span class="rating-text">4.5 (78 reviews)</span>
+                            </div>
+                            <div class="tutor-subjects">
+                                <span class="subject-tag">Essay Writing</span>
+                                <span class="subject-tag">Literature</span>
+                                <span class="subject-tag">Grammar</span>
+                            </div>
+                            <p class="tutor-bio">Professional writer and English teacher with expertise in academic writing and literature analysis.</p>
+                            <div class="tutor-details">
+                                <div class="detail">
+                                    <span class="detail-label">Experience:</span>
+                                    <span class="detail-value">7 years</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Sessions:</span>
+                                    <span class="detail-value">250+</span>
+                                </div>
+                                <div class="detail">
+                                    <span class="detail-label">Price:</span>
+                                    <span class="detail-value">$30/hour</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tutor-actions">
+                            <button class="btn btn-primary btn-full">Book Session</button>
+                            <button class="btn btn-outline btn-full">Send Message</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="load-more">
+                    <button class="btn btn-outline" id="loadMoreBtn">Load More Tutors</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Book Session Modal -->
+    <div class="modal" id="bookSessionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Book Session</h2>
+                <button class="modal-close" id="closeBookModal">×</button>
+            </div>
+            <div class="book-session-content">
+                <div class="selected-tutor" id="selectedTutor">
+                    <!-- Tutor info will be populated here -->
+                </div>
+                <form class="book-session-form" id="bookSessionForm">
+                    <div class="form-group">
+                        <label for="sessionSubject">Subject</label>
+                        <select id="sessionSubject" required>
+                            <option value="">Select subject</option>
+                            <option value="mathematics">Mathematics</option>
+                            <option value="physics">Physics</option>
+                            <option value="chemistry">Chemistry</option>
+                            <option value="biology">Biology</option>
+                            <option value="computer-science">Computer Science</option>
+                            <option value="english">English</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sessionDate">Preferred Date</label>
+                            <input type="date" id="sessionDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionTime">Preferred Time</label>
+                            <input type="time" id="sessionTime" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sessionDuration">Duration</label>
+                        <select id="sessionDuration" required>
+                            <option value="60">1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sessionNotes">Message (Optional)</label>
+                        <textarea id="sessionNotes" rows="4" placeholder="Let the tutor know what you'd like to focus on..."></textarea>
+                    </div>
+                    
+                    <div class="session-summary">
+                        <h3>Session Summary</h3>
+                        <div class="summary-item">
+                            <span>Duration:</span>
+                            <span id="summaryDuration">1 hour</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Rate:</span>
+                            <span id="summaryRate">$45/hour</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total:</span>
+                            <span id="summaryTotal">$45</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelBook">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Request Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/matching.js"></script>
+</body>
+</html>

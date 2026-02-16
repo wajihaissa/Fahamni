@@ -1,0 +1,93 @@
+<style>
+/* Supprimer l'espace vide en haut en admin */
+body{margin:0;padding:0;}
+.main-content{padding-top:0 !important;}
+.admin-top-navbar{
+    height:70px;
+    background:rgba(255,255,255,0.98);
+    box-shadow:0 6px 18px rgba(14,22,50,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2rem;
+    position:sticky;
+    top:0;
+    z-index:100;
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid #e6eef8;
+}
+.admin-navbar-left{display:flex;align-items:center;gap:1rem;}
+.admin-search-bar{position:relative;}
+.admin-search-bar .admin-search-input{
+    width:280px;
+    padding:0.65rem 1rem 0.65rem 2.5rem;
+    border:1px solid #e6eef8;
+    border-radius:10px;
+    font-size:0.875rem;
+    transition:border-color 0.2s ease,box-shadow 0.2s ease;
+}
+.admin-search-bar .admin-search-input:focus{
+    outline:none;
+    border-color:#667eea;
+    box-shadow:0 0 0 3px rgba(102,126,234,0.1);
+}
+.admin-search-bar .fa-search{
+    position:absolute;
+    left:0.9rem;
+    top:50%;
+    transform:translateY(-50%);
+    color:#64748b;
+    font-size:0.9rem;
+}
+.admin-navbar-right{display:flex;align-items:center;gap:1rem;}
+.admin-profile-btn{
+    display:flex;
+    align-items:center;
+    gap:0.6rem;
+    padding:0.4rem 0.75rem;
+    border:1px solid #e6eef8;
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+    transition:background 0.2s ease,box-shadow 0.2s ease;
+    font-size:0.9rem;
+    color:#0b1220;
+}
+.admin-profile-btn:hover{
+    background:#f8fafc;
+    box-shadow:0 2px 8px rgba(14,22,50,0.06);
+}
+.admin-profile-avatar{
+    width:36px;
+    height:36px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    color:#fff;
+    font-weight:700;
+    font-size:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.admin-profile-name{font-weight:500;}
+.admin-profile-chevron{font-size:0.7rem;color:#64748b;}
+</style>
+<nav class="admin-top-navbar">
+    <div class="admin-navbar-left">
+        <div class="admin-search-bar">
+            <i class="fas fa-search"></i>
+            <input type="search" placeholder="Rechercher..." aria-label="Recherche" class="admin-search-input">
+        </div>
+    </div>
+    <div class="admin-navbar-right">
+        <button type="button" class="admin-profile-btn" aria-label="Profil">
+            <span class="admin-profile-avatar">
+                {%- set name = app.user.fullName|default(app.user.username|default('A')) -%}
+                {%- set parts = name|split(' ') -%}
+                {%- if parts|length >= 2 -%}{{ parts[0][0:1]|upper }}{{ parts[1][0:1]|upper }}{%- else -%}{{ name[0:1]|upper }}{%- endif -%}
+            </span>
+            <span class="admin-profile-name">{{ app.user.fullName|default(app.user.username|default('Admin')) }}</span>
+            <i class="fas fa-chevron-down admin-profile-chevron"></i>
+        </button>
+    </div>
+</nav>

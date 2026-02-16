@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ user.fullName }} - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root{--bg:#f8fafc;--nav:#0b1220;--card:#fff;--muted:#6b7280;--text:#0b1220;--border:#e5e7eb;--primary:#6c5ce7;--primary-grad:linear-gradient(90deg,#7c6cff 0%,#6c5ce7 100%);--radius:12px;--shadow:0 6px 18px rgba(11,18,32,0.06)}
+
+        body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--muted)}
+
+        .admin-container{max-width:840px;margin:0 auto;padding:20px}
+
+        .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+        .admin-header h1{font-size:20px;font-weight:700;color:var(--text)}
+
+        .btn{padding:8px 14px;border:none;border-radius:12px;font-weight:600}
+        .btn-primary{background:var(--primary-grad);color:#fff}
+        .btn-secondary{background:var(--card);color:var(--muted);border:1px solid var(--border)}
+
+        .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:18px;border:1px solid var(--border)}
+
+        .user-header{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+        .user-avatar{width:80px;height:80px;border-radius:12px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:22px}
+        .user-info h2{font-size:18px;margin:0;color:var(--text)}
+        .user-info p{color:var(--muted);margin:2px 0}
+        .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#d1fae5;color:#065f46;margin-left:8px}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+        .info-item label{font-weight:600;color:var(--text);margin-bottom:6px;display:block}
+        .info-item p{color:var(--muted);margin:0}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>User Details</h1>
+                <div style="display:flex;gap:8px">
+                    <a href="{{ path('admin_users_edit', {id: user.id}) }}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="{{ path('admin_users_index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+
+        <div class="card">
+            <div class="user-header">
+                <div class="user-avatar">
+                    {%- set parts = user.fullName|split(' ') -%}
+                    {%- if parts|length >= 2 -%}
+                        {{ (parts[0][0:1])|upper }}{{ (parts[1][0:1])|upper }}
+                    {%- else -%}
+                        {{ (user.fullName[0:1])|upper }}
+                    {%- endif -%}
+                </div>
+                <div class="user-info">
+                    <h2>
+                        {{ user.fullName }}
+                        <span class="badge">{{ user.roles[0]|replace({'ROLE_': ''})|lower }}</span>
+                    </h2>
+                    <p>{{ user.email }}</p>
+                    <p>
+                        <strong>Status:</strong> 
+                        {% if user.status %}
+                            <span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Active</span>
+                        {% else %}
+                            <span style="color: #ef4444;"><i class="fas fa-times-circle"></i> Inactive</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Email Address</label>
+                    <p>{{ user.email }}</p>
+                </div>
+
+                <div class="info-item">
+                    <label>Full Name</label>
+                    <p>{{ user.fullName }}</p>
+                </div>
+
+                <div class="info-item">
+                    <label>Role</label>
+                    <p>{{ user.roles[0]|replace({'ROLE_': ''})|capitalize }}</p>
+                </div>
+
+                <div class="info-item">
+                    <label>Created Date</label>
+                    <p>{{ user.createdAt|date('M d, Y H:i') }}</p>
+                </div>
+            </div>
+
+            {% if student %}
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border-color);">
+                <h3 style="color: var(--text-primary); margin-bottom: 1rem;">Student Profile</h3>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Phone</label>
+                        <p>{{ student.phone ?: 'Not provided' }}</p>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Bio</label>
+                        <p>{{ student.bio ?: 'Not provided' }}</p>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Validation Status</label>
+                        <p>
+                            {% if student.validationStatus == 'approved' %}
+                                <span style="color: var(--success-color);">Approved</span>
+                            {% elseif student.validationStatus == 'pending' %}
+                                <span style="color: #f59e0b;">Pending</span>
+                            {% else %}
+                                <span style="color: #ef4444;">Rejected</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="info-item">
+                        <label>Active</label>
+                        <p>
+                            {% if student.isActive %}
+                                <span style="color: var(--success-color);"><i class="fas fa-check-circle"></i> Yes</span>
+                            {% else %}
+                                <span style="color: #ef4444;"><i class="fas fa-times-circle"></i> No</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

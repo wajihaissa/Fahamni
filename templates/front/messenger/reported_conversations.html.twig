@@ -1,0 +1,48 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Conversations signalées - FAHIMNI{% endblock %}
+{% block current_page %}messenger{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.reported-page { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+.reported-page h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-color, #1f2937); }
+.reported-page .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-color, #6366f1); text-decoration: none; font-weight: 500; margin-bottom: 1.5rem; }
+.reported-page .reported-list { background: var(--card-bg, #fff); border-radius: 12px; border: 1px solid var(--border-color, #e5e7eb); overflow: hidden; }
+.reported-item { display: block; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); text-decoration: none; color: inherit; transition: background 0.2s; }
+.reported-item:last-child { border-bottom: none; }
+.reported-item:hover { background: var(--bg-secondary, #f9fafb); }
+.reported-item-title { font-weight: 600; color: var(--text-color, #1f2937); margin-bottom: 0.25rem; }
+.reported-item-meta { font-size: 0.85rem; color: var(--text-light, #6b7280); }
+.reported-item-reason { font-size: 0.9rem; color: var(--text-color, #1f2937); margin-top: 0.35rem; }
+.reported-empty { padding: 2rem; text-align: center; color: var(--text-light, #6b7280); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reported-page">
+    <a href="{{ path('app_messenger_index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Retour au Messenger</a>
+    <h1><i class="fas fa-flag" style="margin-right: 0.5rem;"></i> Conversations signalées</h1>
+    <p style="color: var(--text-light, #6b7280); font-size: 0.95rem; margin-bottom: 1.25rem;">Liste des conversations que vous avez signalées.</p>
+
+    <div class="reported-list">
+        {% for report in reports %}
+            <a href="{{ path('app_messenger_show', { id: report.conversation.id }) }}" class="reported-item">
+                <div class="reported-item-title">
+                    {{ report.conversation.title ?? ('Conversation #' ~ report.conversation.id) }}{% if report.conversation.isGroup %} (groupe){% endif %}
+                </div>
+                <div class="reported-item-meta">Signalé le {{ report.createdAt|date('d/m/Y à H:i') }}</div>
+                {% if report.reason %}
+                    <div class="reported-item-reason">{{ report.reason|slice(0, 120) }}{% if report.reason|length > 120 %}…{% endif %}</div>
+                {% endif %}
+            </a>
+        {% else %}
+            <div class="reported-empty">
+                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                <p>Aucune conversation signalée.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

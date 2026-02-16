@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FAHIMNI</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/admin.css">
+</head>
+<body>
+    <nav class="navbar admin-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html"><h2>FAHIMNI</h2></a>
+                <span class="admin-badge">Admin</span>
+            </div>
+            <div class="nav-menu">
+                <a href="admin.html" class="nav-link active">Dashboard</a>
+                <a href="index.html" class="nav-link">Public Site</a>
+                <button class="btn btn-outline">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-main">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <p>Manage users, content, and platform statistics</p>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h3>2,847</h3>
+                        <p>Total Users</p>
+                        <span class="stat-change positive">+12% this month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🧑‍🏫</div>
+                    <div class="stat-content">
+                        <h3>1,245</h3>
+                        <p>Active Tutors</p>
+                        <span class="stat-change positive">+8% this month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-content">
+                        <h3>1,602</h3>
+                        <p>Students</p>
+                        <span class="stat-change positive">+15% this month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-content">
+                        <h3>15,439</h3>
+                        <p>Sessions Completed</p>
+                        <span class="stat-change positive">+23% this month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <h3>$89,240</h3>
+                        <p>Monthly Revenue</p>
+                        <span class="stat-change positive">+18% this month</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📖</div>
+                    <div class="stat-content">
+                        <h3>324</h3>
+                        <p>Published Articles</p>
+                        <span class="stat-change positive">+6 this week</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- User Management -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>User Management</h2>
+                        <div class="section-actions">
+                            <input type="text" placeholder="Search users..." class="search-input">
+                            <button class="btn btn-primary">Add User</button>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Sessions</th>
+                                    <th>Rating</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar">DR</div>
+                                            <div>
+                                                <div class="user-name">Dr. Sarah Roberts</div>
+                                                <div class="user-email">sarah@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge tutor">Tutor</span></td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                    <td>127</td>
+                                    <td>4.9 ⭐</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn edit">✏️</button>
+                                            <button class="action-btn view">👁️</button>
+                                            <button class="action-btn suspend">⏸️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar">JD</div>
+                                            <div>
+                                                <div class="user-name">John Doe</div>
+                                                <div class="user-email">john@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge student">Student</span></td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                    <td>24</td>
+                                    <td>-</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn edit">✏️</button>
+                                            <button class="action-btn view">👁️</button>
+                                            <button class="action-btn suspend">⏸️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar">AL</div>
+                                            <div>
+                                                <div class="user-name">Alex Liu</div>
+                                                <div class="user-email">alex@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge tutor">Tutor</span></td>
+                                    <td><span class="status-badge pending">Pending</span></td>
+                                    <td>89</td>
+                                    <td>4.8 ⭐</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn edit">✏️</button>
+                                            <button class="action-btn view">👁️</button>
+                                            <button class="action-btn approve">✅</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="user-info">
+                                            <div class="user-avatar">SM</div>
+                                            <div>
+                                                <div class="user-name">Sarah Mitchell</div>
+                                                <div class="user-email">sarah.m@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="role-badge student">Student</span></td>
+                                    <td><span class="status-badge suspended">Suspended</span></td>
+                                    <td>8</td>
+                                    <td>-</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="action-btn edit">✏️</button>
+                                            <button class="action-btn view">👁️</button>
+                                            <button class="action-btn activate">🔄</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Subject Management -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Subject Management</h2>
+                        <button class="btn btn-primary">Add Subject</button>
+                    </div>
+                    <div class="subjects-grid">
+                        <div class="subject-card">
+                            <div class="subject-header">
+                                <h3>Mathematics</h3>
+                                <div class="subject-actions">
+                                    <button class="action-btn edit">✏️</button>
+                                    <button class="action-btn delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="stat">
+                                    <span>245 Tutors</span>
+                                </div>
+                                <div class="stat">
+                                    <span>1,240 Students</span>
+                                </div>
+                                <div class="stat">
+                                    <span>5,680 Sessions</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="subject-card">
+                            <div class="subject-header">
+                                <h3>Computer Science</h3>
+                                <div class="subject-actions">
+                                    <button class="action-btn edit">✏️</button>
+                                    <button class="action-btn delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="stat">
+                                    <span>189 Tutors</span>
+                                </div>
+                                <div class="stat">
+                                    <span>950 Students</span>
+                                </div>
+                                <div class="stat">
+                                    <span>3,420 Sessions</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="subject-card">
+                            <div class="subject-header">
+                                <h3>Chemistry</h3>
+                                <div class="subject-actions">
+                                    <button class="action-btn edit">✏️</button>
+                                    <button class="action-btn delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="stat">
+                                    <span>156 Tutors</span>
+                                </div>
+                                <div class="stat">
+                                    <span>780 Students</span>
+                                </div>
+                                <div class="stat">
+                                    <span>2,890 Sessions</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="subject-card">
+                            <div class="subject-header">
+                                <h3>Physics</h3>
+                                <div class="subject-actions">
+                                    <button class="action-btn edit">✏️</button>
+                                    <button class="action-btn delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="subject-stats">
+                                <div class="stat">
+                                    <span>134 Tutors</span>
+                                </div>
+                                <div class="stat">
+                                    <span>620 Students</span>
+                                </div>
+                                <div class="stat">
+                                    <span>2,340 Sessions</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Management -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Content Management</h2>
+                        <div class="content-tabs">
+                            <button class="tab-btn active" data-tab="articles">Articles</button>
+                            <button class="tab-btn" data-tab="reports">Reports</button>
+                        </div>
+                    </div>
+
+                    <div class="tab-content active" id="articles">
+                        <div class="content-list">
+                            <div class="content-item">
+                                <div class="content-info">
+                                    <h4>10 Proven Study Techniques That Actually Work</h4>
+                                    <p>by Dr. Sarah Roberts • Published 2 hours ago</p>
+                                    <div class="content-stats">
+                                        <span>👍 127 likes</span>
+                                        <span>💬 23 comments</span>
+                                        <span>👁️ 1,250 views</span>
+                                    </div>
+                                </div>
+                                <div class="content-status approved">Approved</div>
+                                <div class="content-actions">
+                                    <button class="action-btn view">👁️</button>
+                                    <button class="action-btn edit">✏️</button>
+                                    <button class="action-btn unpublish">🚫</button>
+                                </div>
+                            </div>
+
+                            <div class="content-item">
+                                <div class="content-info">
+                                    <h4>Understanding Calculus: A Beginner's Guide</h4>
+                                    <p>by Prof. Michael Khan • Submitted 1 day ago</p>
+                                    <div class="content-stats">
+                                        <span>👍 89 likes</span>
+                                        <span>💬 15 comments</span>
+                                        <span>👁️ 890 views</span>
+                                    </div>
+                                </div>
+                                <div class="content-status pending">Pending Review</div>
+                                <div class="content-actions">
+                                    <button class="action-btn view">👁️</button>
+                                    <button class="action-btn approve">✅</button>
+                                    <button class="action-btn reject">❌</button>
+                                </div>
+                            </div>
+
+                            <div class="content-item">
+                                <div class="content-info">
+                                    <h4>Algorithm Design Patterns Every Student Should Know</h4>
+                                    <p>by Alex Liu • Flagged 2 days ago</p>
+                                    <div class="content-stats">
+                                        <span>👍 156 likes</span>
+                                        <span>💬 34 comments</span>
+                                        <span>👁️ 2,100 views</span>
+                                    </div>
+                                </div>
+                                <div class="content-status flagged">Flagged</div>
+                                <div class="content-actions">
+                                    <button class="action-btn view">👁️</button>
+                                    <button class="action-btn restore">🔄</button>
+                                    <button class="action-btn remove">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="reports">
+                        <div class="reports-list">
+                            <div class="report-item high-priority">
+                                <div class="report-info">
+                                    <h4>Inappropriate Content Report</h4>
+                                    <p>Article: "Chemistry Shortcuts" reported for plagiarism</p>
+                                    <div class="report-meta">
+                                        <span>Reported by: Student123</span>
+                                        <span>2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn btn-primary btn-small">Review</button>
+                                    <button class="btn btn-outline btn-small">Dismiss</button>
+                                </div>
+                            </div>
+
+                            <div class="report-item medium-priority">
+                                <div class="report-info">
+                                    <h4>User Behavior Report</h4>
+                                    <p>Multiple students reported harassment from tutor Alex_M</p>
+                                    <div class="report-meta">
+                                        <span>3 reports received</span>
+                                        <span>1 day ago</span>
+                                    </div>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn btn-primary btn-small">Investigate</button>
+                                    <button class="btn btn-outline btn-small">Contact User</button>
+                                </div>
+                            </div>
+
+                            <div class="report-item low-priority">
+                                <div class="report-info">
+                                    <h4>Technical Issue</h4>
+                                    <p>Video call connection problems during sessions</p>
+                                    <div class="report-meta">
+                                        <span>Reported by: TutorPro</span>
+                                        <span>3 days ago</span>
+                                    </div>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn btn-secondary btn-small">Forward to Tech</button>
+                                    <button class="btn btn-outline btn-small">Resolved</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics -->
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Platform Analytics</h2>
+                        <select class="period-selector">
+                            <option value="week">Last 7 days</option>
+                            <option value="month" selected>Last 30 days</option>
+                            <option value="quarter">Last 3 months</option>
+                        </select>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>User Growth</h3>
+                            <div class="chart-placeholder">
+                                <div class="growth-chart">
+                                    <div class="chart-bar" style="height: 30%"></div>
+                                    <div class="chart-bar" style="height: 45%"></div>
+                                    <div class="chart-bar" style="height: 60%"></div>
+                                    <div class="chart-bar" style="height: 75%"></div>
+                                    <div class="chart-bar" style="height: 90%"></div>
+                                    <div class="chart-bar" style="height: 85%"></div>
+                                    <div class="chart-bar" style="height: 100%"></div>
+                                </div>
+                                <p>+15% increase in new registrations</p>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h3>Session Completion Rate</h3>
+                            <div class="chart-placeholder">
+                                <div class="completion-rate">
+                                    <div class="rate-circle">
+                                        <span>94.2%</span>
+                                    </div>
+                                </div>
+                                <p>Excellent session completion rate</p>
+                            </div>
+                        </div>
+
+                        <div class="analytics-card">
+                            <h3>Top Subjects</h3>
+                            <div class="subjects-ranking">
+                                <div class="ranking-item">
+                                    <span>1. Mathematics</span>
+                                    <div class="ranking-bar" style="width: 100%"></div>
+                                </div>
+                                <div class="ranking-item">
+                                    <span>2. Computer Science</span>
+                                    <div class="ranking-bar" style="width: 75%"></div>
+                                </div>
+                                <div class="ranking-item">
+                                    <span>3. Chemistry</span>
+                                    <div class="ranking-bar" style="width: 60%"></div>
+                                </div>
+                                <div class="ranking-item">
+                                    <span>4. Physics</span>
+                                    <div class="ranking-bar" style="width: 45%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/admin.js"></script>
+</body>
+</html>
