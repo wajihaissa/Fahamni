@@ -1,0 +1,198 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Quizzes - FAHIMNI{% endblock %}
+
+{% block content %}
+<style>
+    .quizzes-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .page-header p {
+        font-size: 16px;
+        color: var(--text-secondary);
+    }
+
+    .quizzes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        margin-top: 30px;
+    }
+
+    .quiz-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    body.dark-theme .quiz-card {
+        border-color: #333;
+    }
+
+    .quiz-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .quiz-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .quiz-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--primary-color);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .quiz-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .quiz-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin: 8px 0 0 0;
+    }
+
+    .quiz-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .quiz-description {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+
+    .quiz-button {
+        padding: 10px 16px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .quiz-button:hover {
+        background: var(--primary-dark);
+        transform: scale(1.02);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--card-bg);
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .quizzes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="quizzes-container">
+    <div class="page-header">
+        <h1>Available Quizzes</h1>
+        <p>Test your knowledge with our comprehensive quiz collection</p>
+    </div>
+
+    {% if quizzes|length > 0 %}
+    <div class="quizzes-grid">
+        {% for quiz in quizzes %}
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <div class="quiz-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div>
+                    <h3 class="quiz-title">{{ quiz.titre }}</h3>
+                    <div class="quiz-meta">
+                        <div class="quiz-meta-item">
+                            <i class="fas fa-question-circle"></i>
+                            <span>{{ quiz.questions|length }} Questions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ path('app_quiz_show', {'id': quiz.id}) }}" class="quiz-button">
+                Start Quiz <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📚</div>
+        <h3>No Quizzes Available</h3>
+        <p>There are currently no quizzes available. Please check back later!</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

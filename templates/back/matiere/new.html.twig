@@ -1,0 +1,176 @@
+{% extends 'back/admin_base.html.twig' %}
+
+{% block title %}New Subject - FAHIMNI Admin{% endblock %}
+
+{% block body %}
+    {# 
+       CRITICAL FIX: Injecting styles directly here because admin_base 
+       ignores the {% block stylesheets %}.
+    #}
+    <style>
+        /* --- 1. VISUAL VARIABLES (Consistent with Edit/Index Pages) --- */
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text-primary: #0b1220;
+            --border: #e5e7eb;
+            --primary: #6c5ce7;
+            --primary-grad: linear-gradient(90deg, #7c6cff 0%, #6c5ce7 100%);
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+        }
+
+        /* --- 2. SIDEBAR FIXES (Overrides admin_base) --- */
+        .sidebar-container {
+            background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%) !important;
+            box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25);
+            border: none !important;
+        }
+
+        /* Clean up the lists in the sidebar */
+        .sidebar-container ul { list-style: none; padding: 10px; margin: 0; }
+        .sidebar-container li { margin: 4px 0; }
+
+        /* Force white text and premium styling on links */
+        .sidebar-container a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.86) !important;
+            text-decoration: none !important;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .sidebar-container a:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff !important;
+            transform: translateX(4px);
+        }
+        .sidebar-container a i { width: 24px; text-align: center; color: inherit; }
+
+        /* --- 3. PAGE CONTENT STYLES --- */
+        .admin-content {
+            background-color: var(--bg);
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .page-header p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        /* --- 4. FORM STYLES --- */
+        .form-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 850px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        /* Buttons */
+        .btn-submit {
+            background: var(--primary-grad);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        .btn-cancel:hover { background: #f3f4f6; color: var(--text-primary); }
+    </style>
+
+    <div class="page-header">
+        <h1><i class="fas fa-plus-circle" style="color: var(--primary); margin-right: 8px;"></i> New Subject</h1>
+        <p>Create a new subject for the platform</p>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form) }}
+            
+            <div style="margin-bottom: 1.5rem;">
+                {{ form_label(form.titre, 'Subject Name', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Advanced Mathematics'}}) }}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 5px;">{{ form_errors(form.titre) }}</div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                {{ form_label(form.description, 'Description (Optional)', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4'}}) }}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 5px;">{{ form_errors(form.description) }}</div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                {{ form_label(form.imageFile, 'Cover Image', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 6px;">
+                    <i class="fas fa-upload"></i> Browse your computer for a JPG or PNG.
+                </div>
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 5px;">
+                    {{ form_errors(form.imageFile) }}
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 2rem;">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Save Subject
+                </button>
+                <a href="{{ path('app_matiere_index') }}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

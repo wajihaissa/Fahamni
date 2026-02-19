@@ -1,0 +1,124 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Explore Subjects - FAHIMNI{% endblock %}
+
+{% block current_page %}subjects{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* Reusing the FAHIMNI layout structure from your Calendar example */
+    .explore-layout { display: flex; min-height: calc(100vh - 180px); gap: 30px; margin-top: 30px; }
+    .sidebar { width: 320px; flex-shrink: 0; }
+    
+    .sidebar-section { 
+        background-color: var(--card-bg); 
+        border-radius: 16px; 
+        padding: 25px; 
+        margin-bottom: 25px; 
+        box-shadow: var(--shadow); 
+        border: 1px solid var(--border-color); 
+    }
+
+    /* Subject Grid */
+    .subjects-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+        gap: 25px; 
+        flex: 1; 
+    }
+
+    .subject-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .subject-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg); /* Using a slightly heavier shadow on hover */
+    }
+
+    .card-image {
+        height: 180px;
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .card-content { padding: 20px; flex-grow: 1; }
+    .card-category { color: var(--primary-color); font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+    .card-title { font-size: 20px; font-weight: 700; color: var(--text-color); margin-bottom: 10px; }
+    
+    .card-footer { 
+        padding: 15px 20px; 
+        border-top: 1px solid var(--border-color); 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+    }
+
+    .btn-learn {
+        background-color: var(--primary-color);
+        color: white !important;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .btn-learn:hover { opacity: 0.9; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="explore-layout">
+        {# Sidebar: Reused style from Calendar #}
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <h2 class="sidebar-title"><i class="fas fa-filter"></i> Categories</h2>
+                <div class="filter-list">
+                    <div class="filter-item">
+                        <div class="filter-checkbox checked"></div>
+                        <span class="filter-label">All Subjects</span>
+                    </div>
+                    {# We can dynamically loop categories here later #}
+                </div>
+            </div>
+        </div>
+
+        {# Main Content: The Subject Library #}
+        <div class="calendar-area">
+            <h1 class="calendar-title" style="margin-bottom: 25px;">Knowledge Library</h1>
+            
+            <div class="subjects-grid">
+                {% for matiere in matieres %}
+                    <div class="subject-card">
+                        <img src="{{ matiere.coverImage ? asset(matiere.coverImage) : asset('images/default-subject.jpg') }}" 
+                             class="card-image" alt="{{ matiere.titre }}">
+                        
+                        <div class="card-content">
+                            <div class="card-category">Course</div>
+                            <h3 class="card-title">{{ matiere.titre }}</h3>
+                            <p class="text-muted" style="font-size: 14px;">{{ matiere.description|slice(0, 80) }}...</p>
+                        </div>
+
+                        <div class="card-footer">
+                            <span style="font-size: 13px; color: var(--text-light);">
+                                <i class="fas fa-book-open"></i> Explore Modules
+                            </span>
+                            <a href="{{ path('app_front_subject_show', {'id': matiere.id}) }}" class="btn-learn">Start</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No subjects available yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

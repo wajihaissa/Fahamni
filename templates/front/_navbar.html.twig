@@ -1,0 +1,386 @@
+    <!-- Navbar Partial -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">FAHIM<span>NI</span></a>
+                
+                <nav>
+                    <ul>
+                        <li><a href="/home" class="nav-link{{ (current_page|default('')) == 'home' ? ' active' : '' }}" data-page="home">Home</a></li>
+                        <li><a href="/articles" class="nav-link{{ (current_page|default('')) == 'articles' ? ' active' : '' }}" data-page="articles">Articles</a></li>
+                        <li><a href="/tutor" class="nav-link{{ (current_page|default('')) == 'tutors' ? ' active' : '' }}" data-page="tutors">Find Tutors</a></li>
+                        <li><a href="/calendar" class="nav-link{{ (current_page|default('')) == 'calendar' ? ' active' : '' }}" data-page="calendar">Calendar</a></li>
+                        <li><a href="{{ path('app_quiz_list') }}" class="nav-link{{ (current_page|default('')) == 'quiz' ? ' active' : '' }}" data-page="quiz">Quiz</a></li>
+                        <li><a href="/messenger" class="nav-link{{ (current_page|default('')) == 'messenger' ? ' active' : '' }}" data-page="messenger">Messenger</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="auth-buttons">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+
+                    {% if user %}
+                    {# Icône Messenger : ouvre la Chat Sidebar #}
+                    <button type="button" class="navbar-messenger-icon-btn" id="navbarMessengerIconBtn" aria-label="Ouvrir les messages">
+                        <i class="fas fa-comments"></i>
+                    </button>
+                    {% endif %}
+
+                    {% if user %}
+                    <!-- User Profile Dropdown -->
+                    <div class="user-dropdown" style="position: relative;">
+                        <button class="user-profile-btn" id="userProfileBtn" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 20px; background: var(--primary-color); color: white; font-weight: 500;">
+                            <div style="width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary-color);">
+                                {{ user.fullName|first|upper }}
+                            </div>
+                            <span>{{ user.fullName }}</span>
+                            <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
+                        </button>
+                        
+                        <div class="dropdown-menu" id="userDropdown" style="position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 200px; z-index: 1000; display: none; margin-top: 8px;">
+                            <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color);">
+                                <p style="margin: 0; font-weight: 600; color: var(--text-color);">{{ user.fullName }}</p>
+                                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-light);">{{ user.email }}</p>
+                            </div>
+                            <a href="/profile" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                                <i class="fas fa-user" style="margin-right: 8px; color: var(--primary-color);"></i> My Profile
+                            </a>
+                            <a href="/settings" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                                <i class="fas fa-cog" style="margin-right: 8px; color: var(--primary-color);"></i> Settings
+                            </a>
+                            <a href="/logout" style="display: block; padding: 12px 16px; color: #d32f2f; text-decoration: none;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.getElementById('userProfileBtn').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var dropdown = document.getElementById('userDropdown');
+                            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                        });
+                        document.addEventListener('click', function(e) {
+                            var dropdown = document.getElementById('userDropdown');
+                            var userDropdown = document.querySelector('.user-dropdown');
+                            if (!userDropdown.contains(e.target)) {
+                                dropdown.style.display = 'none';
+                            }
+                        });
+                    </script>
+
+                    {# Chat Sidebar (liste des conversations) - visible uniquement si user connecté #}
+                    <div class="navbar-chat-sidebar-overlay" id="navbarChatSidebarOverlay" aria-hidden="true"></div>
+                    <div class="navbar-chat-sidebar" id="navbarChatSidebar" aria-hidden="true">
+                        <div class="navbar-chat-sidebar-top">
+                            <h2>Messenger</h2>
+                            <div class="navbar-chat-sidebar-top-actions">
+                                <a href="{{ path('app_messenger_index') }}" class="navbar-chat-sidebar-head-btn" data-tooltip="Voir tout dans Messenger" aria-label="Voir tout dans Messenger"><i class="fas fa-external-link-alt"></i></a>
+                                <button type="button" class="navbar-chat-sidebar-head-btn" id="navbarChatSidebarNewMsgBtn" data-tooltip="Nouveau message" aria-label="Nouveau message"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="navbar-chat-sidebar-close" id="navbarChatSidebarClose" data-tooltip="Fermer" aria-label="Fermer"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="navbar-chat-sidebar-content" id="navbarChatSidebarContent">
+                            <div class="navbar-chat-sidebar-loading" id="navbarChatSidebarLoading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+                        </div>
+                        <div class="navbar-chat-sidebar-new-panel" id="navbarChatSidebarNewPanel" style="display:none;">
+                            <div class="navbar-chat-sidebar-new-panel-back">
+                                <button type="button" class="navbar-chat-sidebar-back-btn" id="navbarChatSidebarBackFromNew"><i class="fas fa-arrow-left"></i> Retour</button>
+                            </div>
+                            <div class="navbar-chat-sidebar-new-panel-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="navbarChatSidebarUserSearch" placeholder="Rechercher un utilisateur..." autocomplete="off">
+                            </div>
+                            <div class="navbar-chat-sidebar-new-panel-results" id="navbarChatSidebarUserResults"></div>
+                        </div>
+                        <div class="navbar-chat-sidebar-reduced" id="navbarChatSidebarReduced" style="display:none;">
+                            <div class="navbar-chat-sidebar-reduced-header">
+                                <button type="button" class="navbar-chat-sidebar-back-btn" id="navbarChatSidebarBackFromReduced"><i class="fas fa-arrow-left"></i> Retour</button>
+                            </div>
+                            <iframe id="navbarChatSidebarIframe" class="navbar-chat-sidebar-iframe" title="Conversation"></iframe>
+                        </div>
+                    </div>
+                    <style>
+                        /* Hauteur navbar : sidebar et overlay démarrent en dessous (comme Facebook) */
+                        header { --navbar-height: 72px; }
+                        /* Tooltips personnalisés : apparition rapide (0.15s), style soigné */
+                        [data-tooltip] { position: relative; }
+                        [data-tooltip]::after { content: attr(data-tooltip); position: absolute; left: 50%; top: 100%; transform: translate(-50%, 8px); padding: 6px 10px; background: #374151; color: #fff; font-size: 0.75rem; font-weight: 500; white-space: nowrap; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease; transition-delay: 0.08s; pointer-events: none; z-index: 10000; }
+                        [data-tooltip]:hover::after { opacity: 1; visibility: visible; transform: translate(-50%, 6px); }
+                        .navbar-chat-sidebar-top-actions [data-tooltip]::after { left: auto; right: 0; transform: translate(0, 8px); }
+                        .navbar-chat-sidebar-top-actions [data-tooltip]:hover::after { transform: translate(0, 6px); }
+                        .navbar-messenger-icon-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-color, #6366f1); transition: background 0.2s, color 0.2s; margin-right: 4px; }
+                        .navbar-messenger-icon-btn:hover { background: rgba(99, 102, 241, 0.1); color: var(--primary-color, #6366f1); }
+                        .navbar-chat-sidebar-overlay { position: fixed; top: var(--navbar-height, 72px); left: 0; right: 0; bottom: 0; background: transparent; z-index: 9998; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s; pointer-events: none; }
+                        .navbar-chat-sidebar-overlay.is-open { opacity: 1; visibility: visible; }
+                        .navbar-chat-sidebar { position: fixed; top: var(--navbar-height, 72px); right: 0; width: 360px; max-width: 100vw; height: calc(100vh - var(--navbar-height, 72px)); background: var(--card-bg, #fff); box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 9999; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; border-radius: 12px 0 0 12px; overflow: hidden; visibility: hidden; }
+                        .navbar-chat-sidebar.is-open { transform: translateX(0); visibility: visible; }
+                        .navbar-chat-sidebar-top { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); flex-shrink: 0; }
+                        .navbar-chat-sidebar-top h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color, #1f2937); }
+                        .navbar-chat-sidebar-top-actions { display: flex; align-items: center; gap: 4px; }
+                        .navbar-chat-sidebar-head-btn { width: 36px; height: 36px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-light, #6b7280); background: transparent; cursor: pointer; text-decoration: none; transition: background 0.2s, color 0.2s; font-size: 1rem; }
+                        .navbar-chat-sidebar-head-btn:hover { background: var(--bg-secondary, #f3f4f6); color: var(--primary-color, #6366f1); }
+                        .navbar-chat-sidebar-close { width: 36px; height: 36px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-light, #6b7280); background: transparent; cursor: pointer; transition: background 0.2s; }
+                        .navbar-chat-sidebar-close:hover { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); }
+                        .navbar-chat-sidebar-content { flex: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; }
+                        .navbar-chat-sidebar-new-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+                        .navbar-chat-sidebar-new-panel-back { padding: 8px 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar-back-btn { background: none; border: none; cursor: pointer; color: var(--primary-color, #6366f1); font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; padding: 6px 0; }
+                        .navbar-chat-sidebar-back-btn:hover { text-decoration: underline; }
+                        .navbar-chat-sidebar-new-panel-search { padding: 12px 16px; position: relative; }
+                        .navbar-chat-sidebar-new-panel-search i { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); color: var(--text-light, #6b7280); font-size: 0.9rem; }
+                        .navbar-chat-sidebar-new-panel-search input { width: 100%; padding: 10px 14px 10px 36px; border: none; border-radius: 20px; font-size: 0.9rem; background: var(--bg-secondary, #f3f4f6); outline: none; transition: all 0.2s ease; }
+                        .navbar-chat-sidebar-new-panel-search input:focus { background: var(--card-bg, #fff); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+                        .navbar-chat-sidebar-new-panel-results { flex: 1; overflow-y: auto; padding: 8px; }
+                        .navbar-chat-sidebar-user-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+                        .navbar-chat-sidebar-user-item:hover { background: var(--bg-secondary, #f3f4f6); }
+                        .navbar-chat-sidebar-user-item-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color, #6366f1); color: #fff; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                        .navbar-chat-sidebar-user-item-name { font-weight: 500; color: var(--text-color, #1f2937); }
+                        .navbar-chat-sidebar-reduced { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+                        .navbar-chat-sidebar-reduced-header { padding: 8px 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar-iframe { flex: 1; width: 100%; border: none; min-height: 300px; }
+                        .navbar-chat-sidebar-loading { padding: 24px; text-align: center; color: var(--text-light, #6b7280); }
+                        .navbar-chat-sidebar-inner { padding: 0; }
+                        .navbar-chat-sidebar-search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); position: relative; }
+                        .navbar-chat-sidebar-search-wrap i { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); color: var(--text-light, #6b7280); font-size: 0.9rem; pointer-events: none; }
+                        .navbar-chat-sidebar-list-search-input { width: 100%; padding: 10px 14px 10px 36px; border: none; border-radius: 20px; font-size: 0.9rem; background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); outline: none; transition: all 0.2s ease; }
+                        .navbar-chat-sidebar-list-search-input::placeholder { color: var(--text-light, #9ca3af); }
+                        .navbar-chat-sidebar-list-search-input:focus { background: var(--card-bg, #fff); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+                        .navbar-chat-sidebar-actions { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar-btn { display: block; text-align: center; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: background 0.2s, color 0.2s; }
+                        .navbar-chat-sidebar-btn.full { background: var(--primary-color, #6366f1); color: #fff; }
+                        .navbar-chat-sidebar-btn.full:hover { opacity: 0.9; }
+                        .navbar-chat-sidebar-btn.new { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); border: 1px solid var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar-btn.new:hover { background: var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar-threads { padding: 0; }
+                        .navbar-chat-sidebar .thread-item { padding: 0; border-bottom: 1px solid var(--border-color, #e5e7eb); }
+                        .navbar-chat-sidebar .thread-item-link { padding: 12px 16px; text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px; }
+                        .navbar-chat-sidebar .thread-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-color, #6366f1); color: #fff; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                        .navbar-chat-sidebar .thread-content { flex: 1; min-width: 0; }
+                        .navbar-chat-sidebar .thread-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+                        .navbar-chat-sidebar .thread-user { font-weight: 600; color: var(--text-color, #1f2937); font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                        .navbar-chat-sidebar .thread-time { font-size: 0.75rem; color: var(--text-light, #6b7280); }
+                        .navbar-chat-sidebar .thread-preview { font-size: 0.8rem; color: var(--text-light, #6b7280); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                        .navbar-chat-sidebar .thread-kebab-wrap { display: none; }
+                        /* Ligne unique : tabs + menu 3 points horizontaux */
+                        .navbar-chat-sidebar-tabs-row { display: flex; align-items: center; gap: 8px; padding: 0 16px 12px; border-bottom: 1px solid var(--border-color, #e5e7eb); flex-shrink: 0; }
+                        .navbar-chat-sidebar-tabs { display: flex; flex: 1; gap: 4px; min-width: 0; }
+                        .navbar-chat-sidebar-tab { flex: 1; padding: 8px 10px; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; background: transparent; color: var(--text-light, #6b7280); transition: background 0.2s, color 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+                        .navbar-chat-sidebar-tab i { font-size: 0.9rem; opacity: 0.9; }
+                        .navbar-chat-sidebar-tab:hover { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); }
+                        .navbar-chat-sidebar-tab.active { background: var(--primary-color, #6366f1); color: #fff; }
+                        .navbar-chat-sidebar-tab.active i { opacity: 1; }
+                        /* Menu 3 points horizontal */
+                        .navbar-chat-sidebar-menu-wrap { position: relative; flex-shrink: 0; }
+                        .navbar-chat-sidebar-menu-btn { width: 36px; height: 36px; border: none; border-radius: 8px; background: transparent; color: var(--text-light, #6b7280); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: background 0.2s; }
+                        .navbar-chat-sidebar-menu-btn:hover { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); }
+                        .navbar-chat-sidebar-dropdown { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card-bg, #fff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); min-width: 220px; z-index: 10; display: none; padding: 6px 0; }
+                        .navbar-chat-sidebar-dropdown.is-open { display: block; }
+                        .navbar-chat-sidebar-dropdown-item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; font-size: 0.9rem; color: var(--text-color, #1f2937); text-decoration: none; transition: background 0.2s; }
+                        .navbar-chat-sidebar-dropdown-item i { width: 20px; text-align: center; font-size: 1rem; color: var(--primary-color, #6366f1); }
+                        .navbar-chat-sidebar-dropdown-item:hover { background: var(--bg-secondary, #f3f4f6); }
+                        .navbar-chat-sidebar-dropdown-item:hover i { color: var(--primary-color, #6366f1); }
+                        .navbar-chat-sidebar-thread-wrap { border-bottom: 1px solid var(--border-color, #e5e7eb); }
+                        /* Footer "Tout voir dans Messenger" */
+                        .navbar-chat-sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border-color, #e5e7eb); margin-top: auto; flex-shrink: 0; background: var(--card-bg, #fff); text-align: center; }
+                        .navbar-chat-sidebar-see-all { display: inline-flex; align-items: center; gap: 6px; color: var(--primary-color, #6366f1); font-size: 0.9rem; text-decoration: none; transition: text-decoration 0.2s; }
+                        .navbar-chat-sidebar-see-all:hover { text-decoration: underline; }
+                        .navbar-chat-sidebar-see-all i { font-size: 0.8rem; }
+                    </style>
+                    <script>
+                        (function() {
+                            var btn = document.getElementById('navbarMessengerIconBtn');
+                            var overlay = document.getElementById('navbarChatSidebarOverlay');
+                            var sidebar = document.getElementById('navbarChatSidebar');
+                            var closeBtn = document.getElementById('navbarChatSidebarClose');
+                            var content = document.getElementById('navbarChatSidebarContent');
+                            var loading = document.getElementById('navbarChatSidebarLoading');
+                            var sidebarUrl = '{{ path('app_messenger_sidebar_content') }}';
+                            var searchUsersUrl = '{{ path('app_messenger_search_users') }}';
+                            var loaded = false;
+                            var newPanel = document.getElementById('navbarChatSidebarNewPanel');
+                            var reducedEl = document.getElementById('navbarChatSidebarReduced');
+                            var iframeEl = document.getElementById('navbarChatSidebarIframe');
+                            var userSearchInput = document.getElementById('navbarChatSidebarUserSearch');
+                            var userResultsEl = document.getElementById('navbarChatSidebarUserResults');
+                            var searchTimeout = null;
+
+                            function closeSidebar() {
+                                if (overlay) { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden', 'true'); }
+                                if (sidebar) { sidebar.classList.remove('is-open'); sidebar.setAttribute('aria-hidden', 'true'); }
+                            }
+                            closeSidebar();
+
+                            function showView(view) {
+                                if (content) content.style.display = view === 'list' ? 'flex' : 'none';
+                                if (newPanel) newPanel.style.display = view === 'new' ? 'flex' : 'none';
+                                if (reducedEl) reducedEl.style.display = view === 'reduced' ? 'flex' : 'none';
+                            }
+
+                            function openSidebar() {
+                                overlay.classList.add('is-open');
+                                sidebar.classList.add('is-open');
+                                overlay.setAttribute('aria-hidden', 'false');
+                                sidebar.setAttribute('aria-hidden', 'false');
+                                showView('list');
+                                if (!loaded) {
+                                    fetch(sidebarUrl, { credentials: 'same-origin' }).then(function(r) {
+                                        if (r.ok) return r.text();
+                                        throw new Error('Unauthorized');
+                                    }).then(function(html) {
+                                        content.innerHTML = html;
+                                        loaded = true;
+                                    }).catch(function() {
+                                        content.innerHTML = '<p style="padding:16px;color:#b91c1c;">Connexion requise.</p>';
+                                    });
+                                }
+                            }
+                            if (document.getElementById('navbarChatSidebarNewMsgBtn')) {
+                                document.getElementById('navbarChatSidebarNewMsgBtn').addEventListener('click', function() {
+                                    showView('new');
+                                    if (userResultsEl) userResultsEl.innerHTML = '';
+                                    if (userSearchInput) userSearchInput.value = '';
+                                });
+                            }
+                            if (document.getElementById('navbarChatSidebarBackFromNew')) {
+                                document.getElementById('navbarChatSidebarBackFromNew').addEventListener('click', function() {
+                                    showView('list');
+                                });
+                            }
+                            if (document.getElementById('navbarChatSidebarBackFromReduced')) {
+                                document.getElementById('navbarChatSidebarBackFromReduced').addEventListener('click', function() {
+                                    if (iframeEl) iframeEl.src = 'about:blank';
+                                    showView('list');
+                                });
+                            }
+
+                            if (userSearchInput && userResultsEl) {
+                                userSearchInput.addEventListener('input', function() {
+                                    var q = userSearchInput.value.trim();
+                                    if (searchTimeout) clearTimeout(searchTimeout);
+                                    if (q.length < 2) {
+                                        userResultsEl.innerHTML = q.length === 0 ? '' : '<p class="navbar-chat-sidebar-search-hint" style="padding:12px;color:var(--text-light,#6b7280);font-size:0.85rem;">Tapez au moins 2 caractères</p>';
+                                        return;
+                                    }
+                                    searchTimeout = setTimeout(function() {
+                                        fetch(searchUsersUrl + '?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+                                            .then(function(r) { return r.json(); })
+                                            .then(function(data) {
+                                                var results = data.results || [];
+                                                if (results.length === 0) {
+                                                    userResultsEl.innerHTML = '<p class="navbar-chat-sidebar-search-hint" style="padding:12px;color:var(--text-light,#6b7280);font-size:0.85rem;">Aucun utilisateur trouvé</p>';
+                                                    return;
+                                                }
+                                                userResultsEl.innerHTML = results.map(function(u) {
+                                                    var initials = (u.fullName || '').split(' ').map(function(s) { return s.charAt(0); }).join('').toUpperCase().slice(0, 2) || '?';
+                                                    var url = u.showUrl || u.newConversationUrl || '#';
+                                                    return '<div class="navbar-chat-sidebar-user-item" data-url="' + String(url).replace(/"/g, '&quot;') + '"><div class="navbar-chat-sidebar-user-item-avatar">' + initials + '</div><div class="navbar-chat-sidebar-user-item-name">' + (u.fullName || u.email || '') + '</div></div>';
+                                                }).join('');
+                                            })
+                                            .catch(function() {
+                                                userResultsEl.innerHTML = '<p class="navbar-chat-sidebar-search-hint" style="padding:12px;color:#b91c1c;font-size:0.85rem;">Erreur de recherche</p>';
+                                            });
+                                    }, 300);
+                                });
+                            }
+
+                            if (userResultsEl) {
+                                userResultsEl.addEventListener('click', function(e) {
+                                    var item = e.target.closest('.navbar-chat-sidebar-user-item');
+                                    if (!item) return;
+                                    var url = item.getAttribute('data-url');
+                                    if (url && url !== '#') {
+                                        if (iframeEl) iframeEl.src = url;
+                                        showView('reduced');
+                                    }
+                                });
+                            }
+
+                            if (btn) btn.addEventListener('click', function() {
+                                if (sidebar && sidebar.classList.contains('is-open')) closeSidebar();
+                                else openSidebar();
+                            });
+                            if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+                            var profileBtn = document.getElementById('userProfileBtn');
+                            if (profileBtn) profileBtn.addEventListener('click', closeSidebar);
+
+                            // Filtrage de la liste des conversations par la barre de recherche (respecte l'onglet actif)
+                            if (sidebar) sidebar.addEventListener('input', function(e) {
+                                if (e.target.id !== 'navbarChatSidebarListSearch') return;
+                                var q = (e.target.value || '').trim().toLowerCase();
+                                var threadsEl = document.getElementById('navbarChatSidebarThreads');
+                                if (!threadsEl) return;
+                                var activeTab = sidebar.querySelector('.navbar-chat-sidebar-tab.active');
+                                var filter = activeTab ? activeTab.getAttribute('data-tab') : 'all';
+                                var wraps = threadsEl.querySelectorAll('.navbar-chat-sidebar-thread-wrap');
+                                wraps.forEach(function(w) {
+                                    var isGroup = w.getAttribute('data-is-group') === '1';
+                                    var unread = w.getAttribute('data-unread') === '1';
+                                    var tabMatch = (filter === 'all') || (filter === 'groups' && isGroup) || (filter === 'unread' && unread);
+                                    var userEl = w.querySelector('.thread-user');
+                                    var previewEl = w.querySelector('.thread-preview');
+                                    var text = ((userEl ? userEl.textContent : '') + ' ' + (previewEl ? previewEl.textContent : '')).toLowerCase();
+                                    var searchMatch = q === '' || text.indexOf(q) !== -1;
+                                    w.style.display = (tabMatch && searchMatch) ? '' : 'none';
+                                });
+                            });
+
+                            // Délégation : onglets et menu 3 points (contenu chargé dynamiquement)
+                            if (sidebar) sidebar.addEventListener('click', function(e) {
+                                var tab = e.target.closest('.navbar-chat-sidebar-tab');
+                                var menuBtn = e.target.closest('.navbar-chat-sidebar-menu-btn');
+                                var threadsEl = document.getElementById('navbarChatSidebarThreads');
+                                if (tab && threadsEl) {
+                                    tab.parentElement.querySelectorAll('.navbar-chat-sidebar-tab').forEach(function(t) { t.classList.remove('active'); t.setAttribute('aria-pressed', 'false'); });
+                                    tab.classList.add('active');
+                                    tab.setAttribute('aria-pressed', 'true');
+                                    var filter = tab.getAttribute('data-tab');
+                                    var searchInput = document.getElementById('navbarChatSidebarListSearch');
+                                    var q = (searchInput && searchInput.value) ? searchInput.value.trim().toLowerCase() : '';
+                                    var wraps = threadsEl.querySelectorAll('.navbar-chat-sidebar-thread-wrap');
+                                    wraps.forEach(function(w) {
+                                        var isGroup = w.getAttribute('data-is-group') === '1';
+                                        var unread = w.getAttribute('data-unread') === '1';
+                                        var tabMatch = (filter === 'all') || (filter === 'groups' && isGroup) || (filter === 'unread' && unread);
+                                        var userEl = w.querySelector('.thread-user');
+                                        var previewEl = w.querySelector('.thread-preview');
+                                        var text = ((userEl ? userEl.textContent : '') + ' ' + (previewEl ? previewEl.textContent : '')).toLowerCase();
+                                        var searchMatch = q === '' || text.indexOf(q) !== -1;
+                                        w.style.display = (tabMatch && searchMatch) ? '' : 'none';
+                                    });
+                                }
+                                if (menuBtn) {
+                                    var drop = document.getElementById('navbarChatSidebarMenuDropdown');
+                                    if (drop) {
+                                        drop.classList.toggle('is-open');
+                                        drop.setAttribute('aria-hidden', drop.classList.contains('is-open') ? 'false' : 'true');
+                                        menuBtn.setAttribute('aria-expanded', drop.classList.contains('is-open'));
+                                    }
+                                }
+                            });
+                            document.addEventListener('click', function(e) {
+                                var drop = document.getElementById('navbarChatSidebarMenuDropdown');
+                                var menuWrap = document.querySelector('.navbar-chat-sidebar-menu-wrap');
+                                if (drop && menuWrap && !menuWrap.contains(e.target)) {
+                                    drop.classList.remove('is-open');
+                                    drop.setAttribute('aria-hidden', 'true');
+                                    var menuBtn = document.getElementById('navbarChatSidebarMenuBtn');
+                                    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+                                }
+                            });
+                        })();
+                    </script>
+                    {% else %}
+                    <!-- Login/Register Buttons -->
+                    <a href="/login" class="btn btn-secondary">Login</a>
+                    <a href="/register" class="btn btn-primary">Join Now</a>
+                    {% endif %}
+                    
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>

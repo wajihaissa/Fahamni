@@ -1,0 +1,147 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la question - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root{--bg:#f8fafc;--card:#fff;--muted:#6b7280;--text-primary:#0b1220;--border:#e5e7eb;--primary:#6c5ce7;--primary-grad:linear-gradient(90deg,#7c6cff 0%,#6c5ce7 100%);--primary-gradient:linear-gradient(135deg,#667eea 0%,#764ba2 100%);--radius:12px;--shadow:0 6px 18px rgba(11,18,32,0.06);--sidebar-width:280px;}
+        body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--muted)}
+        .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,#3b2f63 0%,#2b2350 100%);color:#fff;box-shadow:0 12px 40px rgba(19,24,44,0.25);z-index:1000;overflow-y:auto;}
+        .sidebar-header{padding:1rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:6px;}
+        .sidebar .logo h2{color:#fff;font-size:18px;font-weight:700;margin:0 0 4px 8px;}
+        .sidebar .logo .brand-sub{color:rgba(255,255,255,0.75);font-size:12px;margin-left:8px;}
+        .admin-profile{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .admin-info h4{color:#fff;margin:0;font-size:14px;}
+        .admin-info p{color:rgba(255,255,255,0.65);margin:2px 0 0 0;font-size:12px;}
+        .sidebar-nav{list-style:none;padding:6px;margin:6px 0;}
+        .sidebar-nav li{margin:6px 0;}
+        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:rgba(255,255,255,0.86);text-decoration:none;border-radius:10px;position:relative;transition:background 0.18s ease,transform 0.12s ease;}
+        .sidebar-nav a i{width:26px;text-align:center;font-size:14px;}
+        .sidebar-nav a .label{font-size:14px;}
+        .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px);}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600;}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:var(--primary-gradient);}
+        .sidebar-nav li.active a .label{margin-left:6px;}
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
+        .admin-container{max-width:900px;margin:0 auto;padding:2rem;}
+        .breadcrumb{color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem;}
+        .breadcrumb a{color:#667eea;text-decoration:none;}
+        .page-title{font-size:1.35rem;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem;}
+        .section{background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;box-shadow:var(--shadow);border:1px solid var(--border);}
+        .section-title{font-size:1.05rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+        .question-preview{background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:1rem;}
+        .question-preview-text{font-size:1rem;color:var(--text-primary);line-height:1.5;}
+        .form-group{margin-bottom:1rem;}
+        .form-group label{display:block;font-weight:600;color:var(--text-primary);margin-bottom:6px;}
+        .form-group input[type="text"]{width:100%;padding:0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;}
+        .checkbox-wrapper{display:flex;align-items:center;margin-top:8px;}
+        .checkbox-wrapper input{margin-right:8px;}
+        .choice-item{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+        .choice-item.correct{background:#d1fae5;border-color:#10b981;}
+        .choice-item-content{flex:1;}
+        .choice-text{font-weight:600;color:var(--text-primary);margin-bottom:4px;}
+        .choice-label{font-size:0.85rem;color:var(--muted);}
+        .choice-label.correct{color:#059669;font-weight:600;}
+        .choice-actions .delete-btn{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;background:#ef4444;color:#fff;}
+        .btn{padding:0.5rem 1rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+        .btn-primary{background:var(--primary-grad);color:#fff;}
+        .btn-secondary{background:var(--card);color:var(--muted);border:1px solid var(--border);}
+        .btn-danger{background:#ef4444;color:#fff;}
+        .empty-list{text-align:center;padding:2rem;color:var(--muted);}
+        .progress-indicator{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:0.85rem;color:var(--muted);}
+        .progress-bar{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+        .progress-fill{height:100%;background:var(--primary-grad);transition:width 0.2s ease;}
+        .actions{display:flex;gap:10px;margin-top:1.5rem;}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <div class="breadcrumb">
+                <a href="{{ path('admin_quiz_list') }}">Quiz</a> /
+                <a href="{{ path('admin_quiz_edit', {'id': quiz.id}) }}">{{ quiz.titre }}</a> /
+                Question
+            </div>
+            <h1 class="page-title">Modifier la question</h1>
+
+            <div class="section">
+                <div class="section-title">Question</div>
+                <div class="question-preview">
+                    <div class="question-preview-text"><strong>Q<span id="questionNum">1</span>.</strong> {{ question.question }}</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    Ajouter un choix de réponse
+                    <div class="progress-indicator">
+                        <span>{{ question.choices|length }} / 4 choix</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:{{ (question.choices|length / 4) * 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% if question.choices|length < 4 %}
+                <form method="POST" action="{{ path('admin_quiz_choice_add', {'quiz': quiz.id, 'question': question.id}) }}">
+                    <div class="form-group">
+                        <label for="choice_text">Texte du choix *</label>
+                        <input type="text" id="choice_text" name="choice_text" placeholder="Saisissez un choix..." required>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="is_correct" name="is_correct" value="1">
+                            <label for="is_correct" style="margin-bottom:0;">Réponse correcte</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Ajouter</button>
+                </form>
+                {% else %}
+                <div class="empty-list" style="color:#059669;">
+                    <div style="font-size:1.5rem;margin-bottom:8px;">✓</div>
+                    <p>Les 4 choix ont été ajoutés.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="section">
+                <div class="section-title">Choix ({{ question.choices|length }})</div>
+                {% if question.choices|length > 0 %}
+                <div>
+                    {% for choice in question.choices %}
+                    <div class="choice-item {% if choice.isCorrect %}correct{% endif %}">
+                        <div class="choice-item-content">
+                            <div class="choice-text">{{ choice.choice }}</div>
+                            <div class="choice-label {% if choice.isCorrect %}correct{% endif %}">
+                                {% if choice.isCorrect %}<i class="fas fa-check-circle"></i> Correct{% else %}Incorrect{% endif %}
+                            </div>
+                        </div>
+                        <div class="choice-actions">
+                            <form method="POST" action="{{ path('admin_quiz_choice_delete', {'id': choice.id}) }}" style="margin:0;" onsubmit="return confirm('Supprimer ce choix ?');">
+                                <button type="submit" class="delete-btn"><i class="fas fa-trash"></i> Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-list">
+                    <div><i class="fas fa-inbox"></i></div>
+                    <p>Aucun choix. Ajoutez-en un ci-dessus.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="actions">
+                <a href="{{ path('admin_quiz_edit', {'id': quiz.id}) }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Retour au quiz</a>
+                <form method="POST" action="{{ path('admin_quiz_question_delete', {'id': question.id}) }}" style="margin:0;" onsubmit="return confirm('Supprimer cette question ? Cette action est irréversible.');">
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer la question</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

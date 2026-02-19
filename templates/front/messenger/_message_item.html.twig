@@ -1,0 +1,152 @@
+{# Message Item Modernisé - Un message dans le fil de conversation avec avatar et bulles modernes #}
+{% set emoji_map = { 0: '👍', 1: '❤️', 2: '😂', 3: '😮', 4: '😢', 5: '😡' } %}
+{% set is_deleted = msg.deletedAt is not null %}
+
+<div class="message-section{{ is_mine ? ' you' : ' other' }}{{ is_deleted ? ' message-deleted' : '' }}" data-message-id="{{ msg.id }}">
+    {# Avatar pour les messages des autres #}
+    {% if not is_mine %}
+        <div class="message-avatar">
+            {# Si vous avez des images d'avatar : <img src="{{ msg.sender.avatarUrl }}" alt=""> #}
+            {{ msg.sender.FullName|slice(0,2)|upper }}
+        </div>
+    {% endif %}
+    
+    <div class="message-row">
+        <div class="message-bubble-wrap">
+            {# Nom de l'expéditeur (seulement pour les autres) #}
+            {% if not is_mine %}
+                <div class="message-sender">{{ msg.sender.FullName }}</div>
+            {% endif %}
+            
+            {# Citation du message auquel on répond #}
+            {% if msg.replyTo %}
+                <div class="message-reply-quote">
+                    <div class="reply-quote-author">{{ msg.replyTo.sender.FullName }}</div>
+                    <div class="reply-quote-text">
+                        {% if msg.replyTo.deletedAt %}
+                            Ce message a été supprimé
+                        {% else %}
+                            {{ msg.replyTo.content|slice(0, 80) }}{% if msg.replyTo.content|length > 80 %}…{% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            {# Contenu du message avec actions #}
+            <div class="message-content-row">
+                {% if not is_deleted %}
+                {# Actions du message (masquées si message supprimé) #}
+                <div class="message-actions">
+                    {# Menu kebab #}
+                    <div class="kebab-wrap">
+                        <button type="button" class="message-action-btn kebab-btn" title="Menu" aria-haspopup="true">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="kebab-dropdown">
+                            <div class="dropdown-time">
+                                Envoyé {{ msg.createdAt|date('d/m/Y') }} à {{ msg.createdAt|date('H:i') }}
+                            </div>
+                            
+                            <button type="button" class="dropdown-item dropdown-transfer" title="Transférer" data-transfer-msg-id="{{ msg.id }}">
+                                <i class="fas fa-share-alt" style="margin-right:8px;width:16px;"></i>Transférer
+                            </button>
+                            
+                            <button type="button" class="dropdown-item dropdown-copy" data-copy-text="{{ msg.content|e('html_attr') }}">
+                                <i class="fas fa-copy" style="margin-right:8px;width:16px;"></i>Copier
+                            </button>
+                            
+                            {% if is_mine %}
+                                <a href="{{ path('app_messenger_edit_message', { convId: current_conversation.id, messageId: msg.id }) }}" class="dropdown-item">
+                                    <i class="fas fa-edit" style="margin-right:8px;width:16px;"></i>Modifier
+                                </a>
+                                
+                                <form method="post" action="{{ path('app_messenger_delete_message', { convId: current_conversation.id, messageId: msg.id }) }}" onsubmit="return confirm('Supprimer ce message ?');" class="d-inline" style="display:block !important;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_msg_' ~ msg.id) }}">
+                                    <button type="submit" class="dropdown-item danger" style="width:100%;">
+                                        <i class="fas fa-trash-alt" style="margin-right:8px;width:16px;"></i>Retirer
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button type="button" class="dropdown-item dropdown-signal">
+                                    <i class="fas fa-flag" style="margin-right:8px;width:16px;"></i>Signaler
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {# Bouton répondre #}
+                    <button type="button" class="message-action-btn msg-reply" 
+                            data-reply-id="{{ msg.id }}" 
+                            data-reply-author="{{ (msg.sender.FullName)|e('html_attr') }}" 
+                            data-reply-text="{{ msg.content|slice(0, 60)|e('html_attr') }}{% if msg.content|length > 60 %}…{% endif %}" 
+                            title="Répondre">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                    
+                    {# Bouton emoji avec picker #}
+                    <div class="message-action-btn emoji-btn" title="Réagir" data-msg-id="{{ msg.id }}">
+                        <i class="far fa-smile"></i>
+                        <div class="emoji-picker" data-msg-id="{{ msg.id }}">
+                            {% for emojiKey, emojiChar in emoji_map %}
+                                {% set reactionsForEmoji = msg.reactions|filter(r => r.emoji == emojiKey) %}
+                                {% set myReaction = reactionsForEmoji|filter(r => r.reactor.id == actor.id)|first %}
+                                {% if myReaction %}
+                                    <form method="post" action="{{ path('app_messenger_remove_reaction', { convId: current_conversation.id, reactionId: myReaction.id }) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('remove_reaction_' ~ myReaction.id) }}">
+                                        <button type="submit" class="emoji-option" title="Retirer">{{ emojiChar }}</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{{ path('app_messenger_add_reaction', { convId: current_conversation.id, messageId: msg.id }) }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('reaction_' ~ msg.id ~ '_' ~ emojiKey) }}">
+                                        <input type="hidden" name="emoji" value="{{ emojiKey }}">
+                                        <button type="submit" class="emoji-option" title="{{ emojiChar }}">{{ emojiChar }}</button>
+                                    </form>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {# Bulle du message #}
+                <div class="message-content">
+                    {% if is_deleted %}
+                        <span class="message-deleted-text">Ce message a été supprimé</span>
+                    {% else %}
+                        {{ msg.content }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if not is_deleted %}
+            {# Footer avec réactions (masqué si message supprimé) #}
+            <div class="message-footer">
+                {# Réactions existantes #}
+                <div class="message-reactions">
+                    {% for emojiKey, emojiChar in emoji_map %}
+                        {% set reactionsForEmoji = msg.reactions|filter(r => r.emoji == emojiKey) %}
+                        {% set myReaction = reactionsForEmoji|filter(r => r.reactor.id == actor.id)|first %}
+                        {% if reactionsForEmoji|length > 0 %}
+                            {% if myReaction %}
+                                <form method="post" action="{{ path('app_messenger_remove_reaction', { convId: current_conversation.id, reactionId: myReaction.id }) }}" class="d-inline" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('remove_reaction_' ~ myReaction.id) }}">
+                                    <button type="submit" class="reaction-pill reaction-pill-mine" title="Cliquer pour retirer">
+                                        <span class="reaction-emoji">{{ emojiChar }}</span>
+                                        <span class="reaction-count">{{ reactionsForEmoji|length }}</span>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="reaction-pill" title="{{ reactionsForEmoji|map(r => r.reactor.FullName)|join(', ') }}">
+                                    <span class="reaction-emoji">{{ emojiChar }}</span>
+                                    <span class="reaction-count">{{ reactionsForEmoji|length }}</span>
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

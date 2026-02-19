@@ -1,0 +1,216 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Login - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your FAHIMNI account</p>
+                </div>
+                
+                <form class="auth-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="#forgot" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="/register">Create one here</a></p>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Join Our Learning Community</h2>
+                    <p>Access thousands of expert tutors and premium educational resources</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Expert Tutors</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Flexible Scheduling</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Progress Tracking</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginForm = document.getElementById('loginForm');
+            var emailInput = document.getElementById('email');
+            var passwordInput = document.getElementById('password');
+            var emailError = document.getElementById('emailError');
+            var passwordError = document.getElementById('passwordError');
+
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var isValid = true;
+                    emailError.textContent = '';
+                    passwordError.textContent = '';
+
+                    var email = emailInput.value.trim();
+                    if (!email) {
+                        emailError.textContent = 'Email is required';
+                        isValid = false;
+                    } else if (!isValidEmail(email)) {
+                        emailError.textContent = 'Please enter a valid email address';
+                        isValid = false;
+                    }
+
+                    var password = passwordInput.value.trim();
+                    if (!password) {
+                        passwordError.textContent = 'Password is required';
+                        isValid = false;
+                    } else if (password.length < 6) {
+                        passwordError.textContent = 'Password must be at least 6 characters';
+                        isValid = false;
+                    }
+
+                    if (isValid) {
+                        // Show loading state
+                        const submitBtn = loginForm.querySelector('button[type="submit"]');
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = 'Signing in...';
+                        submitBtn.disabled = true;
+                        
+                        // Send actual login request
+                        const formData = new FormData();
+                        const emailValue = emailInput.value.trim();
+                        const passwordValue = passwordInput.value;
+                        
+                        console.log('Submitting login with:', { email: emailValue, password: passwordValue });
+                        
+                        formData.append('email', emailValue);
+                        formData.append('password', passwordValue);
+                        
+                        fetch('/login', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json().then(data => ({status: response.status, data: data}));
+                        })
+                        .then(result => {
+                            console.log('Response:', result);
+                            console.log('User data from JSON:', result.data.user);
+                            var data = result.data;
+                            if (result.status === 200 && data.success) {
+                                // Show user data before redirect
+                                
+                                // Redirect to home on succes
+                                window.location.href = data.redirect || '/';
+                            } else {
+                                // Show error message
+                                emailError.textContent = data.message || 'Login failed';
+                                submitBtn.textContent = originalText;
+                                submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            emailError.textContent = 'Network error: ' + error.message;
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                            console.error('Login error:', error);
+                        });
+                    }
+                });
+            }
+
+            var rememberMe = document.getElementById('rememberMe');
+            if (rememberMe) {
+                var savedEmail = localStorage.getItem('fahimni_remember_email');
+                var savedPassword = localStorage.getItem('fahimni_remember_password');
+                if (savedEmail && savedPassword) {
+                    emailInput.value = savedEmail;
+                    passwordInput.value = savedPassword;
+                    rememberMe.checked = true;
+                }
+                rememberMe.addEventListener('change', function() {
+                    if (this.checked) {
+                        localStorage.setItem('fahimni_remember_email', emailInput.value);
+                        localStorage.setItem('fahimni_remember_password', passwordInput.value);
+                    } else {
+                        localStorage.removeItem('fahimni_remember_email');
+                        localStorage.removeItem('fahimni_remember_password');
+                    }
+                });
+            }
+
+            var forgotLink = document.querySelector('.forgot-link');
+            if (forgotLink) {
+                forgotLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var modal = document.createElement('div');
+                    modal.className = 'modal active';
+                    modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>Reset Password</h2><button class="modal-close">&times;</button></div><form class="reset-form"><div class="form-group"><label for="resetEmail">Enter your email</label><input type="email" id="resetEmail" placeholder="Email address" required><span class="error-message" id="resetError"></span></div><button type="submit" class="btn btn-primary">Send Reset Link</button></form></div>';
+                    document.body.appendChild(modal);
+                    var closeBtn = modal.querySelector('.modal-close');
+                    var resetForm = modal.querySelector('.reset-form');
+                    closeBtn.addEventListener('click', function() { modal.remove(); });
+                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+                    if (resetForm) {
+                        resetForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            var resetEmail = document.getElementById('resetEmail').value;
+                            var resetError = document.getElementById('resetError');
+                            if (!resetEmail || !isValidEmail(resetEmail)) {
+                                resetError.textContent = 'Please enter a valid email address';
+                                return;
+                            }
+                            var btn = this.querySelector('button[type="submit"]');
+                            btn.textContent = 'Sending...';
+                            btn.disabled = true;
+                            setTimeout(function() {
+                                btn.textContent = 'Send Reset Link';
+                                btn.disabled = false;
+                                alert('Reset link sent to ' + resetEmail);
+                                modal.remove();
+                            }, 1500);
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,615 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Nouvelle conversation - FAHIMNI Messenger{% endblock %}
+{% block current_page %}messenger{% endblock %}
+{% block body_class %}page-messenger{% endblock %}
+
+{% block stylesheets %}
+<style>{% include 'front/messenger/_messenger_styles.html.twig' %}</style>
+{% endblock %}
+
+{% block content %}
+<div class="container messenger-page new-conversation-page">
+    <div class="new-conversation-container">
+        {# En-tête avec bouton retour #}
+        <div class="new-conversation-header">
+            <div class="header-top">
+                <a href="{{ path('app_messenger_index') }}" class="back-button" title="Retour aux messages">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <h1>Nouvelle conversation</h1>
+            </div>
+            <p class="subtitle">Sélectionnez un contact pour démarrer une conversation</p>
+        </div>
+
+        {# Barre de recherche #}
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="userSearch" 
+                       class="search-input" 
+                       placeholder="Rechercher par nom ou email..."
+                       autocomplete="off">
+                <button type="button" 
+                        class="clear-search-btn" 
+                        id="clearSearchBtn" 
+                        style="display: none;"
+                        title="Effacer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-info" id="searchInfo">
+                {{ users|length }} {% if users|length > 1 %}utilisateurs disponibles{% else %}utilisateur disponible{% endif %}
+            </div>
+        </div>
+
+        {# Liste des utilisateurs #}
+        <div class="users-section">
+            {% if users|length > 0 %}
+                <div class="users-list" id="usersList">
+                    {% for u in users %}
+                        <a href="{{ path('app_messenger_new_conversation', { with: u.id }) }}" 
+                           class="user-card" 
+                           data-username="{{ u.FullName|lower }}" 
+                           data-email="{{ u.email|lower }}">
+                            <div class="user-avatar-wrap">
+                                <div class="user-avatar">
+                                    <span class="avatar-initials">{{ u.FullName|slice(0, 2)|upper }}</span>
+                                </div>
+                                {% if u.isStatus|default(false) %}
+                                    <span class="online-badge" title="En ligne"></span>
+                                {% endif %}
+                            </div>
+                            <div class="user-info">
+                                <h3 class="user-name">{{ u.FullName }}</h3>
+                                <p class="user-email">{{ u.email }}</p>
+                            </div>
+                            <div class="user-action">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <h3>Aucun utilisateur disponible</h3>
+                    <p>Il n'y a pas d'autres utilisateurs pour démarrer une conversation pour le moment.</p>
+                    <a href="{{ path('app_messenger_index') }}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour aux messages
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Message "Aucun résultat" pour la recherche #}
+        <div class="no-results" id="noResults" style="display: none;">
+            <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h3>Aucun résultat</h3>
+            <p>Aucun utilisateur ne correspond à votre recherche.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ============================================
+   NOUVELLE CONVERSATION - STYLES MODERNES
+   ============================================ */
+.new-conversation-page {
+    padding: 24px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.new-conversation-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
+}
+
+/* En-tête */
+.new-conversation-header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.header-top h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.new-conversation-header .subtitle {
+    font-size: 15px;
+    color: var(--text-light);
+    margin: 0;
+    padding-left: 60px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.back-button:hover {
+    background: #5b7bef;
+    color: white;
+    transform: scale(1.05);
+}
+
+.back-button i {
+    font-size: 18px;
+}
+
+/* Section recherche */
+.search-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 18px;
+    color: var(--text-light);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 14px 50px 14px 52px;
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    background: var(--bg-color);
+    font-size: 15px;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #5b7bef;
+    background: var(--card-bg);
+    box-shadow: 0 0 0 4px rgba(91, 123, 239, 0.1);
+}
+
+.search-input::placeholder {
+    color: var(--text-light);
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    background: #5b7bef;
+    color: white;
+    transform: scale(1.1);
+}
+
+.search-info {
+    font-size: 13px;
+    color: var(--text-light);
+    padding-left: 4px;
+}
+
+/* Liste des utilisateurs */
+.users-section {
+    max-height: calc(100vh - 400px);
+    min-height: 300px;
+    overflow-y: auto;
+}
+
+.users-list {
+    padding: 8px;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-card:last-child {
+    border-bottom: none;
+}
+
+.user-card:hover {
+    background: var(--bg-secondary);
+    transform: translateX(4px);
+}
+
+.user-card:active {
+    background: color-mix(in srgb, var(--conv-primary) 12%, transparent);
+}
+
+.user-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b7bef 0%, #3b5ed6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(91, 123, 239, 0.3);
+}
+
+.avatar-initials {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.online-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #44b700;
+    border: 3px solid var(--card-bg);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 4px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-email {
+    font-size: 14px;
+    color: var(--text-light);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-action {
+    color: var(--text-light);
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.user-card:hover .user-action {
+    color: #5b7bef;
+    transform: scale(1.1);
+}
+
+/* État vide */
+.empty-state,
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    text-align: center;
+}
+
+.empty-icon,
+.no-results-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.empty-icon i,
+.no-results-icon i {
+    font-size: 48px;
+    color: var(--text-light);
+    opacity: 0.6;
+}
+
+.empty-state h3,
+.no-results h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 12px 0;
+}
+
+.empty-state p,
+.no-results p {
+    font-size: 15px;
+    color: var(--text-light);
+    margin: 0 0 24px 0;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #5b7bef;
+    color: white;
+    text-decoration: none;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.btn-back:hover {
+    background: #4867e6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(91, 123, 239, 0.3);
+}
+
+/* Scrollbar personnalisée */
+.users-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.users-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.users-section::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.users-section::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .new-conversation-page {
+        padding: 16px;
+    }
+
+    .new-conversation-header {
+        padding: 20px;
+    }
+
+    .header-top h1 {
+        font-size: 24px;
+    }
+
+    .new-conversation-header .subtitle {
+        font-size: 14px;
+        padding-left: 60px;
+    }
+
+    .search-section {
+        padding: 16px 20px;
+    }
+
+    .user-avatar {
+        width: 52px;
+        height: 52px;
+    }
+
+    .avatar-initials {
+        font-size: 20px;
+    }
+
+    .user-name {
+        font-size: 15px;
+    }
+
+    .user-email {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .new-conversation-page {
+        padding: 12px;
+    }
+
+    .new-conversation-container {
+        border-radius: 12px;
+    }
+
+    .new-conversation-header {
+        padding: 16px;
+    }
+
+    .header-top h1 {
+        font-size: 22px;
+    }
+
+    .new-conversation-header .subtitle {
+        font-size: 13px;
+        padding-left: 56px;
+    }
+
+    .back-button {
+        width: 40px;
+        height: 40px;
+    }
+
+    .back-button i {
+        font-size: 16px;
+    }
+
+    .search-section {
+        padding: 12px 16px;
+    }
+
+    .search-input {
+        padding: 12px 44px 12px 48px;
+    }
+
+    .user-card {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .avatar-initials {
+        font-size: 18px;
+    }
+
+    .online-badge {
+        width: 14px;
+        height: 14px;
+        border-width: 2px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('userSearch');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const userCards = document.querySelectorAll('.user-card');
+    const usersList = document.querySelector('.users-list');
+    const noResults = document.getElementById('noResults');
+    const searchInfo = document.getElementById('searchInfo');
+    
+    let totalUsers = userCards.length;
+
+    // Fonction de recherche
+    function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (!searchTerm) {
+            // Afficher tous les utilisateurs
+            userCards.forEach(card => {
+                card.style.display = 'flex';
+            });
+            visibleCount = totalUsers;
+            if (usersList) usersList.style.display = 'block';
+            if (noResults) noResults.style.display = 'none';
+        } else {
+            // Filtrer les utilisateurs
+            userCards.forEach(card => {
+                const username = card.getAttribute('data-username') || '';
+                const email = card.getAttribute('data-email') || '';
+                
+                if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Afficher "Aucun résultat" si nécessaire
+            if (visibleCount === 0) {
+                if (usersList) usersList.style.display = 'none';
+                if (noResults) noResults.style.display = 'flex';
+            } else {
+                if (usersList) usersList.style.display = 'block';
+                if (noResults) noResults.style.display = 'none';
+            }
+        }
+
+        // Mettre à jour l'info de recherche
+        if (searchInfo) {
+            searchInfo.textContent = `${visibleCount} utilisateur${visibleCount > 1 ? 's' : ''} ${searchTerm ? 'trouvé' + (visibleCount > 1 ? 's' : '') : 'disponible' + (visibleCount > 1 ? 's' : '')}`;
+        }
+
+        // Afficher/masquer le bouton clear
+        clearBtn.style.display = searchTerm ? 'flex' : 'none';
+    }
+
+    // Event listener sur l'input
+    if (searchInput) {
+        searchInput.addEventListener('input', performSearch);
+    }
+
+    // Event listener sur le bouton clear
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            performSearch();
+            searchInput.focus();
+        });
+    }
+
+    // Focus automatique sur la recherche
+    if (searchInput && totalUsers > 0) {
+        searchInput.focus();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ quiz.titre }} - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root{--bg:#f8fafc;--card:#fff;--muted:#6b7280;--text-primary:#0b1220;--border:#e5e7eb;--primary:#6c5ce7;--primary-grad:linear-gradient(90deg,#7c6cff 0%,#6c5ce7 100%);--primary-gradient:linear-gradient(135deg,#667eea 0%,#764ba2 100%);--radius:12px;--shadow:0 6px 18px rgba(11,18,32,0.06);--sidebar-width:280px;}
+        body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--muted)}
+        .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,#3b2f63 0%,#2b2350 100%);color:#fff;box-shadow:0 12px 40px rgba(19,24,44,0.25);z-index:1000;overflow-y:auto;}
+        .sidebar-header{padding:1rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:6px;}
+        .sidebar .logo h2{color:#fff;font-size:18px;font-weight:700;margin:0 0 4px 8px;}
+        .sidebar .logo .brand-sub{color:rgba(255,255,255,0.75);font-size:12px;margin-left:8px;}
+        .admin-profile{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .admin-info h4{color:#fff;margin:0;font-size:14px;}
+        .admin-info p{color:rgba(255,255,255,0.65);margin:2px 0 0 0;font-size:12px;}
+        .sidebar-nav{list-style:none;padding:6px;margin:6px 0;}
+        .sidebar-nav li{margin:6px 0;}
+        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:rgba(255,255,255,0.86);text-decoration:none;border-radius:10px;position:relative;transition:background 0.18s ease,transform 0.12s ease;}
+        .sidebar-nav a i{width:26px;text-align:center;font-size:14px;}
+        .sidebar-nav a .label{font-size:14px;}
+        .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px);}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600;}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:var(--primary-gradient);}
+        .sidebar-nav li.active a .label{margin-left:6px;}
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
+        .admin-container{max-width:900px;margin:0 auto;padding:2rem;}
+        a.back{color:#667eea;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:1rem;}
+        .page-title{font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:1.5rem;}
+        .quiz-info{background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow);border:1px solid var(--border);}
+        .quiz-info .quiz-title{font-size:1.2rem;font-weight:700;color:var(--text-primary);}
+        .quiz-info .quiz-meta{color:var(--muted);margin-top:6px;font-size:0.9rem;}
+        .section{background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;box-shadow:var(--shadow);border:1px solid var(--border);}
+        .section-title{font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
+        .form-group{margin-bottom:1rem;}
+        .form-group label{display:block;font-weight:600;color:var(--text-primary);margin-bottom:6px;}
+        .form-group textarea{width:100%;padding:0.75rem;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;resize:vertical;}
+        .btn{padding:0.5rem 1rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+        .btn-primary{background:var(--primary-grad);color:#fff;}
+        .questions-list{display:flex;flex-direction:column;gap:12px;}
+        .question-item{background:var(--bg);border-left:4px solid #667eea;padding:1rem;border-radius:8px;display:flex;justify-content:space-between;align-items:center;}
+        .question-item-text strong{color:var(--text-primary);display:block;margin-bottom:4px;}
+        .question-item-text small{color:var(--muted);font-size:0.85rem;}
+        .question-item-actions a{padding:6px 12px;border-radius:6px;background:var(--primary-grad);color:#fff;text-decoration:none;font-size:0.85rem;font-weight:600;}
+        .empty-list{text-align:center;padding:2rem;color:var(--muted);}
+        .empty-list i{font-size:2rem;margin-bottom:0.5rem;opacity:0.5;}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <a href="{{ path('admin_quiz_list') }}" class="back"><i class="fas fa-arrow-left"></i> Retour aux quiz</a>
+            <h1 class="page-title">{{ quiz.titre }}</h1>
+
+            <div class="quiz-info">
+                <div class="quiz-title">{{ quiz.titre }}</div>
+                <div class="quiz-meta"><i class="fas fa-question-circle"></i> {{ quiz.questions|length }} question(s)</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Ajouter une question</div>
+                <form method="POST" action="{{ path('admin_quiz_question_add', {'id': quiz.id}) }}">
+                    <div class="form-group">
+                        <label for="question_text">Texte de la question *</label>
+                        <textarea id="question_text" name="question_text" placeholder="Saisissez la question..." rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Ajouter</button>
+                </form>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Questions ({{ quiz.questions|length }})</div>
+                {% if quiz.questions|length > 0 %}
+                <div class="questions-list">
+                    {% for question in quiz.questions %}
+                    <div class="question-item">
+                        <div class="question-item-text">
+                            <strong>Q{{ loop.index }}. {{ question.question|length > 80 ? question.question|slice(0, 80) ~ '...' : question.question }}</strong>
+                            <small>{{ question.choices|length }} choix</small>
+                        </div>
+                        <div class="question-item-actions">
+                            <a href="{{ path('admin_quiz_question_edit', {'quiz': quiz.id, 'question': question.id}) }}"><i class="fas fa-edit"></i> Modifier</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-list">
+                    <div><i class="fas fa-inbox"></i></div>
+                    <p>Aucune question. Ajoutez-en une ci-dessus.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,295 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}FAHIMNI Calendar - Excellence in Education{% endblock %}
+
+{% block current_page %}calendar{% endblock %}
+
+{% block body_class %}page-calendar{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* Masquer les boutons d'auth sur Calendar en gardant l'espace (évite le décalage navbar) */
+.page-calendar .auth-buttons a[href="/login"],
+.page-calendar .auth-buttons a[href="/register"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+/* Variables complémentaires calendar */
+:root { --success-color: #4cc9f0; --warning-color: #f72585; }
+.calendar-layout { display: flex; min-height: calc(100vh - 180px); gap: 30px; }
+.sidebar { width: 320px; flex-shrink: 0; }
+.sidebar-section { background-color: var(--card-bg); border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+.sidebar-title { font-size: 22px; margin-bottom: 20px; color: var(--text-color); display: flex; align-items: center; gap: 10px; }
+.sidebar-title i { color: var(--primary-color); }
+.session-list { display: flex; flex-direction: column; gap: 20px; }
+.session-item { padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+.session-item:last-child { border-bottom: none; padding-bottom: 0; }
+.session-date { font-size: 14px; font-weight: 600; color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+.session-time { font-size: 18px; font-weight: 700; color: var(--text-color); margin-bottom: 8px; }
+.session-title { font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 8px; }
+.session-type { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+.session-type.video { background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); }
+.session-type.in-person { background-color: rgba(114, 9, 183, 0.1); color: var(--secondary-color); }
+.session-link { color: var(--primary-color); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; }
+.session-link:hover { text-decoration: underline; }
+.filter-list { display: flex; flex-direction: column; gap: 15px; }
+.filter-item { display: flex; align-items: center; gap: 12px; }
+.filter-checkbox { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border-color); background-color: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.filter-checkbox.checked { background-color: var(--primary-color); border-color: var(--primary-color); }
+.filter-checkbox.checked:after { content: '✓'; color: white; font-weight: bold; font-size: 12px; }
+.filter-label { font-weight: 600; color: var(--text-color); cursor: pointer; }
+.calendar-area { flex: 1; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.calendar-title { font-size: 28px; font-weight: 700; color: var(--text-color); }
+.calendar-actions { display: flex; gap: 15px; }
+.calendar-nav { display: flex; align-items: center; gap: 10px; }
+.calendar-nav-btn { background: none; border: none; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-color); background-color: var(--bg-secondary); }
+.calendar-nav-btn:hover { background-color: var(--primary-color); color: white; }
+.current-month { font-size: 18px; font-weight: 600; color: var(--text-color); min-width: 150px; text-align: center; }
+.view-options { display: flex; background-color: var(--bg-secondary); border-radius: 8px; padding: 5px; }
+.view-btn { padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--text-light); }
+.view-btn.active { background-color: var(--primary-color); color: white; }
+.calendar-grid { background-color: var(--card-bg); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); background-color: var(--bg-secondary); padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+.weekday { text-align: center; font-weight: 700; color: var(--text-color); text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; }
+.calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; min-height: 500px; }
+.day { padding: 15px; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); position: relative; }
+.day:nth-child(7n) { border-right: none; }
+.day:nth-child(n+29) { border-bottom: none; }
+.day-number { font-weight: 700; color: var(--text-color); font-size: 18px; margin-bottom: 10px; }
+.day-event { background-color: rgba(67, 97, 238, 0.1); border-left: 3px solid var(--primary-color); padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; }
+.day-event-title { font-weight: 600; color: var(--text-color); margin-bottom: 3px; }
+.day-event-time { color: var(--primary-color); font-size: 12px; }
+.day.today .day-number { background-color: var(--primary-color); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.day.other-month { background-color: var(--bg-secondary); color: var(--text-light); }
+.day.other-month .day-number { color: var(--text-light); }
+@media (max-width: 1100px) {
+    .calendar-layout { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .calendar-days { min-height: 400px; }
+}
+@media (max-width: 768px) {
+    .calendar-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .calendar-actions { width: 100%; justify-content: space-between; }
+    .calendar-days { min-height: 350px; }
+    .day { padding: 10px 5px; }
+    .day-number { font-size: 16px; }
+    .day-event { padding: 5px; font-size: 11px; }
+}
+@media (max-width: 576px) {
+    .calendar-days { min-height: 300px; }
+    .weekday { font-size: 12px; }
+    .day-event { display: none; }
+    .day.has-event:after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background-color: var(--primary-color); border-radius: 50%; }
+}
+@media (max-width: 480px) {
+    .calendar-layout { gap: 20px; }
+    .sidebar-section { padding: 18px; }
+    .sidebar-title { font-size: 18px; }
+    .calendar-title { font-size: 22px; }
+    .calendar-header { gap: 12px; }
+    .calendar-nav-btn { width: 36px; height: 36px; }
+    .current-month { font-size: 16px; min-width: 120px; }
+    .calendar-days { min-height: 280px; }
+    .day { padding: 8px 4px; }
+    .day-number { font-size: 14px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="calendar-layout">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h2 class="sidebar-title"><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                    <div class="session-list">
+                        <div class="session-item">
+                            <div class="session-date">Today</div>
+                            <div class="session-time">2:00 PM</div>
+                            <div class="session-title">Calculus Review with Dr. Sarah Roberts</div>
+                            <div class="session-type video">Video Call</div>
+                            <a href="#" class="session-link"><i class="fas fa-video"></i> Join Session</a>
+                        </div>
+                        <div class="session-item">
+                            <div class="session-date">Tomorrow</div>
+                            <div class="session-time">10:00 AM</div>
+                            <div class="session-title">Chemistry Lab Help with Prof. Mike Johnson</div>
+                            <div class="session-type in-person">In-Person</div>
+                        </div>
+                        <div class="session-item">
+                            <div class="session-date">Dec 15</div>
+                            <div class="session-time">4:00 PM</div>
+                            <div class="session-title">Algorithm Practice with Alex Liu</div>
+                            <div class="session-type video">Video Call</div>
+                            <a href="#" class="session-link"><i class="fas fa-video"></i> Join Session</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <h2 class="sidebar-title"><i class="fas fa-eye"></i> Show</h2>
+                    <div class="filter-list">
+                        <div class="filter-item">
+                            <div class="filter-checkbox checked" data-filter="sessions"></div>
+                            <span class="filter-label">My Sessions</span>
+                        </div>
+                        <div class="filter-item">
+                            <div class="filter-checkbox checked" data-filter="slots"></div>
+                            <span class="filter-label">Available Slots</span>
+                        </div>
+                        <div class="filter-item">
+                            <div class="filter-checkbox" data-filter="blocked"></div>
+                            <span class="filter-label">Blocked Time</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="calendar-area">
+                <div class="calendar-header">
+                    <h1 class="calendar-title">FAHIMNI Calendar</h1>
+                    <div class="calendar-actions">
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                            <div class="current-month" id="currentMonth">December 2026</div>
+                            <button class="calendar-nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <div class="view-options">
+                            <button class="view-btn active">Month</button>
+                            <button class="view-btn">Week</button>
+                            <button class="view-btn">Day</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                        <div class="weekday">Sun</div>
+                        <div class="weekday">Mon</div>
+                        <div class="weekday">Tue</div>
+                        <div class="weekday">Wed</div>
+                        <div class="weekday">Thu</div>
+                        <div class="weekday">Fri</div>
+                        <div class="weekday">Sat</div>
+                    </div>
+                    <div class="calendar-days" id="calendarDays"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">FAHIM<span>NI</span></div>
+                    <p class="footer-description">Excellence in Education</p>
+                    <p class="footer-description">Connecting students with premium tutors for academic success.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Platform</h3>
+                    <ul class="footer-links">
+                        <li><a href="/tutor">Find Tutors</a></li>
+                        <li><a href="/articles">Articles</a></li>
+                        <li><a href="/calendar">Calendar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Account</h3>
+                    <ul class="footer-links">
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/register">Register</a></li>
+                        <li><a href="#">Profile</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright"><p>&copy; 2026 FAHIMNI. All rights reserved.</p></div>
+        </div>
+    </footer>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.filter-checkbox').forEach(function(checkbox) {
+        checkbox.addEventListener('click', function() {
+            this.classList.toggle('checked');
+        });
+    });
+
+    var prevMonthBtn = document.getElementById('prevMonth');
+    var nextMonthBtn = document.getElementById('nextMonth');
+    var currentMonthElement = document.getElementById('currentMonth');
+    var calendarDays = document.getElementById('calendarDays');
+    var currentDate = new Date(2026, 11, 1);
+
+    function updateCalendar() {
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        currentMonthElement.textContent = monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+        calendarDays.innerHTML = '';
+
+        var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        var lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        var totalDays = lastDay.getDate();
+        var startingDay = firstDay.getDay();
+        var prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+
+        for (var i = startingDay - 1; i >= 0; i--) {
+            var day = document.createElement('div');
+            day.className = 'day other-month';
+            day.innerHTML = '<div class="day-number">' + (prevMonthLastDay - i) + '</div>';
+            calendarDays.appendChild(day);
+        }
+
+        var today = new Date();
+        var isCurrentMonth = today.getMonth() === currentDate.getMonth() && today.getFullYear() === currentDate.getFullYear();
+        var events = { 1: [{title: 'Chemistry Review', time: '10:00 AM'}], 5: [{title: 'Math Tutoring', time: '2:00 PM'}], 10: [{title: 'Physics Lab', time: '11:30 AM'}], 15: [{title: 'Algorithm Practice', time: '4:00 PM'}], 20: [{title: 'Calculus Session', time: '3:00 PM'}, {title: 'Study Group', time: '6:00 PM'}], 25: [{title: 'Final Exam Prep', time: '1:00 PM'}], 28: [{title: 'Office Hours', time: '9:00 AM'}] };
+
+        for (var day = 1; day <= totalDays; day++) {
+            var dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            if (isCurrentMonth && day === today.getDate()) dayElement.classList.add('today');
+            var dayEventsHTML = '';
+            if (events[day]) {
+                dayElement.classList.add('has-event');
+                events[day].forEach(function(event) {
+                    dayEventsHTML += '<div class="day-event"><div class="day-event-title">' + event.title + '</div><div class="day-event-time">' + event.time + '</div></div>';
+                });
+            }
+            dayElement.innerHTML = '<div class="day-number">' + day + '</div>' + dayEventsHTML;
+            calendarDays.appendChild(dayElement);
+        }
+
+        var totalCells = 42;
+        var daysSoFar = startingDay + totalDays;
+        var nextMonthDays = totalCells - daysSoFar;
+        for (var day = 1; day <= nextMonthDays; day++) {
+            var dayEl = document.createElement('div');
+            dayEl.className = 'day other-month';
+            dayEl.innerHTML = '<div class="day-number">' + day + '</div>';
+            calendarDays.appendChild(dayEl);
+        }
+    }
+
+    prevMonthBtn.addEventListener('click', function() { currentDate.setMonth(currentDate.getMonth() - 1); updateCalendar(); });
+    nextMonthBtn.addEventListener('click', function() { currentDate.setMonth(currentDate.getMonth() + 1); updateCalendar(); });
+
+    document.querySelectorAll('.view-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+        });
+    });
+
+    updateCalendar();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{# Modal Transférer. Vars: conversations, current_conversation, actor #}
+{% set conversations_for_transfer = current_conversation ? conversations|filter(c => c.id != current_conversation.id) : conversations %}
+<div class="transfer-modal-overlay" id="transferModalOverlay" aria-hidden="true">
+    <div class="transfer-modal" id="transferModal" role="dialog" aria-labelledby="transferModalTitle">
+        <div class="transfer-modal-header">
+            <h2 class="transfer-modal-title" id="transferModalTitle">Transférer</h2>
+            <button type="button" class="transfer-modal-close" id="transferModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{{ path('app_messenger_forward_message') }}" id="transferForm" class="transfer-modal-body">
+            <input type="hidden" name="_token" value="{{ csrf_token('forward_message') }}">
+            <input type="hidden" name="message_id" id="transferMessageId" value="">
+            <input type="hidden" name="target_conv_id" id="transferTargetConvId" value="">
+            <div class="transfer-field">
+                <label class="transfer-label">À :</label>
+                <div class="transfer-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="transfer-search" id="transferSearch" placeholder="Recherchez..." autocomplete="off">
+                </div>
+            </div>
+            <div class="transfer-suggestions">
+                <div class="transfer-suggestions-title">Suggestions</div>
+                <div class="transfer-list" id="transferList">
+                    {% for conv in conversations_for_transfer %}
+                        {% set other = conv.participants|filter(p => p.id != actor.id)|first %}
+                        <label class="transfer-contact" data-name="{{ (conv.title ?? (other ? other.FullName : ''))|lower }}" data-email="{{ (other ? other.email : '')|lower }}">
+                            <span class="transfer-contact-avatar">{{ other ? (other.FullName|slice(0,2)|upper) : '?' }}</span>
+                            <span class="transfer-contact-info">
+                                <span class="transfer-contact-name">{{ conv.title ?? (other ? other.FullName : 'Conversation') }}</span>
+                                <span class="transfer-contact-username">{{ other ? other.email : '' }}</span>
+                            </span>
+                            <input type="radio" name="transfer_target" value="{{ conv.id }}" class="transfer-contact-radio">
+                        </label>
+                    {% else %}
+                        <div class="transfer-empty">Aucune autre conversation.</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="transfer-submit" id="transferSubmit">Envoyer</button>
+        </form>
+    </div>
+</div>
