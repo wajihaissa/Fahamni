@@ -1,0 +1,213 @@
+{% extends 'back/admin_base.html.twig' %}
+
+{% block title %}Edit Subject - FAHIMNI Admin{% endblock %}
+
+{% block body %}
+    {# 
+       CRITICAL FIX: Since admin_base lacks a 'stylesheets' block, 
+       we put the styles here to ensure they are actually loaded. 
+    #}
+    <style>
+        /* --- 1. VISUAL VARIABLES (From your New Subject page) --- */
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text-primary: #0b1220;
+            --border: #e5e7eb;
+            --primary: #6c5ce7;
+            --primary-grad: linear-gradient(90deg, #7c6cff 0%, #6c5ce7 100%);
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+        }
+
+        /* --- 2. OVERRIDE ADMIN_BASE SIDEBAR --- */
+        /* We target the existing class in admin_base (.sidebar-container) */
+        .sidebar-container {
+            background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%) !important;
+            box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25);
+            border: none !important;
+        }
+
+        /* Fix the links: Remove blue color and bullets */
+        .sidebar-container ul {
+            list-style: none;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .sidebar-container li {
+            margin: 4px 0;
+        }
+
+        .sidebar-container a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.86) !important; /* Forces white text */
+            text-decoration: none !important;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .sidebar-container a i {
+            width: 24px;
+            text-align: center;
+            color: inherit;
+        }
+
+        /* Hover Effect */
+        .sidebar-container a:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff !important;
+            transform: translateX(4px);
+        }
+
+        /* --- 3. PAGE CONTENT STYLES --- */
+        .admin-content {
+            background-color: var(--bg);
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .page-header p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        /* --- 4. FORM CARD STYLES --- */
+        .form-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 850px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        /* Current Image Box */
+        .current-image-preview {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px dashed var(--border);
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        /* Buttons */
+        .btn-submit {
+            background: var(--primary-grad);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        .btn-cancel:hover { background: #f3f4f6; color: var(--text-primary); }
+    </style>
+
+    <div class="page-header">
+        <h1><i class="fas fa-edit" style="color: var(--primary); margin-right: 8px;"></i> Edit Subject</h1>
+        <p>Update the details for <strong>{{ matiere.titre }}</strong></p>
+    </div>
+
+    <div class="form-card">
+        {{ form_start(form) }}
+            
+            <div style="margin-bottom: 1.5rem;">
+                {{ form_label(form.titre, 'Subject Name', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Mathematics'}}) }}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 5px;">{{ form_errors(form.titre) }}</div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '5'}}) }}
+                <div style="color: #ef4444; font-size: 0.875rem; margin-top: 5px;">{{ form_errors(form.description) }}</div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                {{ form_label(form.imageFile, 'Cover Image', {'label_attr': {'class': 'form-label'}}) }}
+                
+                {% if matiere.coverImage %}
+                    <div class="current-image-preview">
+                        <div style="font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px;">Current Image</div>
+                        <img src="{{ asset(matiere.coverImage) }}" alt="Current Cover" 
+                             style="height: 100px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    </div>
+                {% endif %}
+
+                {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+                <div style="font-size: 0.85rem; color: var(--muted); margin-top: 6px;">
+                    <i class="fas fa-info-circle"></i> Leave empty to keep the current image.
+                </div>
+                <div style="color: #ef4444; font-size: 0.875rem;">{{ form_errors(form.imageFile) }}</div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{{ path('app_matiere_index') }}" class="btn-cancel">Cancel</a>
+                </div>
+            </div>
+
+        {{ form_end(form) }}
+        
+        <div style="margin-top: 1rem; text-align: right;">
+             {{ include('back/matiere/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,214 @@
+{% extends 'back/admin_base.html.twig' %}
+
+{% block title %}Subject Details - {{ matiere.titre }}{% endblock %}
+
+{% block body %}
+    <style>
+        /* --- 1. CORE VARIABLES (Matching Index) --- */
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text-primary: #0b1220;
+            --border: #e5e7eb;
+            --primary: #6c5ce7;
+            --primary-grad: linear-gradient(90deg, #7c6cff 0%, #6c5ce7 100%);
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+        }
+
+        /* --- 2. SIDEBAR FIXES (Ensures Global Consistency) --- */
+        .sidebar-container {
+            background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%) !important;
+            box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25);
+            border: none !important;
+        }
+
+        .admin-content {
+            background-color: var(--bg);
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+
+        /* --- 3. SHOW PAGE SPECIFIC DESIGN --- */
+        .details-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--primary); }
+
+        .subject-hero-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-banner {
+            height: 12px;
+            background: var(--primary-grad);
+        }
+
+        .hero-body {
+            padding: 2.5rem;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .hero-img {
+            width: 140px;
+            height: 140px;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            background: #f1f5f9;
+        }
+
+        .hero-content h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 10px 0;
+        }
+
+        .subject-id {
+            display: inline-block;
+            background: #f1f5f9;
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .description-box {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .description-box h4 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .description-text {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        /* Action Footer */
+        .hero-footer {
+            background: #fafafa;
+            padding: 1.5rem 2.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-main {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-edit-main {
+            background: var(--primary-grad);
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-content-main {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-edit-main:hover, .btn-content-main:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .hero-body { flex-direction: column; text-align: center; align-items: center; }
+        }
+    </style>
+
+    <div class="details-container">
+        <a href="{{ path('app_matiere_index') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Subjects
+        </a>
+
+        <div class="subject-hero-card">
+            <div class="hero-banner"></div>
+            
+            <div class="hero-body">
+                {% if matiere.coverImage %}
+                    <img src="{{ asset(matiere.coverImage) }}" alt="{{ matiere.titre }}" class="hero-img">
+                {% else %}
+                    <div class="hero-img" style="display:flex;align-items:center;justify-content:center;color:#cbd5e1;background:#f8fafc; border: 2px dashed #e2e8f0;">
+                        <i class="fas fa-image fa-3x"></i>
+                    </div>
+                {% endif %}
+
+                <div class="hero-content">
+                    <span class="subject-id">ID: #{{ matiere.id }}</span>
+                    <h1>{{ matiere.titre }}</h1>
+                    
+                    <div class="description-box">
+                        <h4>Description</h4>
+                        <div class="description-text">
+                            {{ matiere.description|default('No description provided for this subject.')|nl2br }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-footer">
+                {# Left Side: Simple Delete (Optional, but useful) #}
+                <div>
+                    {{ include('back/matiere/_delete_form.html.twig') }}
+                </div>
+
+                {# Right Side: The Main Actions #}
+                <div class="action-group">
+                    <a href="{{ path('app_course_manage', {'id': matiere.id}) }}" class="btn-main btn-content-main">
+                        <i class="fas fa-layer-group"></i> Manage Content
+                    </a>
+                    <a href="{{ path('app_matiere_edit', {'id': matiere.id}) }}" class="btn-main btn-edit-main">
+                        <i class="fas fa-pen"></i> Edit Subject
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

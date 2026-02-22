@@ -1,0 +1,158 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}{{ matiere.titre }} - FAHIMNI{% endblock %}
+
+{% block current_page %}subjects{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* Hero Header: Matching the purple gradient from your "Excellence in Education" image */
+    .subject-hero {
+        background: linear-gradient(135deg, #4361ee 0%, #7209b3 100%);
+        padding: 60px 0;
+        color: white;
+        margin-bottom: 40px;
+        border-radius: 0 0 30px 30px;
+    }
+
+    .hero-content { display: flex; align-items: center; gap: 40px; }
+    
+    .hero-img {
+        width: 200px;
+        height: 200px;
+        border-radius: 20px;
+        object-fit: cover;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border: 4px solid rgba(255,255,255,0.2);
+    }
+
+    .subject-title { font-size: 42px; font-weight: 800; margin-bottom: 10px; }
+    .subject-meta { display: flex; gap: 20px; opacity: 0.9; font-weight: 500; }
+
+    /* Layout Structure: Reusing your 30px gap and Sidebar logic */
+    .details-layout { display: flex; gap: 30px; align-items: flex-start; }
+    .main-content { flex: 1; }
+    
+    /* Syllabus Style: Reusing the .session-item style from your Calendar */
+    .syllabus-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+    }
+
+    .chapter-item {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .chapter-item:last-child { border-bottom: none; }
+
+    .chapter-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .lesson-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border-radius: 10px;
+        color: var(--text-color);
+        text-decoration: none;
+        transition: background 0.2s;
+        gap: 10px;
+    }
+
+    .lesson-link:hover { background-color: var(--bg-secondary); color: var(--primary-color); }
+    .lesson-icon { color: var(--primary-color); width: 20px; text-align: center; }
+
+    /* Right Sidebar for Stats */
+    .stats-sidebar { width: 320px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subject-hero">
+    <div class="container">
+        <div class="hero-content">
+            <img src="{{ matiere.coverImage ? asset(matiere.coverImage) : asset('images/default-subject.jpg') }}" class="hero-img">
+            <div>
+                <h1 class="subject-title">{{ matiere.titre }}</h1>
+                <div class="subject-meta">
+                    <span><i class="fas fa-layer-group"></i> {{ matiere.chapters|length }} Chapter(s)</span>
+                    <span><i class="fas fa-clock"></i> {{ matiere.totalLessonsCount }} Lesson(s)</span>
+                    <span><i class="fas fa-user-graduate"></i> 150 Student(s)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="details-layout">
+        <div class="main-content">
+            <div class="syllabus-card">
+    <h2 class="sidebar-title" style="margin-bottom: 30px;">
+        <i class="fas fa-book-reader"></i> Course Curriculum
+    </h2>
+    
+    {# 1. Loop through Chapters #}
+    {% for chapter in matiere.chapters %}
+        <div class="chapter-container" style="margin-bottom: 30px;">
+            <h3 class="chapter-title" style="color: var(--primary-color); border-left: 4px solid var(--secondary-color); padding-left: 15px;">
+                {{ chapter.titre }}
+            </h3>
+
+            {# 2. Loop through Sections inside each Chapter #}
+            {% for section in chapter.sections %}
+                <div class="section-item" style="margin-left: 20px; margin-top: 15px;">
+                    <h4 style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 10px;">
+                        <i class="fas fa-folder-open" style="font-size: 14px; opacity: 0.7;"></i> {{ section.titre }}
+                    </h4>
+
+                    <div class="lesson-list" style="margin-left: 15px;">
+                        {# 3. Loop through Resources inside each Section #}
+                        {% for resource in section.resources %}
+                            {# Determine the URL: Use 'link' for websites/videos, or 'filepath' for uploaded files #}
+                            {% set targetUrl = resource.link ? resource.link : asset('uploads/resources/' ~ resource.filepath) %}
+                            
+                            <a href="{{ targetUrl }}" class="lesson-link" target="_blank">
+                                {% if resource.type|lower == 'video' %}
+                                    <i class="far fa-play-circle lesson-icon"></i>
+                                {% elseif resource.type|lower == 'pdf' %}
+                                    <i class="far fa-file-pdf lesson-icon"></i>
+                                {% else %}
+                                    <i class="fas fa-globe lesson-icon"></i> {# This covers your website links #}
+                                {% endif %}
+                                <span>{{ resource.titre }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No content available for this subject yet.</p>
+    {% endfor %}
+</div>
+        </div>
+
+        <div class="stats-sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title"><i class="fas fa-info-circle"></i> About Subject</h3>
+                <p class="text-muted" style="line-height: 1.6;">{{ matiere.description }}</p>
+                <hr style="border-top: 1px solid var(--border-color); margin: 20px 0;">
+                <button class="btn-learn" style="width: 100%; border: none; padding: 15px;">Enroll for Free</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
