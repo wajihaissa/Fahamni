@@ -181,6 +181,115 @@
             gap: 1.5rem;
         }
 
+        .voice-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .voice-toggle {
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--border-color);
+            border-radius: 0.6rem;
+            background: #fff;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .voice-toggle:hover {
+            border-color: #667eea;
+            color: #4f46e5;
+            box-shadow: 0 8px 18px rgba(79, 70, 229, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .voice-toggle.is-listening {
+            color: #fff;
+            border-color: transparent;
+            background: linear-gradient(135deg, #7c6cff 0%, #4f46e5 100%);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.28);
+        }
+
+        .voice-status {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+            padding: 0.35rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .voice-status.is-listening {
+            border-color: #c7d2fe;
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .voice-status.is-error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .voice-help {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            border: 1px solid #dbe3ef;
+            color: #475569;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: help;
+            user-select: none;
+        }
+
+        .voice-help:hover {
+            border-color: #667eea;
+            color: #4f46e5;
+        }
+
+        .voice-help .voice-tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 260px;
+            padding: 0.65rem 0.75rem;
+            border-radius: 0.6rem;
+            border: 1px solid #dbe3ef;
+            background: #ffffff;
+            color: #334155;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+            font-size: 0.75rem;
+            line-height: 1.45;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: all 0.18s ease;
+            z-index: 1200;
+            pointer-events: none;
+        }
+
+        .voice-help:hover .voice-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
         .notification-icon {
             position: relative;
             cursor: pointer;
@@ -374,6 +483,24 @@
 
         .btn-secondary:hover {
             background-color: #f8fafc;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         /* Tables - styled as white cards inside content area */
@@ -588,6 +715,18 @@
             box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
         }
 
+        .btn-activate {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.12);
+        }
+
+        .btn-deactivate {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
+        }
+
         .btn-action:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
@@ -687,6 +826,78 @@
             transform: translateX(-50%);
             font-size: 0.75rem;
             color: var(--text-secondary);
+        }
+
+        .distribution-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            min-height: 200px;
+        }
+
+        .distribution-chart {
+            --students-deg: 0deg;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4f46e5 0deg var(--students-deg),
+                #06b6d4 var(--students-deg) 360deg
+            );
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .distribution-chart::after {
+            content: '';
+            position: absolute;
+            inset: 24px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .distribution-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            width: 100%;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .distribution-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .distribution-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .distribution-dot.students {
+            background: #4f46e5;
+        }
+
+        .distribution-dot.tutors {
+            background: #06b6d4;
+        }
+
+        .distribution-value {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
         /* Progress Stats */
@@ -958,6 +1169,197 @@
             }
         }
 
+        /* Users Section Visual Refresh (Dashboard page) */
+        #users .section-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid #dbe5f2;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+        }
+        #users .section-header h2 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1.55rem;
+            letter-spacing: -0.02em;
+        }
+        #users .section-subtitle {
+            margin: 6px 0 0 0;
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        #users .section-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        #users .section-header .btn-primary {
+            border-radius: 12px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.28);
+        }
+
+        #users .content-card {
+            background: linear-gradient(160deg, #0f1f3a 0%, #192b4b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 16px 42px rgba(15, 23, 42, 0.35);
+            padding: 22px;
+        }
+        #users .content-card h3 {
+            color: #f8fafc;
+            font-size: 1.35rem;
+            margin-bottom: 14px !important;
+        }
+        #users .panel-subtitle {
+            margin: -6px 0 12px 0;
+            color: #b9c9df;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        #users .list-header-label {
+            display: inline-block;
+            margin: 0 0 10px 2px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #e0ecff;
+            color: #1d4ed8;
+        }
+
+        #users .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            box-shadow: none;
+            padding: 8px;
+        }
+
+        #users .data-table {
+            border-spacing: 0 10px;
+        }
+        #users .data-table thead th {
+            background: transparent !important;
+            color: #9fb0cb !important;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+        }
+        #users .data-table tbody tr {
+            background: #ffffff !important;
+            border: 1px solid #dce5f1 !important;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(2, 6, 23, 0.08);
+            transition: all 0.2s ease;
+        }
+        #users .data-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(2, 6, 23, 0.14);
+            border-color: #bfdbfe !important;
+        }
+        #users .data-table tbody tr td {
+            color: #1e293b;
+            font-size: 0.98rem;
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        #users .btn-secondary {
+            border-radius: 10px;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+            background: #eff6ff;
+            font-weight: 600;
+        }
+        #users .btn-primary {
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        #users .badge {
+            border-radius: 999px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        #users .badge-active { background: #ecfdf3; color: #166534; border: 1px solid #86efac; }
+        #users .badge-inactive { background: #fff1f2; color: #9f1239; border: 1px solid #fda4af; }
+        #users .badge-tutor { background: #ecfeff; color: #155e75; border: 1px solid #a5f3fc; }
+        #users .badge-student { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+
+        #users .user-avatar {
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.12);
+        }
+        #users .btn-action {
+            border-radius: 10px;
+            transition: all .18s ease;
+        }
+        #users .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.15);
+        }
+        #users .table-pagination {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        #users .page-link {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #1e3a8a;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 700;
+            transition: all 0.16s ease;
+        }
+        #users .page-link:hover {
+            border-color: #93c5fd;
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+        #users .page-link.active {
+            border-color: transparent;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+        }
+        #users .page-link.disabled {
+            pointer-events: none;
+            opacity: 0.4;
+            background: #f8fafc;
+            color: #64748b;
+        }
+        #users #users-content {
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        #users #users-content.is-loading {
+            opacity: 0.45;
+            transform: translateY(3px);
+        }
+
         /* Dark mode support (optional) */
         @media (prefers-color-scheme: dark) {
             body {
@@ -990,9 +1392,43 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        {% include 'back/_admin_navbar.html.twig' %}
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">Dashboard</h1>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="voice-control">
+                    <button id="voice-toggle" class="voice-toggle" type="button" title="Voice commands">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <span id="voice-status" class="voice-status">Voice: off</span>
+                    <span class="voice-help" aria-label="Voice commands help" title="Voice commands help">
+                        ?
+                        <span class="voice-tooltip">
+                            Say commands like: open users, add user, next page, previous page, inactive user, delete user, close, home.
+                        </span>
+                    </span>
+                </div>
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+            </div>
+        </header>
+
         <!-- Dashboard Content -->
         <main class="dashboard-content">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-error">{{ message }}</div>
+            {% endfor %}
             <!-- Statistics Overview -->
             <section id="dashboard" class="content-section active">
                 <div class="stats-overview">
@@ -1016,6 +1452,16 @@
                         </div>
                     </div>
                     
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ totalTutors }}</h3>
+                            <p>Total Tutors</p>
+                        </div>
+                    </div>
+
                     <div class="stat-card">
                         <div class="stat-icon">
                             <i class="fas fa-video"></i>
@@ -1065,26 +1511,26 @@
                     </div>
 
                     <div class="content-card">
-                        <h3>Platform Growth</h3>
-                        <div class="chart-container">
-                            <div class="bar-chart">
-                                <div class="bar" style="height: 70%">
-                                    <span class="bar-label">Jan</span>
+                        <h3>Students vs Tutors</h3>
+                        {% set totalLearners = totalStudents + totalTutors %}
+                        {% set studentsPercent = totalLearners > 0 ? (totalStudents / totalLearners * 100) : 0 %}
+                        {% set tutorsPercent = totalLearners > 0 ? (totalTutors / totalLearners * 100) : 0 %}
+                        <div class="distribution-card">
+                            <div class="distribution-chart" style="--students-deg: {{ (studentsPercent * 3.6)|round(2) }}deg;"></div>
+                            <div class="distribution-legend">
+                                <div class="distribution-item">
+                                    <span class="distribution-label">
+                                        <span class="distribution-dot students"></span>
+                                        Students
+                                    </span>
+                                    <span class="distribution-value">{{ totalStudents }} ({{ studentsPercent|round(1) }}%)</span>
                                 </div>
-                                <div class="bar" style="height: 85%">
-                                    <span class="bar-label">Feb</span>
-                                </div>
-                                <div class="bar" style="height: 60%">
-                                    <span class="bar-label">Mar</span>
-                                </div>
-                                <div class="bar" style="height: 90%">
-                                    <span class="bar-label">Apr</span>
-                                </div>
-                                <div class="bar" style="height: 75%">
-                                    <span class="bar-label">May</span>
-                                </div>
-                                <div class="bar" style="height: 95%">
-                                    <span class="bar-label">Jun</span>
+                                <div class="distribution-item">
+                                    <span class="distribution-label">
+                                        <span class="distribution-dot tutors"></span>
+                                        Tutors
+                                    </span>
+                                    <span class="distribution-value">{{ totalTutors }} ({{ tutorsPercent|round(1) }}%)</span>
                                 </div>
                             </div>
                         </div>
@@ -1095,12 +1541,92 @@
             <!-- Users Management -->
             <section id="users" class="content-section">
                 <div class="section-header">
-                    <h2>Users Management</h2>
-                    <button class="btn-primary new-user-btn">Add New User</button>
+                    <div class="section-title-wrap">
+                        <h2>Users Management</h2>
+                        <p class="section-subtitle">Manage registrations, user access and profile status from one place.</p>
+                    </div>
+                    <button id="toggle-add-user" class="btn-primary">Add New User</button>
                 </div>
-                
+
                 <div id="users-content">
+                    {% if pendingUsers is defined and pendingUsers|length > 0 %}
+                        <div class="content-card" style="margin-bottom:12px;">
+                            <h3 style="margin:0 0 8px 0;">Pending Registrations</h3>
+                            <p class="panel-subtitle">Review new accounts and decide whether to approve or decline them.</p>
+                            <div class="card">
+                                <table class="data-table" style="width:100%;">
+                                    <thead>
+                                        <tr><th>Name</th><th>Email</th><th>Requested</th><th>Actions</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for u in pendingUsers %}
+                                            <tr>
+                                                <td>{{ u.fullName }}</td>
+                                                <td>{{ u.email }}</td>
+                                                <td>{{ u.createdAt ? u.createdAt|date('M d, Y H:i') : '-' }}</td>
+                                                <td>
+                                                    <form method="POST" action="{{ path('admin_users_accept', {id: u.id}) }}" style="display:inline-block;margin-right:6px;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ u.id) }}">
+                                                        <button class="btn-primary" type="submit">Accept</button>
+                                                    </form>
+                                                    <form method="POST" action="{{ path('admin_users_decline', {id: u.id}) }}" style="display:inline-block;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('decline' ~ u.id) }}">
+                                                        <button class="btn-secondary" type="submit">Decline</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
                     <div class="content-card">
+                        <span class="list-header-label">User Directory</span>
+                        <div id="add-user-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;z-index:9999;"></div>
+                        <div id="add-user-form" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;padding:2rem;width:90%;max-width:600px;display:none;z-index:10000;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                                <h2 style="margin:0;color:#0b1220;">Add New User</h2>
+                                <button type="button" id="close-form" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#6b7280;">&times;</button>
+                            </div>
+                            <form method="POST" action="{{ path('admin_users_create') }}" style="display:contents;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('add_user') }}">
+                                <input type="hidden" name="return_to" value="admin_dashboard">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                                    <div style="display:flex;flex-direction:column;">
+                                        <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Full Name</label>
+                                        <input type="text" name="fullName" placeholder="John Doe" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;">
+                                        <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Email Address</label>
+                                        <input type="email" name="email" placeholder="john@example.com" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;">
+                                        <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Password</label>
+                                        <input type="password" name="password" placeholder="••••••" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;">
+                                        <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Confirm Password</label>
+                                        <input type="password" name="confirmPassword" placeholder="••••••" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;">
+                                        <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Role</label>
+                                        <select name="role" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;background:#fff;cursor:pointer;transition:border-color 0.3s;">
+                                            <option value="">Select a role</option>
+                                            <option value="ROLE_ETUDIANT">Student</option>
+                                            <option value="ROLE_TUTOR">Tutor</option>
+                                            <option value="ROLE_ADMIN">Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;">
+                                    <button type="button" id="cancel-form" style="padding:10px 16px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:background 0.2s;">Cancel</button>
+                                    <button type="submit" style="padding:10px 20px;background:linear-gradient(90deg,#7c6cff 0%,#6c5ce7 100%);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;">Create User</button>
+                                </div>
+                            </form>
+                        </div>
+                        </div>
+
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
@@ -1114,27 +1640,71 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <div class="user-cell">
-                                                <div class="user-avatar" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);">SJ</div>
-                                                <span>Sarah Johnson</span>
-                                            </div>
-                                        </td>
-                                        <td>sarah.johnson@email.com</td>
-                                        <td><span class="badge badge-student">Student</span></td>
-                                        <td><span class="badge badge-active">Active</span></td>
-                                        <td>Mar 15, 2024</td>
-                                        <td>
-                                            <div class="actions">
-                                                <button class="btn-action btn-view"><i class="fas fa-eye"></i></button>
-                                                <button class="btn-action btn-edit"><i class="fas fa-edit"></i></button>
-                                                <button class="btn-action btn-delete"><i class="fas fa-trash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {% if users is defined and users|length > 0 %}
+                                        {% for user in users %}
+                                            <tr>
+                                                <td>
+                                                    <div class="user-cell">
+                                                        <div class="user-avatar">
+                                                            {%- set parts = user.fullName|split(' ') -%}
+                                                            {%- if parts|length >= 2 -%}
+                                                                {{ (parts[0][0:1])|upper }}{{ (parts[1][0:1])|upper }}
+                                                            {%- else -%}
+                                                                {{ (user.fullName[0:1])|upper }}
+                                                            {%- endif -%}
+                                                        </div>
+                                                        <span>{{ user.fullName }}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{{ user.email }}</td>
+                                                <td>
+                                                    <span class="badge {% if 'ROLE_TUTOR' in user.roles %}badge-tutor{% else %}badge-student{% endif %}">
+                                                        {{ user.roles[0]|replace({'ROLE_': ''})|lower }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if user.status %}badge-active{% else %}badge-inactive{% endif %}">
+                                                        {{ user.status ? 'Active' : 'Inactive' }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ user.createdAt|date('M d, Y') }}</td>
+                                                <td>
+                                                    <div class="actions">
+                                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn-action btn-view" title="View">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <form method="POST" action="{{ path('admin_users_toggle_status', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ user.id) }}">
+                                                            <button type="submit" class="btn-action {% if user.status %}btn-deactivate{% else %}btn-activate{% endif %}" title="{% if user.status %}Deactivate{% else %}Activate{% endif %}">
+                                                                <i class="fas {% if user.status %}fa-ban{% else %}fa-check{% endif %}"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                                                            <button type="submit" class="btn-action btn-delete" title="Delete" onclick="return confirm('Delete this user?');">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="empty">No users found</td>
+                                        </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
+                            {% if users_total_pages is defined and users_total_pages > 1 %}
+                                <div class="table-pagination">
+                                    <a class="page-link {{ users_page <= 1 ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_page: users_page - 1 }) }}#users">Prev</a>
+                                    {% for p in 1..users_total_pages %}
+                                        <a class="page-link {{ p == users_page ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_page: p }) }}#users">{{ p }}</a>
+                                    {% endfor %}
+                                    <a class="page-link {{ users_page >= users_total_pages ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_page: users_page + 1 }) }}#users">Next</a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -1157,7 +1727,6 @@
                             </p>
                             <span class="status-badge published">Published</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1170,7 +1739,6 @@
                             </p>
                             <span class="status-badge pending">Pending</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1183,7 +1751,6 @@
                             </p>
                             <span class="status-badge published">Published</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1221,7 +1788,6 @@
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn-action view"><i class="fas fa-eye"></i></button>
-                                            <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1234,7 +1800,6 @@
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn-action view"><i class="fas fa-eye"></i></button>
-                                            <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1583,7 +2148,14 @@
                         if (card) {
                             const usersContent = usersSection.querySelector('#users-content');
                             usersContent.innerHTML = card.innerHTML;
-                            document.getElementById('users-table-content').innerHTML = card.innerHTML;
+                            // Store the table content for later restoration
+                            if (!document.getElementById('users-table-backup')) {
+                                const backup = document.createElement('div');
+                                backup.id = 'users-table-backup';
+                                backup.style.display = 'none';
+                                document.body.appendChild(backup);
+                            }
+                            document.getElementById('users-table-backup').innerHTML = card.innerHTML;
                         }
                     })
                     .catch(err => console.error('Reload error:', err));
@@ -1593,8 +2165,117 @@
                 alert(msg);
             }
 
+            // AJAX pagination for Users Directory (no full page reload)
+            function loadUsersPage(url) {
+                const usersSection = document.getElementById('users');
+                if (!usersSection) return;
+                const usersContent = usersSection.querySelector('#users-content');
+                if (!usersContent) return;
+
+                usersContent.classList.add('is-loading');
+                fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin'
+                })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const nextContent = doc.querySelector('#users #users-content');
+                    if (nextContent) {
+                        usersContent.innerHTML = nextContent.innerHTML;
+                        // keep an up-to-date backup for "Back to Users" behavior
+                        if (!document.getElementById('users-table-backup')) {
+                            const backup = document.createElement('div');
+                            backup.id = 'users-table-backup';
+                            backup.style.display = 'none';
+                            document.body.appendChild(backup);
+                        }
+                        document.getElementById('users-table-backup').innerHTML = usersContent.innerHTML;
+                        if (window.location.hash !== '#users') {
+                            history.replaceState(null, '', '#users');
+                        }
+                    }
+                })
+                .catch(err => console.error('Users pagination load error:', err))
+                .finally(() => {
+                    usersContent.classList.remove('is-loading');
+                });
+            }
+
+            function getCurrentUsersPageUrl() {
+                const activePage = document.querySelector('#users .table-pagination .page-link.active');
+                if (activePage) {
+                    return activePage.getAttribute('href');
+                }
+                return window.location.pathname + window.location.search + '#users';
+            }
+
+            function submitUsersFormAjax(form) {
+                const usersSection = document.getElementById('users');
+                if (!usersSection) return;
+                const usersContent = usersSection.querySelector('#users-content');
+                if (!usersContent) return;
+
+                usersContent.classList.add('is-loading');
+                const formData = new URLSearchParams(new FormData(form));
+                fetch(form.getAttribute('action'), {
+                    method: form.getAttribute('method') || 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData.toString(),
+                    credentials: 'same-origin'
+                })
+                .then(function () {
+                    loadUsersPage(getCurrentUsersPageUrl());
+                })
+                .catch(function (err) {
+                    console.error('Users action failed:', err);
+                    usersContent.classList.remove('is-loading');
+                });
+            }
+
+            function isUsersActionUrl(action) {
+                try {
+                    const url = new URL(action, window.location.origin);
+                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline)$/.test(url.pathname);
+                } catch (e) {
+                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline)$/.test(action);
+                }
+            }
+
+            // Store initial users table for restoration
+            function storeUsersTableBackup() {
+                const usersSection = document.getElementById('users');
+                const usersContent = usersSection.querySelector('#users-content');
+                if (usersContent) {
+                    if (!document.getElementById('users-table-backup')) {
+                        const backup = document.createElement('div');
+                        backup.id = 'users-table-backup';
+                        backup.style.display = 'none';
+                        document.body.appendChild(backup);
+                    }
+                    document.getElementById('users-table-backup').innerHTML = usersContent.innerHTML;
+                }
+            }
+            
+            // Store initial table on page load
+            setTimeout(storeUsersTableBackup, 100);
+
             // Action buttons functionality
             document.addEventListener('click', function(e) {
+                const pageLink = e.target.closest('#users .table-pagination .page-link');
+                if (pageLink && !pageLink.classList.contains('disabled')) {
+                    e.preventDefault();
+                    const href = pageLink.getAttribute('href');
+                    if (href) {
+                        loadUsersPage(href);
+                    }
+                    return;
+                }
+
                 const button = e.target.closest('.btn-action');
                 if (!button) return;
 
@@ -1624,10 +2305,11 @@
                     
                     // Show detail view
                     const usersContent = usersSection.querySelector('#users-content');
+                    const backupContent = document.getElementById('users-table-backup') ? document.getElementById('users-table-backup').innerHTML : '';
                     usersContent.innerHTML = `
                         <div class="content-card">
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                                <button class="btn-secondary" onclick="document.getElementById('users').querySelector('#users-content').innerHTML = document.getElementById('users-table-content').innerHTML" style="padding: 0.5rem 1rem;">
+                                <button class="btn-secondary" onclick="document.getElementById('users').querySelector('#users-content').innerHTML = document.getElementById('users-table-backup').innerHTML || ''" style="padding: 0.5rem 1rem;">
                                     <i class="fas fa-arrow-left"></i> Back to Users
                                 </button>
                                 <h3 style="margin: 0; font-size: 1.5rem;">User Details</h3>
@@ -1653,165 +2335,28 @@
                         </div>
                     `;
                     
-                } else if (button.classList.contains('btn-edit')) {
-                    e.preventDefault();
-                    
-                    if (!userId) {
-                        console.error('Could not find user ID');
-                        return;
-                    }
-                    
-                    // Fetch edit form and show in dashboard
-                    const editUrl = `/admin/users/${userId}/edit`;
-                    fetch(editUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                        .then(res => {
-                            if (!res.ok) throw new Error('Network error');
-                            return res.text();
-                        })
-                        .then(html => {
-                            // Parse the HTML
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            
-                            // Find the form content
-                            const form = doc.querySelector('form') || doc.querySelector('.admin-container');
-                            if (form) {
-                                const usersSection = document.getElementById('users');
-                                contentSections.forEach(section => section.classList.remove('active'));
-                                usersSection.classList.add('active');
-                                
-                                const usersContent = usersSection.querySelector('#users-content');
-                                usersContent.innerHTML = `
-                                    <div class="content-card">
-                                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                                            <button class="btn-secondary" onclick="document.getElementById('users').querySelector('#users-content').innerHTML = document.getElementById('users-table-content').innerHTML" style="padding: 0.5rem 1rem;">
-                                                <i class="fas fa-arrow-left"></i> Back to Users
-                                            </button>
-                                            <h3 style="margin: 0; font-size: 1.5rem;">Edit User</h3>
-                                        </div>
-                                        <div style="background: #ffffff; padding: 1.5rem; border-radius: 12px;">
-                                            ${form.innerHTML}
-                                        </div>
-                                    </div>
-                                `;
-                                
-                                // Attach form submission handler to the newly added form
-                                const editForm = usersContent.querySelector('form');
-                                if (editForm) {
-                                    editForm.addEventListener('submit', function(e) {
-                                        e.preventDefault();
-                                        
-                                        const submitBtn = editForm.querySelector('button[type="submit"]');
-                                        const originalText = submitBtn.textContent;
-                                        submitBtn.disabled = true;
-                                        submitBtn.textContent = 'Updating...';
-                                        
-                                        // Collect form data including CSRF token
-                                        const formData = new FormData(editForm);
-                                        const urlParams = new URLSearchParams();
-                                        
-                                        // Handle multiple values for roles[]
-                                        for (const [key, value] of formData.entries()) {
-                                            urlParams.append(key, value);
-                                        }
-                                        // Ensure status checkbox is handled if unchecked
-                                        if (!formData.has('status')) {
-                                            urlParams.append(key, value);
-                                        }
-                                        
-                                        console.log('Submitting edit form to:', editUrl);
-                                        console.log('Form data:', urlParams.toString());
-                                        
-                                        // POST to server
-                                        fetch(editUrl, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/x-www-form-urlencoded',
-                                                'X-Requested-With': 'XMLHttpRequest',
-                                            },
-                                            body: urlParams.toString(),
-                                            credentials: 'same-origin'
-                                        })
-                                        .then(async res => {
-                                            console.log('Edit response status:', res.status, 'OK:', res.ok, 'Redirected:', res.redirected);
-                                            
-                                            if (res.ok || res.redirected || res.status === 302 || res.status === 301 || res.status === 303) {
-                                                // Success
-                                                alert('User updated successfully!');
-                                                reloadUsersTable();
-                                                return;
-                                            }
-                                            
-                                            // Error case
-                                            const text = await res.text();
-                                            console.log('Edit error response:', text.substring(0, 500));
-                                            
-                                            if (text.includes('alert-error')) {
-                                                const match = text.match(/<div class="alert alert-error"[^>]*>(.*?)<\/div>/s);
-                                                const errorMsg = match ? match[1].replace(/<[^>]*>/g, '').trim() : 'Failed to update user';
-                                                alert(errorMsg);
-                                            } else {
-                                                alert('Failed to update user');
-                                            }
-                                            submitBtn.disabled = false;
-                                            submitBtn.textContent = originalText;
-                                        })
-                                        .catch(err => {
-                                            console.error('Update error:', err);
-                                            alert('Failed to update user: ' + err.message);
-                                            submitBtn.disabled = false;
-                                            submitBtn.textContent = originalText;
-                                        });
-                                    });
-                                }
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Edit fetch error:', err);
-                            alert('Failed to load edit form');
-                        });
                     
                 } else if (button.classList.contains('btn-delete')) {
                     e.preventDefault();
                     if (confirm('Are you sure you want to delete this user?')) {
-                        // Get delete URL and CSRF token from button attributes
-                        const deleteUrl = button.getAttribute('data-delete-url');
-                        const csrfToken = button.getAttribute('data-csrf');
-                        
-                        if (deleteUrl && csrfToken) {
-                            // Prepare form data
-                            const formData = new URLSearchParams();
-                            formData.append('_token', csrfToken);
-                            
-                            // Perform AJAX delete
-                            fetch(deleteUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                },
-                                body: formData.toString(),
-                                credentials: 'same-origin'
-                            })
-                            .then(async res => {
-                                console.log('Delete response status:', res.status);
-                                
-                                if (res.ok || res.redirected || (res.status >= 300 && res.status < 400)) {
-                                    // Success
-                                    alert('User deleted successfully');
-                                    reloadUsersTable();
-                                    return;
-                                }
-                                
-                                throw new Error('Delete failed with status ' + res.status);
-                            })
-                            .catch(err => {
-                                console.error('Delete error:', err);
-                                alert('Failed to delete user: ' + err.message);
-                            });
-                        }
+                        const deleteForm = button.closest('form');
+                        if (deleteForm) submitUsersFormAjax(deleteForm);
                     }
                 }
+            });
+
+            // Smooth AJAX submit for Users actions (activate/deactivate, accept/decline, delete)
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (!(form instanceof HTMLFormElement)) return;
+                if (!form.closest('#users')) return;
+
+                const action = form.getAttribute('action') || '';
+                const isUsersAction = isUsersActionUrl(action);
+                if (!isUsersAction) return;
+
+                e.preventDefault();
+                submitUsersFormAjax(form);
             });
 
             // Search functionality
@@ -1880,6 +2425,259 @@
                     sidebar.classList.remove('open');
                 }
             });
+
+            // Toggle Add User Form
+            (function(){
+                var btn = document.getElementById('toggle-add-user');
+                var form = document.getElementById('add-user-form');
+                var overlay = document.getElementById('add-user-overlay');
+                var closeBtn = document.getElementById('close-form');
+                var cancelBtn = document.getElementById('cancel-form');
+                
+                function closeModal() {
+                    if(form) form.style.display = 'none';
+                    if(overlay) overlay.style.display = 'none';
+                    // Reset form on close
+                    var f = form.querySelector('form');
+                    if(f) f.reset();
+                }
+                
+                function openModal() {
+                    if(form) form.style.display = 'block';
+                    if(overlay) overlay.style.display = 'block';
+                    var first = form.querySelector('input[name="fullName"]');
+                    if(first) first.focus();
+                }
+                
+                if(btn) {
+                    btn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        openModal();
+                    });
+                }
+                
+                if(closeBtn) {
+                    closeBtn.addEventListener('click', closeModal);
+                }
+                
+                if(cancelBtn) {
+                    cancelBtn.addEventListener('click', closeModal);
+                }
+                
+                if(overlay) {
+                    overlay.addEventListener('click', closeModal);
+                }
+
+                window.openAddUserModal = openModal;
+                window.closeAddUserModal = closeModal;
+            })();
+
+            // Voice commands (experimental v1)
+            (function () {
+                const voiceToggle = document.getElementById('voice-toggle');
+                const voiceStatus = document.getElementById('voice-status');
+                const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+                let recognition = null;
+                const homeUrl = "{{ path('app_home') }}";
+
+                function setVoiceStatus(text, state) {
+                    if (!voiceStatus) return;
+                    voiceStatus.textContent = text;
+                    voiceStatus.classList.remove('is-listening', 'is-error');
+                    if (state === 'listening') voiceStatus.classList.add('is-listening');
+                    if (state === 'error') voiceStatus.classList.add('is-error');
+                }
+
+                function activateSection(sectionId, title) {
+                    const targetSection = document.getElementById(sectionId);
+                    if (!targetSection) return false;
+
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    targetSection.classList.add('active');
+
+                    navLinks.forEach(link => {
+                        if (link.parentElement) link.parentElement.classList.remove('active');
+                    });
+
+                    const matchingNav = Array.from(navLinks).find(link => {
+                        const href = (link.getAttribute('href') || '').replace('#', '');
+                        return href === sectionId;
+                    });
+
+                    if (matchingNav && matchingNav.parentElement) {
+                        matchingNav.parentElement.classList.add('active');
+                    } else if (sectionId === 'dashboard') {
+                        const dashboardNav = Array.from(navLinks).find(link => {
+                            const href = link.getAttribute('href') || '';
+                            return href.indexOf('/admin') === 0 && href.indexOf('#') !== 0;
+                        });
+                        if (dashboardNav && dashboardNav.parentElement) {
+                            dashboardNav.parentElement.classList.add('active');
+                        }
+                    }
+
+                    if (pageTitle) {
+                        pageTitle.textContent = title || sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+                    }
+
+                    if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('open');
+                    return true;
+                }
+
+                function openUsersPageDelta(direction) {
+                    const usersSection = document.getElementById('users');
+                    if (!usersSection) return false;
+
+                    if (!usersSection.classList.contains('active')) {
+                        activateSection('users', 'Users');
+                    }
+
+                    const pager = usersSection.querySelector('.table-pagination');
+                    if (!pager) return false;
+
+                    const target = direction > 0
+                        ? pager.querySelector('.page-link:last-child:not(.disabled)')
+                        : pager.querySelector('.page-link:first-child:not(.disabled)');
+
+                    if (!target) return false;
+
+                    const href = target.getAttribute('href');
+                    if (!href || target.classList.contains('disabled')) return false;
+                    loadUsersPage(href);
+                    return true;
+                }
+
+                function triggerInactiveUserAction() {
+                    activateSection('users', 'Users');
+                    const inactiveBtn = document.querySelector('#users .btn-deactivate');
+                    if (!inactiveBtn) return false;
+                    const form = inactiveBtn.closest('form');
+                    if (!form) return false;
+                    submitUsersFormAjax(form);
+                    return true;
+                }
+
+                function triggerDeleteUserAction() {
+                    activateSection('users', 'Users');
+                    const deleteBtn = document.querySelector('#users .btn-delete');
+                    if (!deleteBtn) return false;
+                    const form = deleteBtn.closest('form');
+                    if (!form) return false;
+                    if (!window.confirm('Delete this user?')) return false;
+                    submitUsersFormAjax(form);
+                    return true;
+                }
+
+                function runVoiceCommand(rawText) {
+                    const text = (rawText || '').toLowerCase().trim();
+                    if (!text) return false;
+
+                    if (text.includes('open users') || text.includes('go to users') || text === 'users') {
+                        return activateSection('users', 'Users');
+                    }
+                    if (text.includes('open dashboard') || text.includes('go to dashboard') || text === 'dashboard') {
+                        return activateSection('dashboard', 'Dashboard');
+                    }
+                    if (text.includes('open articles') || text.includes('go to articles') || text === 'articles') {
+                        return activateSection('articles', 'Articles');
+                    }
+                    if (text.includes('open statistics') || text.includes('go to statistics') || text === 'statistics') {
+                        return activateSection('statistics', 'Statistics');
+                    }
+                    if (text.includes('open sessions') || text.includes('go to sessions') || text === 'sessions') {
+                        return activateSection('sessions', 'Sessions');
+                    }
+                    if (text.includes('next page')) {
+                        return openUsersPageDelta(1);
+                    }
+                    if (text.includes('previous page') || text.includes('prev page') || text.includes('back page')) {
+                        return openUsersPageDelta(-1);
+                    }
+                    if (text.includes('add user') || text.includes('new user')) {
+                        activateSection('users', 'Users');
+                        if (typeof window.openAddUserModal === 'function') {
+                            window.openAddUserModal();
+                            return true;
+                        }
+                        const addUserBtn = document.getElementById('toggle-add-user');
+                        if (addUserBtn) {
+                            addUserBtn.click();
+                            return true;
+                        }
+                    }
+                    if (text.includes('inactive user') || text.includes('deactivate user') || text.includes('unactive user')) {
+                        return triggerInactiveUserAction();
+                    }
+                    if (text.includes('delete user')) {
+                        return triggerDeleteUserAction();
+                    }
+                    if (text === 'close' || text.includes('close modal') || text.includes('close popup')) {
+                        const modal = document.getElementById('add-user-form');
+                        if (modal && modal.style.display === 'block' && typeof window.closeAddUserModal === 'function') {
+                            window.closeAddUserModal();
+                            return true;
+                        }
+                        if (recognition) recognition.stop();
+                        return true;
+                    }
+                    if (text === 'home' || text.includes('go home') || text.includes('open home')) {
+                        if (recognition) recognition.stop();
+                        window.location.href = homeUrl;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (!voiceToggle || !voiceStatus) return;
+
+                if (!SpeechRecognitionApi) {
+                    voiceToggle.disabled = true;
+                    voiceToggle.style.opacity = '0.55';
+                    voiceToggle.style.cursor = 'not-allowed';
+                    setVoiceStatus('Voice unsupported', 'error');
+                    return;
+                }
+
+                recognition = new SpeechRecognitionApi();
+                recognition.lang = 'en-US';
+                recognition.continuous = true;
+                recognition.interimResults = false;
+
+                let isListening = false;
+
+                recognition.onstart = function () {
+                    isListening = true;
+                    voiceToggle.classList.add('is-listening');
+                    setVoiceStatus('Listening...', 'listening');
+                };
+
+                recognition.onend = function () {
+                    isListening = false;
+                    voiceToggle.classList.remove('is-listening');
+                    setVoiceStatus('Voice: off');
+                };
+
+                recognition.onerror = function (event) {
+                    setVoiceStatus('Voice error: ' + (event.error || 'unknown'), 'error');
+                };
+
+                recognition.onresult = function (event) {
+                    const result = event.results[event.results.length - 1];
+                    if (!result || !result[0]) return;
+                    const command = result[0].transcript || '';
+                    const ok = runVoiceCommand(command);
+                    setVoiceStatus(ok ? ('Done: ' + command) : ('Unknown: ' + command), ok ? 'listening' : 'error');
+                };
+
+                voiceToggle.addEventListener('click', function () {
+                    if (!isListening) {
+                        recognition.start();
+                    } else {
+                        recognition.stop();
+                    }
+                });
+            })();
         });
     </script>
 {% endblock %}
