@@ -40,6 +40,24 @@ body{margin:0;padding:0;}
     font-size:0.9rem;
 }
 .admin-navbar-right{display:flex;align-items:center;gap:1rem;}
+.admin-front-link{
+    display:inline-flex;
+    align-items:center;
+    gap:0.45rem;
+    text-decoration:none;
+    color:#0b1220;
+    background:#fff;
+    border:1px solid #e6eef8;
+    border-radius:10px;
+    padding:0.5rem 0.85rem;
+    font-size:0.86rem;
+    font-weight:600;
+    transition:background 0.2s ease,box-shadow 0.2s ease;
+}
+.admin-front-link:hover{
+    background:#f8fafc;
+    box-shadow:0 2px 8px rgba(14,22,50,0.06);
+}
 .admin-profile-btn{
     display:flex;
     align-items:center;
@@ -80,6 +98,10 @@ body{margin:0;padding:0;}
         </div>
     </div>
     <div class="admin-navbar-right">
+        <a class="admin-front-link" href="{{ path('app_home') }}">
+            <i class="fas fa-home"></i>
+            <span>User Space</span>
+        </a>
         <button type="button" class="admin-profile-btn" aria-label="Profil">
             <span class="admin-profile-avatar">
                 {%- set name = app.user.fullName|default(app.user.username|default('A')) -%}

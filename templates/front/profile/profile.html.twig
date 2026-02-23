@@ -1,0 +1,740 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Profile - FAHIMNI{% endblock %}
+
+{% block current_page %}profile{% endblock %}
+
+{% block content %}
+<style>
+/* PROFILE HERO SECTION */
+.profile-hero {
+    padding: 160px 0 80px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,100 1000,0 1000,100"/></svg>');
+    background-size: cover;
+}
+
+.profile-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.avatar-container {
+    position: relative;
+}
+
+.avatar-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: white;
+    color: var(--primary-color);
+    font-size: 46px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border: 4px solid rgba(255,255,255,0.2);
+    transition: transform 0.3s ease;
+}
+
+.avatar-image:hover {
+    transform: scale(1.05);
+}
+
+.profile-info h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.profile-info p {
+    opacity: 0.9;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.profile-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-top: 10px;
+    backdrop-filter: blur(10px);
+}
+
+/* MAIN PROFILE CONTAINER */
+.profile-container {
+    margin-top: -40px;
+    position: relative;
+    z-index: 10;
+    padding: 0 20px;
+}
+
+.profile-card {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    min-height: 600px;
+    display: flex;
+}
+
+/* SIDEBAR NAVIGATION */
+.profile-sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-right: 1px solid var(--border-color);
+    padding: 40px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 0 30px 30px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.sidebar-subtitle {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.nav-item {
+    display: block;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 15px;
+    position: relative;
+}
+
+.nav-item:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.nav-item.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    background: var(--primary-color);
+    border-radius: 0 4px 4px 0;
+}
+
+.nav-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    vertical-align: middle;
+}
+
+/* CONTENT AREA */
+.profile-content {
+    flex: 1;
+    padding: 40px;
+    background: white;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.section-description {
+    color: #64748b;
+    font-size: 16px;
+}
+
+/* FORM STYLING */
+.profile-form .form-group {
+    margin-bottom: 24px;
+}
+
+.profile-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.profile-form input,
+.profile-form textarea,
+.profile-form select {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus,
+.profile-form select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.profile-form textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-hint {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+/* BUTTONS */
+.btn {
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+/* STATUS INDICATORS */
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+    .profile-card {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .profile-sidebar {
+        width: 100%;
+        padding: 30px 0;
+    }
+    
+    .sidebar-nav {
+        padding: 0 30px;
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+    }
+    
+    .nav-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .nav-item.active::before {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-hero {
+        padding: 140px 0 60px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .avatar-image {
+        width: 110px;
+        height: 110px;
+        font-size: 34px;
+    }
+    
+    .profile-info h1 {
+        font-size: 26px;
+    }
+    
+    .profile-content {
+        padding: 30px 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-container {
+        padding: 0 10px;
+    }
+    
+    .sidebar-nav {
+        flex-direction: column;
+    }
+    
+    .nav-item {
+        margin-bottom: 4px;
+    }
+}
+</style>
+
+{# include shared navbar from theme and pass current page #}
+{% include 'front/_navbar.html.twig' with { current_page: block('current_page')|trim } %}
+
+<!-- Hero Section -->
+<div class="profile-hero">
+    <div class="container">
+        <div class="profile-header">
+            <div class="avatar-container">
+                <div class="avatar-image" id="avatarImage">
+                    {%- set parts = user.fullName|split(' ') -%}
+                    {%- if parts|length >= 2 -%}
+                        {{ (parts[0][0:1])|upper }}{{ (parts[1][0:1])|upper }}
+                    {%- else -%}
+                        {{ (user.fullName[0:1])|upper }}
+                    {%- endif -%}
+                </div>
+            </div>
+            <div class="profile-info">
+                <h1>{{ user.fullName }}</h1>
+                <p>{{ student.roles|capitalize }} • Member since {{ user.createdAt|date('M Y') }}</p>
+                <div class="profile-badge">
+                    {% if student.isActive %}
+                        <span class="status-badge status-active">Active</span>
+                    {% else %}
+                        <span class="status-badge status-inactive">Inactive</span>
+                    {% endif %}
+                    <span class="status-badge status-{{ student.validationStatus }}">{{ student.validationStatus|capitalize }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Profile Container -->
+<div class="profile-container">
+    <div class="container">
+        <!-- Flash Messages -->
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type }} mb-4">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+        
+        <div class="profile-card">
+            <!-- Sidebar Navigation -->
+            <div class="profile-sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">Profile Settings</div>
+                    <div class="sidebar-subtitle">Manage your account</div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-section="personal">
+                        <span class="nav-icon">👤</span>
+                        Personal Info
+                    </button>
+                    <button class="nav-item" data-section="account">
+                        <span class="nav-icon">⚙️</span>
+                        Account Settings
+                    </button>
+                    <button class="nav-item" data-section="certifications">
+                        <span class="nav-icon">🏆</span>
+                        Certifications
+                    </button>
+                    <button class="nav-item" data-section="security">
+                        <span class="nav-icon">🔒</span>
+                        Security
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Content Area -->
+            <div class="profile-content">
+                <!-- Personal Information Section -->
+                <div class="content-section active" id="personal">
+                    <div class="section-header">
+                        <h2 class="section-title">Personal Information</h2>
+                        <p class="section-description">Update your personal details and profile information</p>
+                    </div>
+                    
+                    <form class="profile-form" id="personalForm" method="post" action="{{ path('app_profile', {'id': user.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
+                        <input type="hidden" name="_form" value="personal">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" value="{{ (user.fullName|split(' '))[0] }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" value="{{ (user.fullName|split(' ')|slice(1)|join(' ')) }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" value="{{ user.email }}" disabled>
+                            <div class="form-hint">Email cannot be changed for security reasons</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" value="{{ student.phone ?: '' }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bio">Bio / About You</label>
+                            <textarea id="bio" name="bio" placeholder="Tell us about yourself, your expertise, and your learning goals...">{{ student.bio ?: '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select id="role" name="role" disabled>
+                                <option value="student" {% if student.roles == 'student' %}selected{% endif %}>Student</option>
+                                <option value="tutor" {% if student.roles == 'tutor' %}selected{% endif %}>Tutor</option>
+                            </select>
+                            <div class="form-hint">Role is set at registration and cannot be changed</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+
+                <!-- Account Settings Section -->
+                <div class="content-section" id="account">
+                    <div class="section-header">
+                        <h2 class="section-title">Account Settings</h2>
+                        <p class="section-description">Account lifecycle fields are managed by administrators.</p>
+                    </div>
+
+                    <div class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Account Status</label>
+                                <input type="text" value="{{ user.status ? 'Active' : 'Inactive' }}" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Student Active Status</label>
+                                <input type="text" value="{{ student and student.isActive ? 'Active' : 'Inactive' }}" disabled>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Validation Status</label>
+                            <input type="text" value="{{ student ? student.validationStatus|capitalize : 'N/A' }}" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Account Created</label>
+                            <input type="text" value="{{ user.createdAt|date('Y-m-d H:i:s') }}" disabled>
+                            <div class="form-hint">These values are managed by admins and support team only.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certifications Section -->
+                <div class="content-section" id="certifications">
+                    <div class="section-header">
+                        <h2 class="section-title">Certifications & Credentials</h2>
+                        <p class="section-description">Add your certifications and professional credentials</p>
+                    </div>
+                    
+                    <form class="profile-form" id="certificationsForm" method="post" action="{{ path('app_profile', {'id': user.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
+                        <input type="hidden" name="_form" value="certifications">
+                        
+                        <div class="form-group">
+                            <label for="certifications">Certifications</label>
+                            <textarea id="certifications" name="certifications" placeholder="e.g., AWS Certified Solutions Architect, IELTS Band 8, Microsoft Azure Fundamentals...">{% if student.Certifications is not empty %}{{ student.Certifications|join(', ') }}{% endif %}</textarea>
+                            <div class="form-hint">Enter each certification separated by commas</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Certifications</button>
+                    </form>
+                </div>
+
+                <!-- Security Section -->
+                <div class="content-section" id="security">
+                    <div class="section-header">
+                        <h2 class="section-title">Security Settings</h2>
+                        <p class="section-description">Manage your password and security preferences</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <a href="{{ path('app_forgot_password', {'email': user.email}) }}" class="btn btn-primary">
+                            Change Password
+                        </a>
+                        <div class="form-hint">Use a strong password to protect your account</div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1.25rem;">
+                        <label>Face ID / Passkey</label>
+                        <button type="button" class="btn btn-primary" id="enablePasskeyBtn">Enable Face ID Login</button>
+                        <div class="form-hint">Registers a secure passkey on this device (Windows Hello / Face ID).</div>
+                        <div id="passkeyStatus" class="form-hint" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Navigation functionality
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const sectionId = this.getAttribute('data-section');
+            
+            // Remove active class from all nav items and sections
+            navItems.forEach(nav => nav.classList.remove('active'));
+            contentSections.forEach(section => section.classList.remove('active'));
+            
+            // Add active class to clicked item and corresponding section
+            this.classList.add('active');
+            document.getElementById(sectionId).classList.add('active');
+        });
+    });
+
+    // Form validation
+    document.getElementById('personalForm').addEventListener('submit', function(e) {
+        const firstName = document.getElementById('firstName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        
+        if (!firstName || !lastName) {
+            e.preventDefault();
+            alert('First and last names are required');
+        }
+    });
+
+    const enablePasskeyBtn = document.getElementById('enablePasskeyBtn');
+    const passkeyStatus = document.getElementById('passkeyStatus');
+
+    function setPasskeyStatus(message, ok) {
+        if (!passkeyStatus) return;
+        passkeyStatus.textContent = message;
+        passkeyStatus.style.color = ok ? '#166534' : '#991b1b';
+    }
+
+    function base64UrlToArrayBuffer(base64url) {
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = '='.repeat((4 - (base64.length % 4)) % 4);
+        const raw = atob(base64 + pad);
+        const out = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+        return out.buffer;
+    }
+
+    function arrayBufferToBase64Url(buffer) {
+        const bytes = new Uint8Array(buffer);
+        let raw = '';
+        for (let i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
+        return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    if (enablePasskeyBtn) {
+        enablePasskeyBtn.addEventListener('click', async function () {
+            if (!window.PublicKeyCredential || !navigator.credentials) {
+                setPasskeyStatus('Passkeys are not supported on this browser/device.', false);
+                return;
+            }
+
+            enablePasskeyBtn.disabled = true;
+            const originalText = enablePasskeyBtn.textContent;
+            enablePasskeyBtn.textContent = 'Preparing...';
+            setPasskeyStatus('Starting passkey registration...', true);
+
+            try {
+                const optionsRes = await fetch('{{ path('app_passkey_register_options') }}', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                const optionsData = await optionsRes.json();
+                if (!optionsRes.ok || !optionsData.success) {
+                    throw new Error(optionsData.message || 'Failed to load passkey options');
+                }
+
+                const publicKey = optionsData.publicKey;
+                publicKey.challenge = base64UrlToArrayBuffer(publicKey.challenge);
+                publicKey.user.id = base64UrlToArrayBuffer(publicKey.user.id);
+
+                enablePasskeyBtn.textContent = 'Waiting for Face ID...';
+                const credential = await navigator.credentials.create({ publicKey: publicKey });
+                if (!credential) {
+                    throw new Error('No passkey credential returned');
+                }
+
+                const response = credential.response;
+                const publicKeyBytes = response.getPublicKey ? response.getPublicKey() : null;
+                if (!publicKeyBytes) {
+                    throw new Error('Your browser did not provide the public key. Use latest Chrome or Edge.');
+                }
+
+                const publicKeyPem = [
+                    '-----BEGIN PUBLIC KEY-----',
+                    btoa(String.fromCharCode(...new Uint8Array(publicKeyBytes))).match(/.{1,64}/g).join('\n'),
+                    '-----END PUBLIC KEY-----'
+                ].join('\n');
+
+                const verifyPayload = {
+                    id: credential.id,
+                    publicKeyPem: publicKeyPem,
+                    clientDataJSON: arrayBufferToBase64Url(response.clientDataJSON)
+                };
+
+                const verifyRes = await fetch('{{ path('app_passkey_register_verify') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(verifyPayload)
+                });
+                const verifyData = await verifyRes.json();
+                if (!verifyRes.ok || !verifyData.success) {
+                    throw new Error(verifyData.message || 'Passkey registration failed');
+                }
+
+                setPasskeyStatus('Face ID login is now enabled on this account.', true);
+            } catch (err) {
+                setPasskeyStatus(err.message || 'Could not register passkey.', false);
+            } finally {
+                enablePasskeyBtn.disabled = false;
+                enablePasskeyBtn.textContent = originalText;
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

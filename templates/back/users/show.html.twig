@@ -35,18 +35,31 @@
 {% block body %}
     {% include 'back/_sidebar.html.twig' %}
     <div class="main-content">
-        {% include 'back/_admin_navbar.html.twig' %}
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
+                <h1 class="page-title">User Details</h1>
+            </div>
+            <div class="navbar-right"></div>
+        </header>
+
         <div class="admin-container">
             <div class="admin-header">
                 <h1>User Details</h1>
                 <div style="display:flex;gap:8px">
-                    <a href="{{ path('admin_users_edit', {id: user.id}) }}" class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    {# Edit removed from show per request #}
                     <a href="{{ path('admin_users_index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
                 </div>
             </div>
 
         <div class="card">
             <div class="user-header">
+                {% set roleLabel = 'Student' %}
+                {% if 'ROLE_ADMIN' in user.roles %}
+                    {% set roleLabel = 'Admin' %}
+                {% elseif 'ROLE_TUTOR' in user.roles %}
+                    {% set roleLabel = 'Tutor' %}
+                {% endif %}
                 <div class="user-avatar">
                     {%- set parts = user.fullName|split(' ') -%}
                     {%- if parts|length >= 2 -%}
@@ -58,7 +71,7 @@
                 <div class="user-info">
                     <h2>
                         {{ user.fullName }}
-                        <span class="badge">{{ user.roles[0]|replace({'ROLE_': ''})|lower }}</span>
+                        <span class="badge">{{ roleLabel|lower }}</span>
                     </h2>
                     <p>{{ user.email }}</p>
                     <p>
@@ -85,7 +98,7 @@
 
                 <div class="info-item">
                     <label>Role</label>
-                    <p>{{ user.roles[0]|replace({'ROLE_': ''})|capitalize }}</p>
+                    <p>{{ roleLabel }}</p>
                 </div>
 
                 <div class="info-item">
