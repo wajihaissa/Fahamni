@@ -1,0 +1,598 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Quiz - FAHIMNI{% endblock %}
+
+{% block stylesheets %}
+<style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary-color: #7209b7;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-primary: #2b2d42;
+            --text-secondary: #6c757d;
+            --success-color: #4cc9f0;
+            --border-radius: 12px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s ease;
+        }
+
+        /* Dark Theme Variables */
+        body.dark-theme {
+            --light-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        
+        /* Main Content */
+        .quiz-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .quiz-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .quiz-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        body.dark-theme .progress-bar {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            border-radius: 10px;
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Cube */
+        .question-cube {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: var(--transition);
+        }
+
+        .question-cube:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-4px);
+        }
+
+        .question-number {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Options */
+        .options-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option {
+            background-color: var(--card-bg);
+            border: 2px solid;
+            border-color: rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        body.dark-theme .option {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .option:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        body.dark-theme .option:hover {
+            background-color: rgba(67, 97, 238, 0.15);
+        }
+
+        .option.selected {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+        }
+
+        body.dark-theme .option.selected {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .option-radio {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid;
+            border-color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .option.selected .option-radio {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+        }
+
+        .option.selected .option-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        .option-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Navigation Buttons */
+        .quiz-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .nav-btn {
+            padding: 0.9rem 1.8rem;
+            border-radius: var(--border-radius);
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-prev {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-theme .btn-prev {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-prev:hover:not(:disabled) {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-color: var(--text-secondary);
+        }
+
+        body.dark-theme .btn-prev:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-next {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-next:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-submit {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #5a08a0;
+            transform: translateY(-2px);
+        }
+
+        /* Question Cubes Overview */
+        .questions-overview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-theme .questions-overview {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .cube-small {
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            border: 2px solid transparent;
+            color: var(--text-primary);
+        }
+
+        body.dark-theme .cube-small {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .cube-small:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-theme .cube-small:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .cube-small.current {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .cube-small.answered {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+            border-color: rgba(67, 97, 238, 0.3);
+        }
+
+        body.dark-theme .cube-small.answered {
+            background-color: rgba(67, 97, 238, 0.2);
+        }
+
+        /* Footer */
+        .quiz-footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid;
+            border-color: rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        body.dark-theme .quiz-footer {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 0 1rem;
+            }
+            
+            .quiz-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .question-cube {
+                padding: 1.5rem;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .cube-small {
+                width: 40px;
+                height: 40px;
+            }
+        }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    {% if quiz %}
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title">{{ quiz.titre }}</h1>
+            <div class="quiz-progress">
+                <span class="progress-text">Question 1 of {{ quiz.questions|length }}</span>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Cube -->
+        <div class="question-cube">
+            {% for index, question in quiz.questions %}
+            <div class="question-container" data-question="{{ index + 1 }}" style="{% if index != 0 %}display: none;{% endif %}">
+                <div class="question-number">Question {{ index + 1 }}</div>
+                <p class="question-text">
+                    {{ question.question }}
+                </p>
+                
+                <div class="options-container">
+                    {% for choice in question.choices %}
+                    <div class="option" data-choice-id="{{ choice.id }}" data-question-id="{{ question.id }}">
+                        <div class="option-radio"></div>
+                        <span class="option-label">{{ choice.choice }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="quiz-navigation">
+            <button class="nav-btn btn-prev" disabled>
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            
+            <button class="nav-btn btn-next">
+                Next <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="quiz-footer">
+        <p>© 2025 FAHIMNI Learning Platform. All rights reserved.</p>
+        <p>Active • Approved • Certifications updated successfully</p>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; max-width: 800px; margin: 40px auto;">
+        <p style="font-size: 18px; color: var(--text-secondary);">Quiz not found. Please select a quiz to start.</p>
+        <a href="{{ path('app_quiz_list') }}" style="
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        ">
+            Back to Quizzes
+        </a>
+    </div>
+    {% endif %}
+
+  
+  
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentQuestion = 1;
+            const totalQuestions = document.querySelectorAll('.question-container').length;
+            const answers = {}; // Store selected answers: { questionId: choiceId }
+
+            function showQuestion(questionNum) {
+                // Hide all questions
+                document.querySelectorAll('.question-container').forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                // Show current question
+                const current = document.querySelector(`.question-container[data-question="${questionNum}"]`);
+                if (current) {
+                    current.style.display = 'block';
+                }
+
+                // Update progress
+                document.querySelector('.progress-text').textContent = `Question ${questionNum} of ${totalQuestions}`;
+                document.querySelector('.progress-fill').style.width = `${(questionNum / totalQuestions) * 100}%`;
+
+                // Update button states
+                document.querySelector('.btn-prev').disabled = questionNum === 1;
+                
+                const nextBtn = document.querySelector('.btn-next');
+                if (questionNum === totalQuestions) {
+                    nextBtn.innerHTML = 'Submit Quiz <i class="fas fa-paper-plane"></i>';
+                    nextBtn.classList.add('btn-submit');
+                } else {
+                    nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+                    nextBtn.classList.remove('btn-submit');
+                }
+
+                // Restore selected answer for this question
+                if (answers[questionNum]) {
+                    document.querySelectorAll(`.question-container[data-question="${questionNum}"] .option`).forEach(option => {
+                        if (parseInt(option.dataset.choiceId) === answers[questionNum]) {
+                            option.classList.add('selected');
+                        }
+                    });
+                }
+
+                currentQuestion = questionNum;
+            }
+
+            // Option selection
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const questionId = this.dataset.questionId;
+                    const choiceId = parseInt(this.dataset.choiceId);
+                    const container = this.closest('.question-container');
+
+                    // Remove selected from siblings
+                    container.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+
+                    // Add selected to clicked
+                    this.classList.add('selected');
+
+                    // Store answer
+                    answers[currentQuestion] = choiceId;
+                });
+            });
+
+            // Previous button
+            document.querySelector('.btn-prev').addEventListener('click', function() {
+                if (currentQuestion > 1) {
+                    showQuestion(currentQuestion - 1);
+                }
+            });
+
+            // Next button
+            document.querySelector('.btn-next').addEventListener('click', function() {
+                if (currentQuestion === totalQuestions) {
+                    // Submit quiz
+                    submitQuiz();
+                } else {
+                    showQuestion(currentQuestion + 1);
+                }
+            });
+
+            function submitQuiz() {
+                const quizId = {{ quiz.id }};
+                const answerData = {};
+
+                // Convert answers to format expected by backend
+                document.querySelectorAll('.question-container').forEach((container, index) => {
+                    const questionId = container.querySelector('.option').dataset.questionId;
+                    answerData[questionId] = answers[index + 1] || null;
+                });
+
+                fetch(`/quiz/${quizId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ answers: answerData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show results
+                        showResults(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error submitting quiz. Please try again.');
+                });
+            }
+
+            function showResults(data) {
+                // Hide quiz container, show results
+                document.querySelector('.quiz-container').innerHTML = `
+                    <div class="quiz-results" style="text-align: center; padding: 40px;">
+                        <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: var(--primary-color);">Quiz Complete!</h2>
+                        <div style="font-size: 3rem; font-weight: 700; color: var(--primary-color); margin: 30px 0;">
+                            ${data.score} / ${data.total}
+                        </div>
+                        <div style="font-size: 1.5rem; color: var(--text-secondary); margin-bottom: 30px;">
+                            ${Math.round(data.percentage)}%
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 30px;">
+                            ${data.percentage >= 70 ? '✅ Great job! You passed the quiz!' : '❌ You can try again to improve your score.'}
+                        </p>
+                        <button onclick="window.location.href='{{ path('app_quiz_list') }}'" style="
+                            padding: 12px 30px;
+                            background: var(--primary-color);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 16px;
+                        ">
+                            Go Back to Quizzes
+                        </button>
+                    </div>
+                `;
+            }
+
+            // Initialize
+            showQuestion(1);
+        });
+    </script>
+
+{% endblock %}

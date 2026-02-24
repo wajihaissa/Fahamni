@@ -1,0 +1,61 @@
+{# Chat Header Modernisé - En-tête du chat avec avatar et boutons d'action #}
+<div class="chat-header" id="chatHeader" 
+     data-conv-id="{{ current_conversation.id }}" 
+     data-search-url="{{ path('app_messenger_search_messages', { id: current_conversation.id }) }}">
+    
+    {# Informations utilisateur (mode normal) #}
+    <div class="chat-user-info" id="chatHeaderUserInfo">
+        {# Avatar #}
+        <div class="user-avatar">
+            {# Si vous avez des images d'avatar : <img src="{{ other.avatarUrl }}" alt=""> #}
+            {{ other ? (other.FullName|slice(0,2)|upper) : '?' }}
+        </div>
+        
+        {# Détails utilisateur #}
+        <div class="user-details">
+            <h3>{{ current_conversation.title ?? (other_display_name|default(other ? other.FullName : 'Conversation')) }}</h3>
+            <div class="user-status{{ other and other.isStatus ? ' online' : '' }}">
+                {% if other and other.isStatus %}
+                    En ligne
+                {% else %}
+                    {{ other ? other.email : 'Hors ligne' }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {# Boutons d'appel #}
+    <div class="chat-header-call-actions">
+        <button type="button" class="chat-call-btn" title="Appel vocal" aria-label="Appel vocal">
+            <i class="fas fa-phone"></i>
+        </button>
+        <button type="button" class="chat-call-btn" title="Appel vidéo" aria-label="Appel vidéo">
+            <i class="fas fa-video"></i>
+        </button>
+    </div>
+    
+    {# Bouton recherche #}
+    <button type="button" class="chat-search-toggle" id="chatSearchToggle" 
+            title="Rechercher dans la conversation" aria-label="Rechercher">
+        <i class="fas fa-search"></i>
+    </button>
+    
+    {# Bouton infos #}
+    <button type="button" class="chat-info-toggle" id="chatInfoToggle" 
+            title="Infos et options" aria-label="Infos et options" aria-expanded="false">
+        <i class="fas fa-info-circle"></i>
+    </button>
+    
+    {# Barre de recherche (cachée par défaut) #}
+    <div class="chat-search-bar" id="chatSearchBar" aria-hidden="true">
+        <button type="button" class="chat-search-back" id="chatSearchBack" aria-label="Fermer la recherche">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="chat-search-input-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" class="chat-search-input" id="chatSearchInput" 
+                   placeholder="Rechercher dans la conversation..." autocomplete="off">
+        </div>
+        <div class="chat-search-results" id="chatSearchResults"></div>
+    </div>
+</div>

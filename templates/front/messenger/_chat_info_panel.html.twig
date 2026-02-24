@@ -1,0 +1,97 @@
+{# Panneau Infos / Options du chat. Vars: current_conversation, other, actor, other_display_name, current_nickname #}
+<div class="chat-info-panel" id="chatInfoPanel">
+    {% if other %}
+    <div class="chat-info-section chat-info-quick-actions">
+        <div class="chat-info-quick-actions-row">
+            <a href="{{ path('app_profile', { id: other.id }) }}" class="chat-info-quick-btn" title="Voir le profil"><i class="fas fa-user"></i><span>Profil</span></a>
+            <button type="button" class="chat-info-quick-btn chat-info-nickname-btn" id="chatInfoNicknameBtn" title="Surnoms"><i class="fas fa-tag"></i><span>Surnoms</span></button>
+            <button type="button" class="chat-info-quick-btn chat-info-search-btn" id="chatInfoSearchBtn" title="Rechercher dans la conversation"><i class="fas fa-search"></i><span>Recherche</span></button>
+            <button type="button" class="chat-info-quick-btn chat-info-customize-btn" id="chatInfoCustomizeBtn" title="Personnaliser (thème)"><i class="fas fa-palette"></i><span>Personnaliser</span></button>
+        </div>
+        <div class="chat-info-nickname-form-wrap" id="chatInfoNicknameFormWrap" style="display: none;">
+            <label class="chat-info-nickname-label">Surnom pour {{ other_display_name|default(other.FullName) }}</label>
+            <form id="chatInfoNicknameForm" class="chat-info-nickname-form" data-conv-id="{{ current_conversation.id }}" data-target-user-id="{{ other.id }}" data-nickname-url="{{ path('app_messenger_set_nickname', { id: current_conversation.id }) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('nickname_conv_' ~ current_conversation.id) }}">
+                <input type="text" name="nickname" id="chatInfoNicknameInput" class="chat-info-nickname-input" placeholder="Surnom (vide = nom d'origine)" value="{{ current_nickname|default('') }}" maxlength="120">
+                <button type="submit" class="chat-info-nickname-submit">Enregistrer</button>
+            </form>
+            <p class="chat-info-nickname-hint">Ce surnom s’affiche uniquement pour vous dans cette conversation.</p>
+        </div>
+    </div>
+    {% endif %}
+    <div class="chat-info-section">
+        <h3 class="chat-info-section-title">Thème</h3>
+        <div id="chatInfoThemeConfig" style="display: none;">
+            <div class="chat-info-theme-row">
+                <span class="chat-info-theme-label">Mode</span>
+                <div class="chat-info-theme">
+                    <button type="button" class="chat-info-option" data-theme="light" title="Clair"><i class="fas fa-sun"></i><span>Clair</span></button>
+                    <button type="button" class="chat-info-option" data-theme="dark" title="Sombre"><i class="fas fa-moon"></i><span>Sombre</span></button>
+                </div>
+            </div>
+            <div class="chat-info-theme-row">
+                <span class="chat-info-theme-label">Couleur conversation</span>
+                <div class="chat-info-theme chat-info-theme-colors">
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="default" title="Par défaut"><span class="chat-theme-dot" style="background:var(--primary-color);"></span><span>Défaut</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="blue" title="Bleu"><span class="chat-theme-dot" style="background:#2563eb;"></span><span>Bleu</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="green" title="Vert"><span class="chat-theme-dot" style="background:#059669;"></span><span>Vert</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="violet" title="Violet"><span class="chat-theme-dot" style="background:#7c3aed;"></span><span>Violet</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="rose" title="Rose"><span class="chat-theme-dot" style="background:#db2777;"></span><span>Rose</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="orange" title="Orange"><span class="chat-theme-dot" style="background:#ea580c;"></span><span>Orange</span></button>
+                    <button type="button" class="chat-info-option conv-theme-opt" data-conv-theme="teal" title="Teal"><span class="chat-theme-dot" style="background:#0d9488;"></span><span>Teal</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chat-info-section">
+        <h3 class="chat-info-section-title">Chat infos</h3>
+        <div class="chat-info-details">
+            <div class="chat-info-avatar">{{ other ? (other.FullName|slice(0,2)|upper) : '?' }}</div>
+            <div class="chat-info-meta">
+                <div class="chat-info-name">{{ current_conversation.title ?? (other_display_name|default(other ? other.FullName : 'Conversation')) }}</div>
+                <div class="chat-info-email">{{ other ? other.email : '' }}</div>
+            </div>
+        </div>
+    </div>
+    {% if current_conversation.isGroup %}
+    {# Groupe : voir membres + quitter le groupe #}
+    <div class="chat-info-section chat-info-members-section">
+        <h3 class="chat-info-section-title">Membres</h3>
+        <button type="button" class="chat-info-action chat-info-toggle-members" id="chatInfoToggleMembers" title="Voir les membres du groupe"><i class="fas fa-users"></i><span>Voir membres</span></button>
+        <div class="chat-info-members-list" id="chatInfoMembersList" style="display: none;">
+            {% for p in current_conversation.participants %}
+                <div class="chat-info-member-item">
+                    <span class="chat-info-member-avatar">{{ p.FullName|slice(0,2)|upper }}</span>
+                    <a href="{{ path('app_profile', { id: p.id }) }}" class="chat-info-member-name">{{ p.FullName }}</a>
+                    {% if p.id == actor.id %}<span class="chat-info-member-you">(vous)</span>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="chat-info-section">
+        <h3 class="chat-info-section-title">Actions</h3>
+        <div class="chat-info-actions">
+            <form method="post" action="{{ path('app_messenger_leave_group', { id: current_conversation.id }) }}" onsubmit="return confirm('Quitter ce groupe ? Vous ne recevrez plus les messages.');" class="chat-info-action-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('leave_group_' ~ current_conversation.id) }}">
+                <button type="submit" class="chat-info-action chat-info-action-danger"><i class="fas fa-sign-out-alt"></i><span>Quitter le groupe</span></button>
+            </form>
+            <button type="button" class="chat-info-action chat-info-action-report" title="Signaler"><i class="fas fa-flag"></i><span>Reporter</span></button>
+        </div>
+    </div>
+    {% else %}
+    {# Conversation à deux : créer un groupe, bloquer, etc. #}
+    <div class="chat-info-section">
+        <h3 class="chat-info-section-title">Actions</h3>
+        <div class="chat-info-actions">
+            <button type="button" class="chat-info-action" title="Mute"><i class="fas fa-bell-slash"></i><span>Mute</span></button>
+            <a href="{{ path('app_messenger_new_group', { from: current_conversation.id }) }}" class="chat-info-action" title="Créer un groupe avec {{ other_display_name|default(other ? other.FullName : 'ce contact') }}"><i class="fas fa-users"></i><span>Créer un groupe</span></a>
+            <button type="button" class="chat-info-action" title="Bloquer"><i class="fas fa-ban"></i><span>Bloquer</span></button>
+            <button type="button" class="chat-info-action chat-info-action-report" title="Signaler"><i class="fas fa-flag"></i><span>Reporter</span></button>
+            <form method="post" action="{{ path('app_messenger_delete_conversation', { id: current_conversation.id }) }}" onsubmit="return confirm('Supprimer cette conversation ?');" class="chat-info-action-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_conv_' ~ current_conversation.id) }}">
+                <button type="submit" class="chat-info-action chat-info-action-danger"><i class="fas fa-trash-alt"></i><span>Supprimer conversation</span></button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>

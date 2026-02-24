@@ -1,0 +1,297 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Detail Seance - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text-primary: #0b1220;
+            --border: #e5e7eb;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--muted);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.9rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-back {
+            background: #e2e8f0;
+            color: #1f2937;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.1rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            margin: 0 0 0.9rem 0;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .detail-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.8rem;
+            background: #fbfdff;
+        }
+
+        .detail-label {
+            display: block;
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-bottom: 0.35rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .description {
+            color: #243043;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .badge-active {
+            color: #065f46;
+            background: #d1fae5;
+        }
+
+        .badge-pending {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 0.75rem 0.6rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 0.92rem;
+        }
+
+        .data-table thead th {
+            color: #64748b;
+            font-size: 0.83rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .empty {
+            text-align: center;
+            color: #64748b;
+            padding: 1.5rem 0.4rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <div class="top-bar">
+                <h1><i class="fas fa-eye" style="margin-right:0.5rem;"></i> Consultation seance #{{ seance.id }}</h1>
+                <div class="top-actions">
+                    <a class="btn btn-back" href="{{ path('admin_seance_index') }}">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                    <form method="post" action="{{ path('admin_seance_delete', {id: seance.id}) }}" onsubmit="return confirm('Supprimer cette seance ?');" style="margin:0;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_seance_' ~ seance.id) }}">
+                        <button class="btn btn-delete" type="submit">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <section class="card">
+                <h2>Informations generales</h2>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Matiere</span>
+                        <div class="detail-value">{{ seance.matiere }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tuteur</span>
+                        <div class="detail-value">{{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Date et heure</span>
+                        <div class="detail-value">{{ seance.startAt ? seance.startAt|date('d/m/Y H:i') : '-' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Duree</span>
+                        <div class="detail-value">{{ seance.durationMin }} min</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Capacite max</span>
+                        <div class="detail-value">{{ seance.maxParticipants }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Statut</span>
+                        <div class="detail-value">
+                            <span class="badge {{ seance.status == 1 ? 'badge-active' : 'badge-pending' }}">
+                                {{ seance.status == 1 ? 'Active' : 'Brouillon' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Creee le</span>
+                        <div class="detail-value">{{ seance.createdAt ? seance.createdAt|date('d/m/Y H:i') : '-' }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Mise a jour</span>
+                        <div class="detail-value">{{ seance.updatedAt ? seance.updatedAt|date('d/m/Y H:i') : '-' }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>Description</h2>
+                <div class="description">{{ seance.description ?: 'Aucune description.' }}</div>
+            </section>
+
+            <section class="card">
+                <h2>Reservations associees ({{ reservations|length }})</h2>
+                {% if reservations is empty %}
+                    <div class="empty">Aucune reservation pour cette seance.</div>
+                {% else %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Participant</th>
+                                    <th>Email</th>
+                                    <th>Statut</th>
+                                    <th>Reservee le</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in reservations %}
+                                    <tr>
+                                        <td>#{{ reservation.id }}</td>
+                                        <td>{{ reservation.participant ? reservation.participant.fullName : 'N/A' }}</td>
+                                        <td>{{ reservation.participant ? reservation.participant.email : 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge {{ reservation.status == 0 ? 'badge-pending' : 'badge-active' }}">
+                                                {{ reservation.status == 2 ? 'Payee' : (reservation.status == 1 ? 'Acceptee' : 'En attente') }}
+                                            </span>
+                                        </td>
+                                        <td>{{ reservation.reservedAt ? reservation.reservedAt|date('d/m/Y H:i') : '-' }}</td>
+                                        <td>{{ reservation.notes ?: '-' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+{% endblock %}

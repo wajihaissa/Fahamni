@@ -1,0 +1,481 @@
+{# Scripts Messenger : inclus dans messages.html.twig #}
+document.addEventListener('DOMContentLoaded', function() {
+    var conversationsSearchWrap = document.getElementById('conversationsSearchWrap');
+    var conversationsSearchInput = document.getElementById('conversationsSearch');
+    var threadsList = document.getElementById('threadsList');
+    var conversationSearchTimeout = null;
+    var initialThreadsHtml = threadsList ? threadsList.innerHTML : '';
+    if (conversationsSearchWrap && conversationsSearchInput && threadsList) {
+        conversationsSearchInput.addEventListener('input', function() {
+            var q = this.value.trim();
+            if (conversationSearchTimeout) clearTimeout(conversationSearchTimeout);
+            if (!q) {
+                threadsList.innerHTML = initialThreadsHtml;
+                return;
+            }
+            conversationSearchTimeout = setTimeout(function() {
+                var baseUrl = conversationsSearchWrap.getAttribute('data-search-url') || '';
+                var currentId = conversationsSearchWrap.getAttribute('data-current-conv-id') || '';
+                var url = baseUrl + '?q=' + encodeURIComponent(q);
+                fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var results = data.results || [];
+                        var html = '';
+                        if (results.length === 0) {
+                            html = '<div class="thread-item thread-item-empty"><div class="thread-preview">Aucun utilisateur trouvé.</div></div>';
+                        } else {
+                            results.forEach(function(r) {
+                                var hasConv = r.conversationId != null;
+                                var urlToUse = hasConv ? (r.showUrl || ('/messenger/' + r.conversationId)) : (r.newConversationUrl || ('/messenger/new?with=' + r.userId));
+                                var active = (currentId && hasConv && String(r.conversationId) === String(currentId)) ? ' active' : '';
+                                var label = hasConv ? 'Ouvrir la conversation' : 'Nouvelle conversation';
+                                html += '<div class="thread-item thread-item-search' + active + '" data-conv-id="' + (r.conversationId || '') + '" data-user-id="' + (r.userId || '') + '">';
+                                html += '<a href="' + urlToUse + '" class="thread-item-link">';
+                                html += '<div class="thread-header"><div><div class="thread-user">' + escapeHtml(r.fullName || '') + '</div><div class="thread-status">' + escapeHtml(r.email || '') + '</div></div>';
+                                html += '<div class="thread-time thread-time-label">' + escapeHtml(label) + '</div></div>';
+                                html += '<div class="thread-preview"></div></a></div>';
+                            });
+                        }
+                        threadsList.innerHTML = html;
+                    })
+                    .catch(function() {
+                        threadsList.innerHTML = '<div class="thread-item thread-item-empty"><div class="thread-preview">Erreur de recherche.</div></div>';
+                    });
+            }, 280);
+        });
+    }
+    function escapeHtml(s) {
+        if (s == null) return '';
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+    document.querySelectorAll('.chat-call-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) { e.preventDefault(); });
+    });
+
+    var chatInfoToggle = document.getElementById('chatInfoToggle');
+    var chatColumn = document.querySelector('.chat-column');
+    if (chatInfoToggle && chatColumn) {
+        chatInfoToggle.addEventListener('click', function() {
+            var isOpen = chatColumn.classList.toggle('is-info-visible');
+            chatInfoToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+    }
+
+    var chatInfoSearchBtn = document.getElementById('chatInfoSearchBtn');
+    if (chatInfoSearchBtn && chatColumn) {
+        chatInfoSearchBtn.addEventListener('click', function() {
+            chatColumn.classList.remove('is-info-visible');
+            if (chatInfoToggle) chatInfoToggle.setAttribute('aria-expanded', 'false');
+            var searchToggle = document.getElementById('chatSearchToggle');
+            if (searchToggle) {
+                searchToggle.click();
+            }
+        });
+    }
+
+    var chatInfoNicknameBtn = document.getElementById('chatInfoNicknameBtn');
+    var chatInfoNicknameFormWrap = document.getElementById('chatInfoNicknameFormWrap');
+    var chatInfoNicknameInput = document.getElementById('chatInfoNicknameInput');
+    if (chatInfoNicknameBtn && chatInfoNicknameFormWrap) {
+        chatInfoNicknameBtn.addEventListener('click', function() {
+            var visible = chatInfoNicknameFormWrap.style.display !== 'none';
+            chatInfoNicknameFormWrap.style.display = visible ? 'none' : 'block';
+        });
+    }
+
+    var chatInfoNicknameForm = document.getElementById('chatInfoNicknameForm');
+    if (chatInfoNicknameForm) {
+        chatInfoNicknameForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var form = this;
+            var url = form.getAttribute('data-nickname-url');
+            var targetUserId = form.getAttribute('data-target-user-id');
+            var nicknameInput = document.getElementById('chatInfoNicknameInput');
+            var submitBtn = form.querySelector('.chat-info-nickname-submit');
+            var fd = new FormData(form);
+            fd.set('target_user_id', targetUserId);
+            if (nicknameInput) fd.set('nickname', nicknameInput.value.trim());
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enregistrement…'; }
+            fetch(url, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.ok && data.display_name !== undefined) {
+                        var h3 = document.querySelector('.chat-header .user-details h3');
+                        if (h3) h3.textContent = data.display_name;
+                        var chatInfoName = document.querySelector('.chat-info-name');
+                        if (chatInfoName) chatInfoName.textContent = data.display_name;
+                        // après enregistrement, fermer la barre de modification
+                        if (chatInfoNicknameFormWrap) {
+                            chatInfoNicknameFormWrap.style.display = 'none';
+                        }
+                        if (nicknameInput) {
+                            // mettre à jour la valeur dans le champ pour la prochaine ouverture
+                            nicknameInput.value = (data.display_name === chatInfoName.textContent ? nicknameInput.value.trim() : nicknameInput.value.trim());
+                        }
+                    }
+                })
+                .catch(function() {})
+                .finally(function() {
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Enregistrer'; }
+                });
+        });
+    }
+
+    var chatInfoToggleMembers = document.getElementById('chatInfoToggleMembers');
+    var chatInfoMembersList = document.getElementById('chatInfoMembersList');
+    if (chatInfoToggleMembers && chatInfoMembersList) {
+        chatInfoToggleMembers.addEventListener('click', function() {
+            var visible = chatInfoMembersList.style.display !== 'none';
+            chatInfoMembersList.style.display = visible ? 'none' : 'block';
+            var span = chatInfoToggleMembers.querySelector('span');
+            if (span) span.textContent = visible ? 'Voir membres' : 'Masquer membres';
+        });
+    }
+
+    var chatInfoCustomizeBtn = document.getElementById('chatInfoCustomizeBtn');
+    var chatInfoThemeConfig = document.getElementById('chatInfoThemeConfig');
+    if (chatInfoCustomizeBtn) {
+        chatInfoCustomizeBtn.addEventListener('click', function() {
+            // S'assurer que le panneau d'infos est bien visible
+            if (chatColumn && !chatColumn.classList.contains('is-info-visible')) {
+                chatColumn.classList.add('is-info-visible');
+                if (chatInfoToggle) chatInfoToggle.setAttribute('aria-expanded', 'true');
+            }
+            // Ouvrir/fermer le panneau de modification du thème
+            if (chatInfoThemeConfig) {
+                var visible = chatInfoThemeConfig.style.display !== 'none';
+                chatInfoThemeConfig.style.display = visible ? 'none' : 'block';
+                if (!visible) {
+                    chatInfoThemeConfig.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        });
+    }
+
+    var chatHeader = document.getElementById('chatHeader');
+    var chatSearchToggle = document.getElementById('chatSearchToggle');
+    var chatSearchBar = document.getElementById('chatSearchBar');
+    var chatSearchBack = document.getElementById('chatSearchBack');
+    var chatSearchInput = document.getElementById('chatSearchInput');
+    var chatSearchResults = document.getElementById('chatSearchResults');
+    var messageSearchTimeout = null;
+    if (chatHeader && chatSearchToggle && chatSearchBar && chatSearchBack && chatSearchInput && chatSearchResults) {
+        var searchBaseUrl = chatHeader.getAttribute('data-search-url') || ('/messenger/' + chatHeader.getAttribute('data-conv-id') + '/search');
+        chatSearchToggle.addEventListener('click', function() {
+            chatHeader.classList.add('is-search-open');
+            chatSearchBar.setAttribute('aria-hidden', 'false');
+            chatSearchInput.value = '';
+            chatSearchResults.classList.remove('is-visible');
+            chatSearchResults.innerHTML = '';
+            setTimeout(function() { chatSearchInput.focus(); }, 100);
+        });
+        chatSearchBack.addEventListener('click', function() {
+            chatHeader.classList.remove('is-search-open');
+            chatSearchBar.setAttribute('aria-hidden', 'true');
+            chatSearchResults.classList.remove('is-visible');
+            chatSearchResults.innerHTML = '';
+        });
+        function runMessageSearch() {
+            var q = chatSearchInput.value.trim();
+            if (!q) {
+                chatSearchResults.classList.remove('is-visible');
+                chatSearchResults.innerHTML = '';
+                return;
+            }
+            var url = searchBaseUrl + (searchBaseUrl.indexOf('?') !== -1 ? '&' : '?') + 'q=' + encodeURIComponent(q);
+            fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var results = data.results || [];
+                    chatSearchResults.innerHTML = '';
+                    if (results.length === 0) {
+                        chatSearchResults.innerHTML = '<div class="chat-search-results-empty">Aucun message trouvé.</div>';
+                    } else {
+                        results.forEach(function(msg) {
+                            var btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'chat-search-result-item';
+                            btn.setAttribute('data-message-id', msg.id);
+                            var sender = document.createElement('div');
+                            sender.className = 'result-sender';
+                            sender.textContent = msg.isMine ? 'Vous' : msg.senderName;
+                            var content = document.createElement('div');
+                            content.className = 'result-content';
+                            content.textContent = msg.content.length > 120 ? msg.content.slice(0, 120) + '…' : msg.content;
+                            btn.appendChild(sender);
+                            btn.appendChild(content);
+                            btn.addEventListener('click', function() {
+                                var mid = this.getAttribute('data-message-id');
+                                var el = document.querySelector('.message-section[data-message-id="' + mid + '"]');
+                                if (el) {
+                                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    el.classList.add('is-search-highlight');
+                                    setTimeout(function() { el.classList.remove('is-search-highlight'); }, 1200);
+                                }
+                                chatHeader.classList.remove('is-search-open');
+                                chatSearchBar.setAttribute('aria-hidden', 'true');
+                                chatSearchResults.classList.remove('is-visible');
+                                chatSearchResults.innerHTML = '';
+                            });
+                            chatSearchResults.appendChild(btn);
+                        });
+                    }
+                    chatSearchResults.classList.add('is-visible');
+                })
+                .catch(function() {
+                    chatSearchResults.innerHTML = '<div class="chat-search-results-empty">Erreur de recherche.</div>';
+                    chatSearchResults.classList.add('is-visible');
+                });
+        }
+        chatSearchInput.addEventListener('input', function() {
+            clearTimeout(messageSearchTimeout);
+            messageSearchTimeout = setTimeout(runMessageSearch, 300);
+        });
+    }
+    document.querySelectorAll('.chat-info-option[data-theme]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var theme = this.getAttribute('data-theme');
+            var themeToggle = document.getElementById('themeToggle');
+            if (themeToggle && theme === 'dark' && !document.body.classList.contains('dark-theme')) themeToggle.click();
+            if (themeToggle && theme === 'light' && document.body.classList.contains('dark-theme')) themeToggle.click();
+        });
+    });
+
+    var messengerLayout = document.querySelector('.messenger-layout');
+    var CONV_THEME_KEY = 'messenger_conv_theme';
+    function applyConvTheme(name) {
+        if (!messengerLayout) return;
+        messengerLayout.classList.remove('conv-theme-blue', 'conv-theme-green', 'conv-theme-violet', 'conv-theme-rose', 'conv-theme-orange', 'conv-theme-teal');
+        if (name && name !== 'default') messengerLayout.classList.add('conv-theme-' + name);
+    }
+    function setActiveConvThemeOption(name) {
+        document.querySelectorAll('.conv-theme-opt').forEach(function(btn) {
+            btn.classList.toggle('is-active', btn.getAttribute('data-conv-theme') === (name || 'default'));
+        });
+    }
+    var savedConvTheme = typeof localStorage !== 'undefined' && localStorage.getItem(CONV_THEME_KEY);
+    applyConvTheme(savedConvTheme || 'default');
+    setActiveConvThemeOption(savedConvTheme || 'default');
+    document.querySelectorAll('.conv-theme-opt').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var name = this.getAttribute('data-conv-theme') || 'default';
+            applyConvTheme(name);
+            if (typeof localStorage !== 'undefined') localStorage.setItem(CONV_THEME_KEY, name);
+            setActiveConvThemeOption(name);
+        });
+    });
+    document.querySelectorAll('.chat-info-action:not(.chat-info-action-danger)').forEach(function(btn) {
+        btn.addEventListener('click', function(e) { e.preventDefault(); });
+    });
+
+    var chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        /* Garder la zone de saisie visible après envoi (rechargement) */
+        var inputArea = document.querySelector('.message-input-area');
+        if (inputArea) inputArea.scrollIntoView({ block: 'end', behavior: 'auto' });
+    }
+
+    function copyToClipboard(text, doneCallback) {
+        if (!text) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() { if (doneCallback) doneCallback(); });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); if (doneCallback) doneCallback(); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+    }
+
+    var replyToInput = document.getElementById('replyToInput');
+    var replyPreviewBar = document.getElementById('replyPreviewBar');
+    var replyPreviewText = document.getElementById('replyPreviewText');
+    var replyPreviewCancel = document.getElementById('replyPreviewCancel');
+    var messageInput = document.getElementById('messageInput');
+    if (replyToInput && replyPreviewBar && replyPreviewText) {
+        document.querySelectorAll('.msg-reply').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var id = this.getAttribute('data-reply-id');
+                var author = this.getAttribute('data-reply-author') || '';
+                var text = this.getAttribute('data-reply-text') || '';
+                replyToInput.value = id;
+                replyPreviewText.textContent = 'Réponse à ' + author + ': ' + text;
+                replyPreviewBar.classList.add('is-visible');
+                if (messageInput) messageInput.focus();
+                closeAllPickers();
+            });
+        });
+        if (replyPreviewCancel) {
+            replyPreviewCancel.addEventListener('click', function() {
+                replyToInput.value = '';
+                replyPreviewBar.classList.remove('is-visible');
+                replyPreviewText.textContent = '';
+            });
+        }
+    }
+
+    function closeAllPickers() {
+        document.querySelectorAll('.emoji-picker.is-open').forEach(function(p) { p.classList.remove('is-open'); });
+        document.querySelectorAll('.kebab-dropdown.is-open').forEach(function(p) { p.classList.remove('is-open'); });
+        document.querySelectorAll('.thread-kebab-dropdown.is-open').forEach(function(p) { p.classList.remove('is-open'); });
+    }
+    document.addEventListener('click', function(e) {
+        var target = e.target;
+        if (target.closest('.message-actions') || target.closest('.emoji-picker') || target.closest('.kebab-dropdown') || target.closest('.thread-kebab-wrap') || target.closest('.thread-kebab-dropdown')) {
+            return;
+        }
+        closeAllPickers();
+    });
+
+    document.querySelectorAll('.thread-kebab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var wrap = this.closest('.thread-kebab-wrap');
+            var dropdown = wrap ? wrap.querySelector('.thread-kebab-dropdown') : null;
+            if (dropdown) {
+                document.querySelectorAll('.thread-kebab-dropdown.is-open').forEach(function(d) { if (d !== dropdown) d.classList.remove('is-open'); });
+                dropdown.classList.toggle('is-open');
+            }
+        });
+    });
+    document.querySelectorAll('.thread-kebab-dropdown').forEach(function(dd) {
+        dd.addEventListener('click', function(e) { e.stopPropagation(); });
+    });
+
+    document.querySelectorAll('.message-action-btn.emoji-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var picker = this.querySelector('.emoji-picker');
+            if (picker) {
+                document.querySelectorAll('.kebab-dropdown.is-open').forEach(function(d) { d.classList.remove('is-open'); });
+                document.querySelectorAll('.emoji-picker.is-open').forEach(function(p) { if (p !== picker) p.classList.remove('is-open'); });
+                picker.classList.toggle('is-open');
+            }
+        });
+    });
+    document.querySelectorAll('.emoji-picker').forEach(function(picker) {
+        picker.addEventListener('click', function(e) { e.stopPropagation(); });
+    });
+
+    document.querySelectorAll('.kebab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var wrap = this.closest('.kebab-wrap');
+            var dropdown = wrap ? wrap.querySelector('.kebab-dropdown') : null;
+            if (dropdown) {
+                document.querySelectorAll('.emoji-picker.is-open').forEach(function(p) { p.classList.remove('is-open'); });
+                document.querySelectorAll('.kebab-dropdown.is-open').forEach(function(d) { if (d !== dropdown) d.classList.remove('is-open'); });
+                var chatMessages = document.getElementById('chatMessages');
+                var visibleBottom = chatMessages ? chatMessages.getBoundingClientRect().bottom : window.innerHeight;
+                var wrapRect = wrap.getBoundingClientRect();
+                dropdown.style.display = 'block';
+                dropdown.style.visibility = 'hidden';
+                var dropdownHeight = dropdown.offsetHeight;
+                dropdown.style.display = '';
+                dropdown.style.visibility = '';
+                if (wrapRect.bottom + dropdownHeight + 8 > visibleBottom) {
+                    dropdown.classList.remove('open-below');
+                    dropdown.classList.add('open-above');
+                } else {
+                    dropdown.classList.remove('open-above');
+                    dropdown.classList.add('open-below');
+                }
+                dropdown.classList.toggle('is-open');
+            }
+        });
+    });
+    document.querySelectorAll('.kebab-dropdown').forEach(function(dd) {
+        dd.addEventListener('click', function(e) { e.stopPropagation(); });
+    });
+
+    document.querySelectorAll('.dropdown-copy').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var text = this.getAttribute('data-copy-text') || '';
+            copyToClipboard(text, function() {
+                var orig = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;width:16px;"></i>Copié !';
+                setTimeout(function() { btn.innerHTML = orig; }, 1500);
+            });
+        });
+    });
+    var transferOverlay = document.getElementById('transferModalOverlay');
+    var transferModal = document.getElementById('transferModal');
+    var transferMessageIdInput = document.getElementById('transferMessageId');
+    var transferTargetConvIdInput = document.getElementById('transferTargetConvId');
+    var transferForm = document.getElementById('transferForm');
+    var transferSearch = document.getElementById('transferSearch');
+    var transferList = document.getElementById('transferList');
+    var transferCloseBtn = document.getElementById('transferModalClose');
+    if (transferOverlay && transferModal && transferMessageIdInput) {
+        document.querySelectorAll('.dropdown-transfer').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                var msgId = this.getAttribute('data-transfer-msg-id');
+                if (msgId) {
+                    closeAllPickers();
+                    transferMessageIdInput.value = msgId;
+                    transferTargetConvIdInput.value = '';
+                    if (transferSearch) transferSearch.value = '';
+                    if (transferList) {
+                        transferList.querySelectorAll('.transfer-contact').forEach(function(el) { el.classList.remove('is-hidden'); });
+                        transferList.querySelectorAll('.transfer-contact-radio').forEach(function(r) { r.checked = false; });
+                    }
+                    transferOverlay.classList.add('is-open');
+                    transferOverlay.setAttribute('aria-hidden', 'false');
+                }
+            });
+        });
+        function closeTransferModal() {
+            transferOverlay.classList.remove('is-open');
+            transferOverlay.setAttribute('aria-hidden', 'true');
+        }
+        if (transferCloseBtn) transferCloseBtn.addEventListener('click', closeTransferModal);
+        transferOverlay.addEventListener('click', function(e) {
+            if (e.target === transferOverlay) closeTransferModal();
+        });
+        if (transferModal) transferModal.addEventListener('click', function(e) { e.stopPropagation(); });
+        if (transferSearch && transferList) {
+            transferSearch.addEventListener('input', function() {
+                var q = this.value.trim().toLowerCase();
+                transferList.querySelectorAll('.transfer-contact').forEach(function(label) {
+                    var name = (label.getAttribute('data-name') || '');
+                    var email = (label.getAttribute('data-email') || '');
+                    var show = !q || name.indexOf(q) !== -1 || email.indexOf(q) !== -1;
+                    label.classList.toggle('is-hidden', !show);
+                });
+            });
+        }
+        if (transferForm && transferTargetConvIdInput && transferList) {
+            transferList.querySelectorAll('.transfer-contact-radio').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    transferTargetConvIdInput.value = this.value;
+                });
+            });
+            transferForm.addEventListener('submit', function(e) {
+                if (!transferTargetConvIdInput.value) {
+                    e.preventDefault();
+                    alert('Veuillez choisir une conversation.');
+                }
+            });
+        }
+    }
+    document.querySelectorAll('.dropdown-signal').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Signaler : fonctionnalité à venir.');
+        });
+    });
+});

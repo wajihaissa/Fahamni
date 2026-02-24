@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - FAHIMNI</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html"><h2>FAHIMNI</h2></a>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="articles.html" class="nav-link">Articles</a>
+                <a href="matching.html" class="nav-link">Find Tutors</a>
+                <a href="calendar.html" class="nav-link">Calendar</a>
+                <a href="messages.html" class="nav-link">Messages</a>
+                <a href="notifications.html" class="nav-link active">Notifications</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="notifications-main">
+        <div class="container">
+            <div class="notifications-header">
+                <h1>Notifications</h1>
+                <div class="notifications-actions">
+                    <button class="btn btn-secondary" id="markAllRead">Mark All Read</button>
+                    <button class="btn btn-outline" id="clearAll">Clear All</button>
+                </div>
+            </div>
+
+            <div class="notifications-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="sessions">Sessions</button>
+                <button class="filter-btn" data-filter="messages">Messages</button>
+                <button class="filter-btn" data-filter="articles">Articles</button>
+                <button class="filter-btn" data-filter="requests">Requests</button>
+            </div>
+
+            <div class="notifications-list" id="notificationsList">
+                <!-- Session Notifications -->
+                <div class="notification-item unread" data-type="sessions">
+                    <div class="notification-icon session">📅</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Session Reminder</div>
+                        <div class="notification-message">Your Calculus session with Dr. Sarah Roberts starts in 30 minutes</div>
+                        <div class="notification-time">5 minutes ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary" id="joinSession">Join Now</button>
+                        <button class="action-btn secondary">Dismiss</button>
+                    </div>
+                </div>
+
+                <div class="notification-item unread" data-type="requests">
+                    <div class="notification-icon request">🤝</div>
+                    <div class="notification-content">
+                        <div class="notification-title">New Session Request</div>
+                        <div class="notification-message">Mike Johnson requested a Chemistry tutoring session for tomorrow at 2 PM</div>
+                        <div class="notification-time">1 hour ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">Accept</button>
+                        <button class="action-btn outline">Decline</button>
+                    </div>
+                </div>
+
+                <div class="notification-item unread" data-type="messages">
+                    <div class="notification-icon message">💬</div>
+                    <div class="notification-content">
+                        <div class="notification-title">New Message</div>
+                        <div class="notification-message">Sarah Mitchell sent you a message about the upcoming session</div>
+                        <div class="notification-time">2 hours ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">Reply</button>
+                        <button class="action-btn secondary">Mark Read</button>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="sessions">
+                    <div class="notification-icon session">✅</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Session Confirmed</div>
+                        <div class="notification-message">Your Physics session with Emma Wilson has been confirmed for Dec 15 at 4 PM</div>
+                        <div class="notification-time">3 hours ago</div>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="articles">
+                    <div class="notification-icon article">📚</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Article Published</div>
+                        <div class="notification-message">Your article "Understanding Calculus" has been published successfully</div>
+                        <div class="notification-time">5 hours ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">View Article</button>
+                    </div>
+                </div>
+
+                <div class="notification-item unread" data-type="requests">
+                    <div class="notification-icon request">⏰</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Session Rescheduled</div>
+                        <div class="notification-message">Alex Liu rescheduled your Computer Science session to Dec 16 at 3 PM</div>
+                        <div class="notification-time">6 hours ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">Confirm</button>
+                        <button class="action-btn outline">Request Change</button>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="messages">
+                    <div class="notification-icon message">💬</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Message from Dr. Roberts</div>
+                        <div class="notification-message">"Great progress in our last session! Here are some additional practice problems..."</div>
+                        <div class="notification-time">1 day ago</div>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="sessions">
+                    <div class="notification-icon session">🎯</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Session Completed</div>
+                        <div class="notification-message">You completed a 2-hour Mathematics session. Please rate your experience</div>
+                        <div class="notification-time">1 day ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">Rate Session</button>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="articles">
+                    <div class="notification-icon article">👍</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Article Liked</div>
+                        <div class="notification-message">Your article "Study Tips for Success" received 50+ likes</div>
+                        <div class="notification-time">2 days ago</div>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="requests">
+                    <div class="notification-icon request">🔄</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Payment Processed</div>
+                        <div class="notification-message">Payment of $45 for Chemistry session has been processed successfully</div>
+                        <div class="notification-time">2 days ago</div>
+                    </div>
+                </div>
+
+                <div class="notification-item" data-type="sessions">
+                    <div class="notification-icon session">📋</div>
+                    <div class="notification-content">
+                        <div class="notification-title">Weekly Progress Report</div>
+                        <div class="notification-message">Your weekly learning progress report is ready. You completed 4 sessions this week!</div>
+                        <div class="notification-time">3 days ago</div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="action-btn primary">View Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-notifications" id="noNotifications" style="display: none;">
+                <div class="no-notifications-icon">🔔</div>
+                <h3>No notifications</h3>
+                <p>You're all caught up! Check back later for new updates.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Rate Session Modal -->
+    <div class="modal" id="rateSessionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Rate Your Session</h2>
+                <button class="modal-close" id="closeRatingModal">×</button>
+            </div>
+            <div class="rating-form">
+                <div class="session-info">
+                    <h3>Mathematics Session</h3>
+                    <p>with Dr. Sarah Roberts</p>
+                </div>
+                <div class="rating-section">
+                    <label>How was your session?</label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-rating="1">⭐</span>
+                        <span class="star" data-rating="2">⭐</span>
+                        <span class="star" data-rating="3">⭐</span>
+                        <span class="star" data-rating="4">⭐</span>
+                        <span class="star" data-rating="5">⭐</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sessionFeedback">Feedback (Optional)</label>
+                    <textarea id="sessionFeedback" rows="4" placeholder="Share your experience..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="skipRating">Skip</button>
+                    <button type="button" class="btn btn-primary" id="submitRating">Submit Rating</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/notifications.js"></script>
+</body>
+</html>
