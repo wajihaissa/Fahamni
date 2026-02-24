@@ -23,7 +23,6 @@ class MessageRepository extends ServiceEntityRepository
     public function findByConversation(Conversation $conversation, bool $excludeDeleted = true): array
     {
         $qb = $this->createQueryBuilder('m')
-            ->leftJoin('m.attachments', 'att')->addSelect('att')
             ->where('m.conversation = :conv')
             ->setParameter('conv', $conversation)
             ->orderBy('m.createdAt', 'ASC')->addOrderBy('m.id', 'ASC');
@@ -62,24 +61,5 @@ class MessageRepository extends ServiceEntityRepository
             ->addOrderBy('m.id', 'DESC')
             ->setMaxResults($limit);
         return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Nombre de messages créés par jour sur les N derniers jours.
-     *
-     * @return array<string, int> [ 'Y-m-d' => count, ... ]
-     */
-    public function countByDay(int $days = 30): array
-    {
-        $conn = $this->getEntityManager()->getConnection();
-        $sql = 'SELECT DATE(created_at) AS day, COUNT(*) AS cnt FROM message WHERE created_at >= :since GROUP BY DATE(created_at) ORDER BY day ASC';
-        $since = (new \DateTimeImmutable())->modify("-{$days} days")->format('Y-m-d 00:00:00');
-        $result = $conn->executeQuery($sql, ['since' => $since]);
-        $rows = $result->fetchAllAssociative();
-        $byDay = [];
-        foreach ($rows as $row) {
-            $byDay[(string) $row['day']] = (int) $row['cnt'];
-        }
-        return $byDay;
     }
 }

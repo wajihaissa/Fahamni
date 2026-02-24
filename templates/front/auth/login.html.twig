@@ -30,15 +30,10 @@
                             <span class="checkmark"></span>
                             Remember me
                         </label>
-                        <a href="{{ path('app_forgot_password') }}" class="forgot-link">Forgot password?</a>
+                        <a href="#forgot" class="forgot-link">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
-
-                    <button type="button" class="btn btn-secondary btn-full" id="passkeyLoginBtn" style="margin-top: 10px;">
-                        Sign In with Face ID
-                    </button>
-                    <span class="error-message" id="passkeyError"></span>
                 </form>
 
                 <div class="auth-footer">
@@ -52,15 +47,15 @@
                     <p>Access thousands of expert tutors and premium educational resources</p>
                     <div class="auth-features">
                         <div class="auth-feature">
-                            <span class="feature-icon">OK</span>
+                            <span class="feature-icon">✓</span>
                             <span>Expert Tutors</span>
                         </div>
                         <div class="auth-feature">
-                            <span class="feature-icon">OK</span>
+                            <span class="feature-icon">✓</span>
                             <span>Flexible Scheduling</span>
                         </div>
                         <div class="auth-feature">
-                            <span class="feature-icon">OK</span>
+                            <span class="feature-icon">✓</span>
                             <span>Progress Tracking</span>
                         </div>
                     </div>
@@ -78,8 +73,6 @@
             var passwordInput = document.getElementById('password');
             var emailError = document.getElementById('emailError');
             var passwordError = document.getElementById('passwordError');
-            var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
-            var passkeyError = document.getElementById('passkeyError');
 
             function isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -164,106 +157,6 @@
                 });
             }
 
-            function base64UrlToArrayBuffer(base64url) {
-                var base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-                var pad = '='.repeat((4 - (base64.length % 4)) % 4);
-                var raw = atob(base64 + pad);
-                var out = new Uint8Array(raw.length);
-                for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-                return out.buffer;
-            }
-
-            function arrayBufferToBase64Url(buffer) {
-                var bytes = new Uint8Array(buffer);
-                var raw = '';
-                for (var i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
-                return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-            }
-
-            if (passkeyLoginBtn) {
-                passkeyLoginBtn.addEventListener('click', async function() {
-                    if (!window.PublicKeyCredential || !navigator.credentials) {
-                        passkeyError.textContent = 'Passkeys are not supported on this browser/device.';
-                        return;
-                    }
-
-                    var email = emailInput.value.trim();
-                    if (!email) {
-                        passkeyError.textContent = 'Enter your email first, then use Face ID login.';
-                        emailInput.focus();
-                        return;
-                    }
-
-                    passkeyError.textContent = '';
-                    var originalText = passkeyLoginBtn.textContent;
-                    passkeyLoginBtn.textContent = 'Preparing Face ID...';
-                    passkeyLoginBtn.disabled = true;
-
-                    try {
-                        var optionsRes = await fetch('{{ path('app_passkey_login_options') }}', {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ email: email })
-                        });
-
-                        var optionsData = await optionsRes.json();
-                        if (!optionsRes.ok || !optionsData.success) {
-                            throw new Error(optionsData.message || 'Unable to start passkey login');
-                        }
-
-                        var publicKey = optionsData.publicKey;
-                        publicKey.challenge = base64UrlToArrayBuffer(publicKey.challenge);
-                        if (publicKey.allowCredentials && publicKey.allowCredentials.length) {
-                            publicKey.allowCredentials = publicKey.allowCredentials.map(function(item) {
-                                return {
-                                    type: item.type,
-                                    id: base64UrlToArrayBuffer(item.id)
-                                };
-                            });
-                        }
-
-                        passkeyLoginBtn.textContent = 'Waiting for Face ID...';
-                        var assertion = await navigator.credentials.get({ publicKey: publicKey });
-                        if (!assertion) {
-                            throw new Error('No passkey assertion returned');
-                        }
-
-                        var verifyPayload = {
-                            id: assertion.id,
-                            clientDataJSON: arrayBufferToBase64Url(assertion.response.clientDataJSON),
-                            authenticatorData: arrayBufferToBase64Url(assertion.response.authenticatorData),
-                            signature: arrayBufferToBase64Url(assertion.response.signature)
-                        };
-
-                        var verifyRes = await fetch('{{ path('app_passkey_login_verify') }}', {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify(verifyPayload)
-                        });
-
-                        var verifyData = await verifyRes.json();
-                        if (!verifyRes.ok || !verifyData.success) {
-                            throw new Error(verifyData.message || 'Passkey login failed');
-                        }
-
-                        window.location.href = verifyData.redirect || '/home';
-                    } catch (err) {
-                        passkeyError.textContent = err.message || 'Passkey login failed.';
-                    } finally {
-                        passkeyLoginBtn.textContent = originalText;
-                        passkeyLoginBtn.disabled = false;
-                    }
-                });
-            }
-
             var rememberMe = document.getElementById('rememberMe');
             if (rememberMe) {
                 var savedEmail = localStorage.getItem('fahimni_remember_email');
@@ -283,7 +176,41 @@
                     }
                 });
             }
+
+            var forgotLink = document.querySelector('.forgot-link');
+            if (forgotLink) {
+                forgotLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var modal = document.createElement('div');
+                    modal.className = 'modal active';
+                    modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>Reset Password</h2><button class="modal-close">&times;</button></div><form class="reset-form"><div class="form-group"><label for="resetEmail">Enter your email</label><input type="email" id="resetEmail" placeholder="Email address" required><span class="error-message" id="resetError"></span></div><button type="submit" class="btn btn-primary">Send Reset Link</button></form></div>';
+                    document.body.appendChild(modal);
+                    var closeBtn = modal.querySelector('.modal-close');
+                    var resetForm = modal.querySelector('.reset-form');
+                    closeBtn.addEventListener('click', function() { modal.remove(); });
+                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+                    if (resetForm) {
+                        resetForm.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            var resetEmail = document.getElementById('resetEmail').value;
+                            var resetError = document.getElementById('resetError');
+                            if (!resetEmail || !isValidEmail(resetEmail)) {
+                                resetError.textContent = 'Please enter a valid email address';
+                                return;
+                            }
+                            var btn = this.querySelector('button[type="submit"]');
+                            btn.textContent = 'Sending...';
+                            btn.disabled = true;
+                            setTimeout(function() {
+                                btn.textContent = 'Send Reset Link';
+                                btn.disabled = false;
+                                alert('Reset link sent to ' + resetEmail);
+                                modal.remove();
+                            }, 1500);
+                        });
+                    }
+                });
+            }
         });
     </script>
 {% endblock %}
-

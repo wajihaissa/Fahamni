@@ -35,7 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $status = null;
+    private ?bool $Status = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -49,15 +49,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $conversationNicknames = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $passkeyCredentialId = null;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $passkeyPublicKeyPem = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $passkeySignCount = null;
 
     #[ORM\OneToOne(mappedBy: 'userId', cascade: ['persist', 'remove'])]
     private ?Student $profile = null;
@@ -201,12 +192,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isStatus(): ?bool
     {
-        return $this->status;
+        return $this->Status;
     }
 
-    public function setStatus(?bool $status): static
+    public function setStatus(?bool $Status): static
     {
-        $this->status = $status;
+        $this->Status = $Status;
 
         return $this;
     }
@@ -267,42 +258,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->profile = $profile;
-
-        return $this;
-    }
-
-    public function getPasskeyCredentialId(): ?string
-    {
-        return $this->passkeyCredentialId;
-    }
-
-    public function setPasskeyCredentialId(?string $passkeyCredentialId): static
-    {
-        $this->passkeyCredentialId = $passkeyCredentialId;
-
-        return $this;
-    }
-
-    public function getPasskeyPublicKeyPem(): ?string
-    {
-        return $this->passkeyPublicKeyPem;
-    }
-
-    public function setPasskeyPublicKeyPem(?string $passkeyPublicKeyPem): static
-    {
-        $this->passkeyPublicKeyPem = $passkeyPublicKeyPem;
-
-        return $this;
-    }
-
-    public function getPasskeySignCount(): ?int
-    {
-        return $this->passkeySignCount;
-    }
-
-    public function setPasskeySignCount(?int $passkeySignCount): static
-    {
-        $this->passkeySignCount = $passkeySignCount;
 
         return $this;
     }

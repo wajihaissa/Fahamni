@@ -1,0 +1,375 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Seances - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text-primary: #0b1220;
+            --border: #e5e7eb;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+            --sidebar-width: 280px;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--muted);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header-meta {
+            color: #51607a;
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.1rem;
+            border: 1px solid var(--border);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 12px 14px;
+            vertical-align: middle;
+        }
+
+        .data-table thead th {
+            color: var(--muted);
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+
+        .data-table tbody tr {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 5px 14px rgba(14, 22, 50, 0.05);
+            transition: all 0.18s ease;
+        }
+
+        .data-table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(14, 22, 50, 0.08);
+            border-color: #cdd6f6;
+        }
+
+        .data-table tbody tr td:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+
+        .data-table tbody tr td:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .subject {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .subtext {
+            margin-top: 2px;
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .badge-active {
+            color: #065f46;
+            background: #d1fae5;
+        }
+
+        .badge-draft {
+            color: #92400e;
+            background: #fef3c7;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            text-decoration: none;
+        }
+
+        .btn-view {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.14);
+        }
+
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
+
+        .empty i {
+            font-size: 2.8rem;
+            color: #d5dbe5;
+            margin-bottom: 0.9rem;
+            display: block;
+        }
+
+        .pagination {
+            margin-top: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            border: 1px solid #d7deea;
+            background: #f8fbff;
+            color: #294d83;
+            border-radius: 9px;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+
+        .page-btn:hover {
+            background: #edf3fd;
+            border-color: #c2d2ea;
+        }
+
+        .page-btn.active {
+            background: #3b6be8;
+            border-color: #3b6be8;
+            color: #fff;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .page-info {
+            margin-left: 0.3rem;
+            font-size: 0.82rem;
+            color: #607393;
+            font-weight: 700;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type }}">
+                        <i class="fas fa-{% if type == 'success' %}check-circle{% elseif type == 'warning' %}triangle-exclamation{% else %}circle-exclamation{% endif %}" style="margin-right:0.45rem;"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
+            <div class="admin-header">
+                <h1><i class="fas fa-calendar-check" style="margin-right:0.5rem;"></i> Seances</h1>
+                <div class="header-meta">{{ totalSeances|default(seances|length) }} seance(s) trouvee(s)</div>
+            </div>
+
+            <div class="card">
+                {% if seances is empty %}
+                    <div class="empty">
+                        <i class="fas fa-calendar-xmark"></i>
+                        <p>Aucune seance disponible.</p>
+                    </div>
+                {% else %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Matiere</th>
+                                    <th>Tuteur</th>
+                                    <th>Date</th>
+                                    <th>Duree</th>
+                                    <th>Capacite</th>
+                                    <th>Reservations</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for seance in seances %}
+                                    <tr>
+                                        <td>#{{ seance.id }}</td>
+                                        <td>
+                                            <p class="subject">{{ seance.matiere }}</p>
+                                            {% if seance.description %}
+                                                <div class="subtext">{{ seance.description|length > 60 ? seance.description|slice(0, 60) ~ '...' : seance.description }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</td>
+                                        <td>{{ seance.startAt ? seance.startAt|date('d/m/Y H:i') : '-' }}</td>
+                                        <td>{{ seance.durationMin }} min</td>
+                                        <td>{{ seance.maxParticipants }}</td>
+                                        <td>{{ reservationCounts[seance.id]|default(0) }}</td>
+                                        <td>
+                                            <span class="badge {{ seance.status == 1 ? 'badge-active' : 'badge-draft' }}">
+                                                {{ seance.status == 1 ? 'Active' : 'Brouillon' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="actions">
+                                                <a class="btn-action btn-view" href="{{ path('admin_seance_show', {id: seance.id}) }}" title="Consulter">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <form method="post" action="{{ path('admin_seance_delete', {id: seance.id}) }}" onsubmit="return confirm('Supprimer cette seance ?');" style="margin:0;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_seance_' ~ seance.id) }}">
+                                                    <button class="btn-action btn-delete" type="submit" title="Supprimer">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if totalPages|default(1) > 1 %}
+                        <nav class="pagination" aria-label="Pagination seances">
+                            {% set prevPage = page > 1 ? page - 1 : 1 %}
+                            {% set nextPage = page < totalPages ? page + 1 : totalPages %}
+
+                            <a class="page-btn {{ page <= 1 ? 'disabled' : '' }}" href="{{ path('admin_seance_index', {page: prevPage}) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+
+                            {% for p in 1..totalPages %}
+                                <a class="page-btn {{ p == page ? 'active' : '' }}" href="{{ path('admin_seance_index', {page: p}) }}">{{ p }}</a>
+                            {% endfor %}
+
+                            <a class="page-btn {{ page >= totalPages ? 'disabled' : '' }}" href="{{ path('admin_seance_index', {page: nextPage}) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+
+                            <span class="page-info">Page {{ page }}/{{ totalPages }}</span>
+                        </nav>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -4,8 +4,6 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    mailer_from_address: '%env(MAILER_FROM_ADDRESS)%'
-    mailer_from_name: '%env(MAILER_FROM_NAME)%'
 
 services:
     # default configuration for services in *this* file
@@ -22,16 +20,43 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Service\ConversationSummaryService:
+    App\Service\EmailService:
         arguments:
-            $geminiApiKey: '%env(GEMINI_API_KEY)%'
-            $geminiApiUrl: '%gemini_api_url%'
+            $mailerDsn: '%env(string:MAILER_DSN)%'
+            $fromAddress: '%env(string:MAILER_FROM_ADDRESS)%'
+            $fromName: '%env(string:MAILER_FROM_NAME)%'
 
-    App\Service\ChatbotService:
+    App\Service\OpenAiMatchingService:
         arguments:
-            $mistralApiKey: '%env(MISTRAL_API_KEY)%'
-            $mistralApiUrl: '%mistral_api_url%'
-            $mistralModel: '%mistral_model%'
+            $apiKey: '%env(string:OPENAI_API_KEY)%'
+            $model: '%env(string:OPENAI_MODEL)%'
+            $apiBaseUrl: '%env(string:OPENAI_API_BASE_URL)%'
+            $requestTimeoutSeconds: '%env(int:OPENAI_TIMEOUT_SECONDS)%'
+            $plannerApiKey: '%env(string:PLANNER_AI_API_KEY)%'
+            $plannerModel: '%env(string:PLANNER_AI_MODEL)%'
+            $plannerApiBaseUrl: '%env(string:PLANNER_AI_API_BASE_URL)%'
+            $plannerTimeoutSeconds: '%env(int:PLANNER_AI_TIMEOUT_SECONDS)%'
+
+    App\Service\KonnectCheckoutService:
+        arguments:
+            $apiKey: '%env(string:KONNECT_API_KEY)%'
+            $receiverWalletId: '%env(string:KONNECT_RECEIVER_WALLET_ID)%'
+            $apiBaseUrl: '%env(string:KONNECT_API_BASE_URL)%'
+            $currency: '%env(string:KONNECT_CURRENCY)%'
+            $pricePerHourInMinorUnit: '%env(int:KONNECT_PRICE_PER_HOUR_MINOR)%'
+            $lifespanMinutes: '%env(int:KONNECT_LIFESPAN_MINUTES)%'
+
+    App\Service\StripeCheckoutService:
+        arguments:
+            $stripeSecretKey: '%env(string:STRIPE_SECRET_KEY)%'
+            $stripeWebhookSecret: '%env(string:STRIPE_WEBHOOK_SECRET)%'
+            $stripePublishableKey: '%env(string:STRIPE_PUBLISHABLE_KEY)%'
+            $defaultCurrency: '%env(string:STRIPE_CURRENCY)%'
+            $defaultPricePerHourCents: '%env(int:STRIPE_PRICE_PER_HOUR_CENTS)%'
+
+    App\Service\PaymentService:
+        arguments:
+            $paymentProvider: '%env(string:PAYMENT_PROVIDER)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

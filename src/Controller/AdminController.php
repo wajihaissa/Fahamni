@@ -3,35 +3,22 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
-use App\Entity\Blog;
 use App\Entity\Student;
+use App\Entity\Blog;
 
 #[Route('/admin', name: 'admin_')]
-#[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
     #[Route('/', name: 'dashboard')]
-    public function dashboard(Request $request, EntityManagerInterface $entityManager): Response
+    public function dashboard(EntityManagerInterface $entityManager): Response
     {
         // Get statistics for dashboard
         $totalUsers = $entityManager->getRepository(User::class)->count([]);
-        $countUsersByRole = static function (EntityManagerInterface $entityManager, string $role): int {
-            return (int) $entityManager->getRepository(User::class)
-                ->createQueryBuilder('u')
-                ->select('COUNT(u.id)')
-                ->where('u.roles LIKE :role')
-                ->setParameter('role', '%"' . $role . '"%')
-                ->getQuery()
-                ->getSingleScalarResult();
-        };
-        $totalStudents = $countUsersByRole($entityManager, 'ROLE_ETUDIANT');
-        $totalTutors = $countUsersByRole($entityManager, 'ROLE_TUTOR');
+        $totalStudents = $entityManager->getRepository(Student::class)->count([]);
         $totalArticles = $entityManager->getRepository(Blog::class)->count([]);
         
         // Get recent users (limit 5)
@@ -42,38 +29,24 @@ final class AdminController extends AbstractController
         $recentArticles = $entityManager->getRepository(Blog::class)
             ->findBy([], ['createdAt' => 'DESC'], 3);
 
-        // Get pending users (inactive status)
-        $pendingUsers = $entityManager->getRepository(User::class)
-            ->findBy(['status' => false], ['createdAt' => 'DESC']);
-
-        // Paginated users for users management block
-        $usersPerPage = 8;
-        $requestedPage = max(1, (int) $request->query->get('users_page', 1));
-        $usersTotal = $entityManager->getRepository(User::class)->count([]);
-        $usersTotalPages = max(1, (int) ceil($usersTotal / $usersPerPage));
-        $usersPage = min($requestedPage, $usersTotalPages);
-        $usersOffset = ($usersPage - 1) * $usersPerPage;
-        $users = $entityManager->getRepository(User::class)
-            ->findBy([], ['createdAt' => 'DESC'], $usersPerPage, $usersOffset);
-
         return $this->render('back/index.html.twig', [
             'totalUsers' => $totalUsers,
             'totalStudents' => $totalStudents,
-            'totalTutors' => $totalTutors,
             'totalArticles' => $totalArticles,
             'recentUsers' => $recentUsers,
             'recentArticles' => $recentArticles,
-            'pendingUsers' => $pendingUsers,
-            'users' => $users,
-            'users_page' => $usersPage,
-            'users_total_pages' => $usersTotalPages,
         ]);
     }
 
     #[Route('/users', name: 'users')]
-    public function users(): Response
+    public function users(EntityManagerInterface $entityManager): Response
     {
-        return $this->redirectToRoute('admin_users_index');
+        $users = $entityManager->getRepository(User::class)
+            ->findBy([], ['createdAt' => 'DESC']);
+
+        return $this->render('back/users/index.html.twig', [
+            'users' => $users,
+        ]);
     }
 
     #[Route('/articles', name: 'articles')]
