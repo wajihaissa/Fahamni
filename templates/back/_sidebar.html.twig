@@ -37,6 +37,7 @@
         <li class="{% if current_route == 'admin_articles' %}active{% endif %}"><a href="{{ path('admin_articles') }}"><i class="fas fa-newspaper"></i><span class="label">Articles</span></a></li>
         <li class="{% if current_route starts with 'admin_quiz_' %}active{% endif %}"><a href="{{ path('admin_quiz_list') }}"><i class="fas fa-question-circle"></i><span class="label">Quiz</span></a></li>
         <li class="{% if current_route == 'admin_statistics' %}active{% endif %}"><a href="{{ path('admin_statistics') }}"><i class="fas fa-chart-bar"></i><span class="label">Statistics</span></a></li>
+        <li><a href="{{ path('app_home') }}"><i class="fas fa-home"></i><span class="label">User Space</span></a></li>
         <li><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a></li>
     </ul>
     <style>

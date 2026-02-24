@@ -9,6 +9,7 @@ framework:
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
+            sync: 'sync://'
             failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
 

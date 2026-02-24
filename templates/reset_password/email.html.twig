@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password - FAHIMNI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .email-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4361ee, #7209b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .reset-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4361ee, #7209b7);
+            color: white;
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+        .reset-button:hover {
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+        }
+        .security-note {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">FAHIMNI</div>
+            <h1 style="color: #333; margin: 0;">Reset Your Password</h1>
+        </div>
+
+        <p>Hello,</p>
+
+        <p>You have requested to reset your password for your FAHIMNI account. Click the button below to set a new password:</p>
+
+        <div style="text-align: center;">
+            <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" class="reset-button">
+                Reset My Password
+            </a>
+        </div>
+
+        <div class="security-note">
+            <strong>Security Note:</strong> This link will expire in {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }} for your security.
+        </div>
+
+        <div class="warning">
+            <strong>Didn't request this?</strong> If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+        </div>
+
+        <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 14px;">
+            {{ url('app_reset_password', {token: resetToken.token}) }}
+        </p>
+
+        <div class="footer">
+            <p>This email was sent by FAHIMNI. If you have any questions, please contact our support team.</p>
+            <p>&copy; 2026 FAHIMNI. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

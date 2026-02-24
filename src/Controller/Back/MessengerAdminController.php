@@ -29,7 +29,7 @@ use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/admin/messenger', name: 'admin_messenger_')]
-//#[IsGranted('ROLE_ADMIN')]
+#[IsGranted('ROLE_ADMIN')]
 final class MessengerAdminController extends AbstractController
 {
     public function __construct(

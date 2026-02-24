@@ -18,7 +18,6 @@ security:
             provider: app_user_provider
             form_login:
                 login_path: app_login
-                # Use a separate check path so our controller can handle POST to /login
                 check_path: app_login_check
             logout:
                 path: app_logout
@@ -28,6 +27,7 @@ security:
     # Remettre ROLE_ADMIN sur ^/admin en production si vous voulez réserver l'admin aux admins.
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/passkey/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_USER }
         - { path: ^/messenger, roles: ROLE_USER }

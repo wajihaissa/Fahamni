@@ -2466,6 +2466,7 @@
                     "dev-main": "9.3.x-dev"
                 }
             },
+            "type": "library",
             "autoload": {
                 "files": [
                     "src/Rule/Rule.php",
@@ -4097,11 +4098,7 @@
             "authors": [
                 {
                     "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
+                    "email": "fabien.potencier@gmail.com"
                 }
             ],
             "description": "Allows to easily create, process and reuse HTML forms",
@@ -4297,6 +4294,8 @@
                 "shasum": ""
             },
             "require": {
+                "composer-runtime-api": ">=2.1",
+                "ext-xml": "*",
                 "php": ">=8.1",
                 "psr/log": "^1|^2|^3",
                 "symfony/deprecation-contracts": "^2.5|^3",
@@ -4344,8 +4343,8 @@
             ],
             "authors": [
                 {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -4506,8 +4505,8 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -4516,6 +4515,9 @@
             ],
             "description": "Defines an object-oriented layer for the HTTP specification",
             "homepage": "https://symfony.com",
+            "keywords": [
+                "http"
+            ],
             "support": {
                 "source": "https://github.com/symfony/http-foundation/tree/v6.4.33"
             },
@@ -4610,12 +4612,21 @@
                 "twig/twig": "^2.13|^3.0.4"
             },
             "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.6-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\HttpKernel\\": ""
                 },
                 "exclude-from-classmap": [
-                    "/Tests/"
+                    "/Test/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4624,8 +4635,8 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -4634,6 +4645,14 @@
             ],
             "description": "Provides a structured process for converting a Request into a Response",
             "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
             "support": {
                 "source": "https://github.com/symfony/http-kernel/tree/v6.4.33"
             },
@@ -4644,10 +4663,6 @@
                 },
                 {
                     "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
                     "type": "github"
                 },
                 {
@@ -4877,7 +4892,8 @@
                     "Symfony\\Component\\Messenger\\": ""
                 },
                 "exclude-from-classmap": [
-                    "/Tests/"
+                    "/Tests/",
+                    "/Resources/data/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -4896,6 +4912,14 @@
             ],
             "description": "Helps applications send and receive messages to/from other applications or via message queues",
             "homepage": "https://symfony.com",
+            "keywords": [
+                "i18n",
+                "icu",
+                "internationalization",
+                "intl",
+                "l10n",
+                "localization"
+            ],
             "support": {
                 "source": "https://github.com/symfony/messenger/tree/v6.4.32"
             },
@@ -4934,6 +4958,7 @@
                 "shasum": ""
             },
             "require": {
+                "egulias/email-validator": "^2.1.10|^3|^4",
                 "php": ">=8.1",
                 "symfony/deprecation-contracts": "^2.5|^3",
                 "symfony/polyfill-intl-idn": "^1.10",
@@ -5186,6 +5211,7 @@
                 "shasum": ""
             },
             "require": {
+                "monolog/monolog": "^1.25.1|^2|^3",
                 "php": ">=8.1",
                 "psr/log": "^1|^2|^3"
             },
@@ -5203,7 +5229,7 @@
                 "symfony/http-foundation": "^5.4|^6.0|^7.0",
                 "symfony/messenger": "^5.4|^6.0|^7.0"
             },
-            "type": "library",
+            "type": "symfony-bridge",
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Notifier\\": ""
@@ -5273,7 +5299,7 @@
                 "php": ">=8.1",
                 "symfony/deprecation-contracts": "^2.5|^3"
             },
-            "type": "library",
+            "type": "symfony-bundle",
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\OptionsResolver\\": ""
@@ -5429,6 +5455,7 @@
                     "name": "symfony/polyfill"
                 }
             },
+            "type": "library",
             "autoload": {
                 "files": [
                     "bootstrap.php"
@@ -6007,12 +6034,21 @@
                 "php": ">=8.1"
             },
             "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
             "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
                 "psr-4": {
                     "Symfony\\Component\\Process\\": ""
                 },
-                "exclude-from-classmap": [
-                    "/Tests/"
+                "classmap": [
+                    "Resources/stubs"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -6344,6 +6380,7 @@
             "extra": {
                 "class": "Symfony\\Component\\Runtime\\Internal\\ComposerPlugin"
             },
+            "type": "library",
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Runtime\\": "",
@@ -6359,8 +6396,8 @@
             ],
             "authors": [
                 {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
+                    "name": "Kévin Dunglas",
+                    "email": "dunglas@gmail.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -7051,7 +7088,7 @@
                     "Symfony\\Component\\Stopwatch\\": ""
                 },
                 "exclude-from-classmap": [
-                    "/Tests/"
+                    "/Test/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -7309,6 +7346,9 @@
                 }
             },
             "autoload": {
+                "files": [
+                    "Resources/functions.php"
+                ],
                 "psr-4": {
                     "Symfony\\Contracts\\Translation\\": ""
                 },
@@ -7430,6 +7470,9 @@
             },
             "type": "symfony-bridge",
             "autoload": {
+                "files": [
+                    "Resources/functions.php"
+                ],
                 "psr-4": {
                     "Symfony\\Bridge\\Twig\\": ""
                 },
@@ -7522,7 +7565,7 @@
                     "Symfony\\Bundle\\TwigBundle\\": ""
                 },
                 "exclude-from-classmap": [
-                    "/Tests/"
+                    "/Test/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -7531,8 +7574,8 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -7541,6 +7584,14 @@
             ],
             "description": "Provides a tight integration of Twig into the Symfony full-stack framework",
             "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
             "support": {
                 "source": "https://github.com/symfony/twig-bundle/tree/v6.4.32"
             },
@@ -7601,6 +7652,7 @@
                     "name": "symfony/ux"
                 }
             },
+            "type": "symfony-bridge",
             "autoload": {
                 "psr-4": {
                     "Symfony\\UX\\Chartjs\\": "src/"
@@ -7663,6 +7715,7 @@
                 "shasum": ""
             },
             "require": {
+                "composer-runtime-api": ">=2.1",
                 "php": ">=8.1",
                 "symfony/stimulus-bundle": "^2.9.1"
             },
@@ -7803,7 +7856,6 @@
                 "symfony/translation": "^5.4.35|~6.3.12|^6.4.3|^7.0.3",
                 "symfony/yaml": "^5.4|^6.0|^7.0"
             },
-            "type": "library",
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Validator\\": ""
@@ -7819,8 +7871,8 @@
             ],
             "authors": [
                 {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
+                    "name": "Kévin Dunglas",
+                    "email": "kevin@dunglas.fr"
                 },
                 {
                     "name": "Symfony Community",
@@ -7829,6 +7881,14 @@
             ],
             "description": "Provides tools to validate values",
             "homepage": "https://symfony.com",
+            "keywords": [
+                "hotwire",
+                "javascript",
+                "mercure",
+                "symfony-ux",
+                "turbo",
+                "turbo-stream"
+            ],
             "support": {
                 "source": "https://github.com/symfony/validator/tree/v6.4.33"
             },
@@ -7894,7 +7954,8 @@
                     "Symfony\\Component\\VarDumper\\": ""
                 },
                 "exclude-from-classmap": [
-                    "/Tests/"
+                    "/Tests/",
+                    "/Resources/bin/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -7903,8 +7964,8 @@
             ],
             "authors": [
                 {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
                 },
                 {
                     "name": "Symfony Community",
@@ -7963,6 +8024,9 @@
                 "symfony/serializer": "^6.4|^7.0",
                 "symfony/var-dumper": "^5.4|^6.0|^7.0"
             },
+            "bin": [
+                "Resources/bin/var-dump-server"
+            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -8226,10 +8290,6 @@
                 "MIT"
             ],
             "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
                 {
                     "name": "Symfony Community",
                     "homepage": "https://symfony.com/contributors"
