@@ -1,0 +1,14 @@
+{# Template pour la conversation en mode réduit flottant #}
+<div class="messenger-float-conversation" data-conv-id="{{ current_conversation.id }}">
+    <div class="messenger-float-messages" id="messengerFloatMessages">
+        <div class="messenger-float-messages-inner">
+            {% for msg in messages %}
+                {% set is_mine = msg.sender.id == actor.id %}
+                {% include 'front/messenger/_message_item.html.twig' with { msg: msg, is_mine: is_mine, actor: actor, current_conversation: current_conversation } %}
+            {% else %}
+                <div class="thread-preview" style="padding: 20px; text-align: center; color: var(--text-light, #6b7280);">Aucun message. Envoyez le premier.</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% include 'front/messenger/_message_input.html.twig' with { current_conversation: current_conversation, editing_message: null } %}
+</div>

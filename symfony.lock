@@ -35,13 +35,16 @@
             "./migrations/.gitignore"
         ]
     },
-    "google/apiclient": {
-        "version": "2.19",
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.10.0"
+    },
+    "nucleos/dompdf-bundle": {
+        "version": "4.3",
         "recipe": {
             "repo": "github.com/symfony/recipes-contrib",
             "branch": "main",
-            "version": "2.10",
-            "ref": "07a97ec434d43b7903c78069a04c92adb6442e52"
+            "version": "3.1",
+            "ref": "0a89461aec4873f9205f1fc04c96c607116abb2e"
         }
     },
     "phpunit/phpunit": {
@@ -262,6 +265,9 @@
             "./templates/base.html.twig"
         ]
     },
+    "symfony/ux-chartjs": {
+        "version": "v2.32.0"
+    },
     "symfony/ux-turbo": {
         "version": "2.32",
         "recipe": {
@@ -338,5 +344,14 @@
     },
     "twig/extra-bundle": {
         "version": "v3.23.0"
+    },
+    "vich/uploader-bundle": {
+        "version": "2.9",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.13",
+            "ref": "1b3064c2f6b255c2bc2f56461aaeb76b11e07e36"
+        }
     }
 }

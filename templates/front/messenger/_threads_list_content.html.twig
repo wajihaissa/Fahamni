@@ -1,0 +1,8 @@
+{# Fragment : liste des conversations (colonne gauche page Messenger) pour mise à jour AJAX #}
+{% for conv in conversations %}
+    {% include 'front/messenger/_thread_item.html.twig' with { conv: conv, actor: actor, current_conversation: current_conversation|default(null) } %}
+{% else %}
+    <div class="thread-item thread-item-empty">
+        <div class="thread-preview">Aucune conversation. Cliquez sur « Nouvelle conversation ».</div>
+    </div>
+{% endfor %}

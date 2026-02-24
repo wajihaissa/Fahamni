@@ -91,4 +91,57 @@ class ConversationRepository extends ServiceEntityRepository
         }
         return $qb->getQuery()->getOneOrNullResult();
     }
+
+    /**
+     * Toutes les conversations pour l'admin, triées par dernier message.
+     *
+     * @return Conversation[]
+     */
+    public function findAllOrderedByLastMessage(): array
+    {
+        return $this->getQueryOrderedByLastMessage()->getResult();
+    }
+
+    /**
+     * QueryBuilder des conversations pour l'admin (pour pagination KnpPaginator).
+     */
+    public function getQueryOrderedByLastMessage(): \Doctrine\ORM\Query
+    {
+        return $this->createQueryBuilder('c')
+            ->orderBy('c.lastMessageAt', 'DESC')
+            ->addOrderBy('c.createdAt', 'DESC')
+            ->getQuery();
+    }
+
+    /**
+     * Nombre de conversations créées par jour sur les N derniers jours.
+     *
+     * @return array<string, int> [ 'Y-m-d' => count, ... ]
+     */
+    public function countByDay(int $days = 30): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT DATE(created_at) AS day, COUNT(*) AS cnt FROM conversation WHERE created_at >= :since GROUP BY DATE(created_at) ORDER BY day ASC';
+        $since = (new \DateTimeImmutable())->modify("-{$days} days")->format('Y-m-d 00:00:00');
+        $result = $conn->executeQuery($sql, ['since' => $since]);
+        $rows = $result->fetchAllAssociative();
+        $byDay = [];
+        foreach ($rows as $row) {
+            $byDay[(string) $row['day']] = (int) $row['cnt'];
+        }
+        return $byDay;
+    }
+
+    /**
+     * Nombre de conversations de type groupe vs privées (pour graphique type doughnut).
+     *
+     * @return array{group: int, private: int}
+     */
+    public function countGroupVsPrivate(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $group = $conn->executeQuery('SELECT COUNT(*) FROM conversation WHERE is_group = 1')->fetchOne();
+        $private = $conn->executeQuery('SELECT COUNT(*) FROM conversation WHERE is_group = 0 OR is_group IS NULL')->fetchOne();
+        return ['group' => (int) $group, 'private' => (int) $private];
+    }
 }

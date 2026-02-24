@@ -12,74 +12,38 @@
             --card:#ffffff;
             --muted:#64748b;
             --text:#0b1220;
-            --text-primary:#0f172a;
-            --border:#dbe3ee;
-            --primary:#2563eb;
-            --primary-grad:linear-gradient(135deg,#2563eb 0%,#0ea5e9 100%);
-            --radius:14px;
-            --shadow:0 12px 28px rgba(15,23,42,0.08);
+            --text-primary:#0b1220;
+            --border:#e5e7eb;
+            --primary:#6c5ce7;
+            --primary-grad:linear-gradient(90deg,#7c6cff 0%,#6c5ce7 100%);
+            --primary-gradient:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+            --radius:12px;
+            --shadow:0 6px 18px rgba(11,18,32,0.06);
+            --sidebar-width:280px;
         }
 
-        body{
-            font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
-            background:
-                radial-gradient(circle at 10% -10%, rgba(37,99,235,.16), transparent 38%),
-                radial-gradient(circle at 100% 0, rgba(14,165,233,.14), transparent 32%),
-                var(--bg);
-            color:var(--muted);
-        }
+        body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--muted)}
 
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-            background: transparent;
+        /* Sidebar (identique dashboard / messagerie) */
+        .sidebar{
+            position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;
+            background:linear-gradient(180deg,#3b2f63 0%,#2b2350 100%);
+            color:#fff;box-shadow:0 12px 40px rgba(19,24,44,0.25);z-index:1000;overflow-y:auto;
         }
-
-        .top-navbar {
-            height: 70px;
-            background: rgba(255,255,255,0.9);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            backdrop-filter: blur(10px);
-        }
-
-        .navbar-left {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .sidebar-toggle {
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            background: #fff;
-            color: #475569;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all .18s ease;
-        }
-        .sidebar-toggle:hover {
-            color: var(--primary);
-            border-color: #bfdbfe;
-            transform: translateY(-1px);
-        }
-
-        .page-title {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
+        .sidebar-header{padding:1rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:6px;}
+        .sidebar .logo h2{color:#fff;font-size:18px;font-weight:700;margin:0 0 4px 8px;letter-spacing:0.3px;}
+        .sidebar .logo .brand-sub{color:rgba(255,255,255,0.75);font-size:12px;margin-left:8px;}
+        .admin-profile{padding:12px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04);}
+        .admin-info h4{color:#fff;margin:0;font-size:14px;}
+        .admin-info p{color:rgba(255,255,255,0.65);margin:2px 0 0 0;font-size:12px;}
+        .sidebar-nav{list-style:none;padding:6px;margin:6px 0;}
+        .sidebar-nav li{margin:6px 0;}
+        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:rgba(255,255,255,0.86);text-decoration:none;border-radius:10px;position:relative;transition:background 0.18s ease,transform 0.12s ease;}
+        .sidebar-nav a i{width:26px;text-align:center;font-size:14px;color:inherit;}
+        .sidebar-nav a .label{font-size:14px;}
+        .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px);}
+        .sidebar-nav li.active a{background:rgba(255,255,255,0.04);color:#fff;font-weight:600;}
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
 
         .admin-container {
             max-width: 1500px;
