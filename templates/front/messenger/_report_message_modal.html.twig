@@ -1,0 +1,27 @@
+{# Modal Signaler un message. Var: current_conversation. L'action du formulaire est définie en JS avec le messageId. #}
+<div class="report-conv-modal-overlay report-msg-modal-overlay" id="reportMsgModalOverlay" aria-hidden="true" data-report-message-url-base="{{ path('app_messenger_report_message', { convId: current_conversation.id, messageId: 0 }) }}">
+    <div class="report-conv-modal report-msg-modal" id="reportMsgModal" role="dialog" aria-labelledby="reportMsgModalTitle">
+        <div class="report-conv-modal-header">
+            <div class="report-conv-modal-header-icon"><i class="fas fa-flag"></i></div>
+            <h2 class="report-conv-modal-title" id="reportMsgModalTitle">Signaler ce message</h2>
+            <p class="report-conv-modal-subtitle">Votre signalement sera transmis à l'équipe d'administration pour examen.</p>
+            <button type="button" class="report-conv-modal-close" id="reportMsgModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="" id="reportMsgForm" class="report-conv-modal-body">
+            <input type="hidden" name="_token" value="{{ csrf_token('report_msg_conv_' ~ current_conversation.id) }}">
+            <div class="report-conv-info-box">
+                <i class="fas fa-info-circle report-conv-info-icon"></i>
+                <p class="report-conv-info-text">Ce signalement concerne uniquement le message sélectionné. L'équipe pourra le consulter et prendre les mesures nécessaires (avertissement, modération). Vous ne serez pas identifié(e) auprès de l'auteur du message.</p>
+            </div>
+            <div class="report-conv-field">
+                <label for="reportMsgReason" class="report-conv-label">Raison du signalement <span class="report-conv-optional">(optionnel)</span></label>
+                <textarea name="reason" id="reportMsgReason" class="report-conv-textarea" placeholder="Décrivez brièvement la raison (contenu inapproprié, harcèlement, spam…)" rows="4" maxlength="500"></textarea>
+                <span class="report-conv-char-count"><span id="reportMsgCharCount">0</span>/500</span>
+            </div>
+            <div class="report-conv-actions">
+                <button type="button" class="report-conv-btn report-conv-btn-cancel" id="reportMsgCancel">Annuler</button>
+                <button type="submit" class="report-conv-btn report-conv-btn-submit" id="reportMsgSubmit"><i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Envoyer le signalement</button>
+            </div>
+        </form>
+    </div>
+</div>
