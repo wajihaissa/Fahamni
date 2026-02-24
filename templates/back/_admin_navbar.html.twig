@@ -40,6 +40,241 @@ body{margin:0;padding:0;}
     font-size:0.9rem;
 }
 .admin-navbar-right{display:flex;align-items:center;gap:1rem;}
+/* Cloche notifications */
+.admin-notif-wrap{position:relative;}
+.admin-notif-btn{
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:10px;
+    background:#f1f5f9;
+    color:#64748b;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.15rem;
+    transition:background 0.2s,color 0.2s;
+}
+.admin-notif-btn:hover{background:#e2e8f0;color:#667eea;}
+.admin-notif-badge{
+    position:absolute;
+    top:-2px;
+    right:-2px;
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border-radius:999px;
+    background:#ef4444;
+    color:#fff;
+    font-size:0.7rem;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.admin-notif-badge.empty{display:none;}
+.admin-notif-dropdown{
+    display:none;
+    position:absolute;
+    top:100%;
+    right:0;
+    margin-top:10px;
+    width:380px;
+    max-height:420px;
+    background:#fff;
+    border-radius:16px;
+    box-shadow:0 25px 60px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.04);
+    z-index:1000;
+    overflow:hidden;
+    flex-direction:column;
+}
+.admin-notif-dropdown.is-open{display:flex;}
+.admin-notif-dropdown-header{
+    padding:16px 20px;
+    border-bottom:1px solid #e2e8f0;
+    font-weight:700;
+    font-size:1rem;
+    color:#0f172a;
+    background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+.admin-notif-dropdown-header i{color:#667eea;}
+.admin-notif-dropdown-list{overflow-y:auto;flex:1;max-height:360px;padding:10px;}
+.admin-notif-item-row{
+    display:flex;
+    align-items:stretch;
+    gap:0;
+    margin-bottom:8px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    transition:box-shadow 0.2s,border-color 0.2s;
+}
+.admin-notif-item-row:hover{border-color:#c7d2fe;box-shadow:0 4px 16px rgba(102,126,234,0.12);}
+.admin-notif-item-row .admin-notif-item-icon{
+    width:48px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.1rem;
+}
+.admin-notif-item-row[data-type="conversation"] .admin-notif-item-icon{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);color:#b45309;}
+.admin-notif-item-row[data-type="message"] .admin-notif-item-icon{background:linear-gradient(135deg,#fee2e2 0%,#fecaca 100%);color:#b91c1c;}
+.admin-notif-item{
+    flex:1;
+    display:block;
+    width:100%;
+    padding:14px 16px;
+    border:none;
+    background:transparent;
+    text-align:left;
+    cursor:pointer;
+    transition:background 0.15s;
+    font-family:inherit;
+    min-width:0;
+}
+.admin-notif-item:hover{background:#f8fafc;}
+.admin-notif-item-title{font-size:0.9rem;font-weight:600;color:#0f172a;margin-bottom:6px;line-height:1.35;}
+.admin-notif-item-meta{font-size:0.78rem;color:#64748b;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.admin-notif-item-meta i{opacity:0.8;}
+.admin-notif-item-read-btn{
+    flex-shrink:0;
+    width:44px;
+    border:none;
+    background:rgba(16,185,129,0.08);
+    color:#059669;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.95rem;
+    transition:background 0.2s,color 0.2s;
+}
+.admin-notif-item-read-btn:hover{background:#059669;color:#fff;}
+.admin-notif-empty{
+    padding:32px 24px;
+    text-align:center;
+    color:#94a3b8;
+    font-size:0.9rem;
+}
+.admin-notif-empty i{font-size:2.2rem;color:#e2e8f0;display:block;margin-bottom:12px;}
+/* Modal notification */
+.admin-notif-modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.5);
+    backdrop-filter:blur(8px);
+    z-index:2000;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+}
+.admin-notif-modal-overlay.is-open{display:flex;}
+.admin-notif-modal{
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 32px 64px rgba(15,23,42,0.2), 0 0 0 1px rgba(15,23,42,0.06);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+.admin-notif-modal-header{
+    padding:20px 24px;
+    border-bottom:1px solid #e2e8f0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    color:#fff;
+}
+.admin-notif-modal-header h3{margin:0;font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px;}
+.admin-notif-modal-header h3 i{opacity:0.95;}
+.admin-notif-modal-close{
+    width:40px;
+    height:40px;
+    border:none;
+    background:rgba(255,255,255,0.2);
+    border-radius:12px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:1.25rem;
+    transition:background 0.2s;
+}
+.admin-notif-modal-close:hover{background:rgba(255,255,255,0.3);}
+.admin-notif-modal-body{flex:1;overflow-y:auto;padding:24px;min-height:0;}
+.admin-notif-modal-body .signal-info-grid{
+    display:grid;
+    gap:16px;
+}
+.admin-notif-modal-body .signal-info-row{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.admin-notif-modal-body .signal-info-label{font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;}
+.admin-notif-modal-body .signal-info-value{font-size:0.95rem;color:#0f172a;}
+.admin-notif-modal-body .reason-block{
+    background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
+    border-left:4px solid #667eea;
+    padding:14px 18px;
+    border-radius:0 12px 12px 0;
+    margin-bottom:20px;
+}
+.admin-notif-modal-body .reason-block .signal-info-value{margin:0;}
+.admin-notif-modal-footer{
+    padding:18px 24px;
+    border-top:1px solid #e2e8f0;
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    flex-shrink:0;
+    background:#f8fafc;
+}
+.admin-notif-modal-footer .btn-close{
+    padding:10px 20px;
+    border-radius:12px;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    color:#475569;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:background 0.2s,border-color 0.2s;
+}
+.admin-notif-modal-footer .btn-close:hover{background:#f1f5f9;border-color:#cbd5e1;}
+.admin-notif-modal-footer .btn-warning{
+    padding:10px 20px;
+    border-radius:12px;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    border:none;
+    background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:opacity 0.2s,transform 0.2s;
+}
+.admin-notif-modal-footer .btn-warning:hover{opacity:0.95;transform:translateY(-1px);}
+.admin-notif-modal-loading{text-align:center;padding:32px;color:#64748b;}
+.admin-notif-modal-loading i{font-size:1.8rem;animation:admin-notif-spin 0.8s linear infinite;}
+@keyframes admin-notif-spin{to{transform:rotate(360deg);}}
 .admin-profile-btn{
     display:flex;
     align-items:center;
@@ -80,6 +315,18 @@ body{margin:0;padding:0;}
         </div>
     </div>
     <div class="admin-navbar-right">
+        <div class="admin-notif-wrap">
+            <button type="button" class="admin-notif-btn" id="admin-notif-bell" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="admin-notif-badge empty" id="admin-notif-badge">0</span>
+            </button>
+            <div class="admin-notif-dropdown" id="admin-notif-dropdown">
+                <div class="admin-notif-dropdown-header"><i class="fas fa-flag"></i> Signalements</div>
+                <div class="admin-notif-dropdown-list" id="admin-notif-list">
+                    <div class="admin-notif-empty">Chargement…</div>
+                </div>
+            </div>
+        </div>
         <button type="button" class="admin-profile-btn" aria-label="Profil">
             <span class="admin-profile-avatar">
                 {%- set name = app.user.fullName|default(app.user.username|default('A')) -%}
@@ -91,3 +338,207 @@ body{margin:0;padding:0;}
         </button>
     </div>
 </nav>
+
+<!-- Modal détail notification -->
+<div class="admin-notif-modal-overlay" id="admin-notif-modal">
+    <div class="admin-notif-modal">
+        <div class="admin-notif-modal-header">
+            <h3 id="admin-notif-modal-title">Détail du signalement</h3>
+            <button type="button" class="admin-notif-modal-close" id="admin-notif-modal-close" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="admin-notif-modal-body" id="admin-notif-modal-body">
+            <div class="admin-notif-modal-loading" id="admin-notif-modal-loading"><i class="fas fa-spinner"></i> Chargement…</div>
+            <div class="admin-notif-modal-content" id="admin-notif-modal-content" style="display:none;"></div>
+        </div>
+        <div class="admin-notif-modal-footer" id="admin-notif-modal-footer" style="display:none;">
+            <button type="button" class="btn-close" id="admin-notif-modal-btn-close"><i class="fas fa-times"></i> Fermer</button>
+            <button type="button" class="btn-warning" id="admin-notif-modal-btn-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> Envoyer avertissement</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const baseUrl = '{{ path('admin_notifications_list') }}'.replace(/\/$/, '').replace(/\/notifications\/?$/, '/notifications');
+    const bell = document.getElementById('admin-notif-bell');
+    const badge = document.getElementById('admin-notif-badge');
+    const dropdown = document.getElementById('admin-notif-dropdown');
+    const listEl = document.getElementById('admin-notif-list');
+    const modal = document.getElementById('admin-notif-modal');
+    const modalTitle = document.getElementById('admin-notif-modal-title');
+    const modalBody = document.getElementById('admin-notif-modal-body');
+    const modalLoading = document.getElementById('admin-notif-modal-loading');
+    const modalContent = document.getElementById('admin-notif-modal-content');
+    const modalClose = document.getElementById('admin-notif-modal-close');
+    const modalFooter = document.getElementById('admin-notif-modal-footer');
+    const modalBtnClose = document.getElementById('admin-notif-modal-btn-close');
+    const modalBtnWarning = document.getElementById('admin-notif-modal-btn-warning');
+
+    let notifItems = [];
+    let currentNotif = null;
+
+    function formatDate(atom) {
+        if (!atom) return '';
+        const d = new Date(atom);
+        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderList() {
+        if (notifItems.length === 0) {
+            listEl.innerHTML = '<div class="admin-notif-empty"><i class="fas fa-inbox"></i> Aucun nouveau signalement</div>';
+            badge.textContent = '0';
+            badge.classList.add('empty');
+            return;
+        }
+        badge.textContent = notifItems.length > 99 ? '99+' : notifItems.length;
+        badge.classList.remove('empty');
+        listEl.innerHTML = notifItems.map(function(item) {
+            var icon = item.type === 'conversation' ? 'fa-comments' : 'fa-comment';
+            return '<div class="admin-notif-item-row" data-type="' + item.type + '">' +
+                '<span class="admin-notif-item-icon"><i class="fas ' + icon + '"></i></span>' +
+                '<button type="button" class="admin-notif-item" data-type="' + item.type + '" data-id="' + item.id + '">' +
+                '<div class="admin-notif-item-title">' + escapeHtml(item.title || 'Signalement') + '</div>' +
+                '<div class="admin-notif-item-meta"><i class="fas fa-user"></i> ' + escapeHtml(item.reportedBy || '') + ' &middot; <i class="fas fa-clock"></i> ' + formatDate(item.createdAt) + '</div>' +
+                '</button>' +
+                '<button type="button" class="admin-notif-item-read-btn" title="Marquer comme lu" data-type="' + item.type + '" data-id="' + item.id + '"><i class="fas fa-check"></i></button>' +
+                '</div>';
+        }).join('');
+    }
+
+    function escapeHtml(s) {
+        if (!s) return '';
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function loadNotifications() {
+        fetch(baseUrl, { headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                notifItems = data.items || [];
+                renderList();
+            })
+            .catch(function() {
+                listEl.innerHTML = '<div class="admin-notif-empty">Erreur de chargement</div>';
+            });
+    }
+
+    function openDetail(type, id) {
+        currentNotif = { type: type, id: id };
+        modal.classList.add('is-open');
+        modalLoading.style.display = 'block';
+        modalContent.style.display = 'none';
+        modalContent.innerHTML = '';
+        if (modalFooter) modalFooter.style.display = 'none';
+        var url = type === 'conversation' ? baseUrl + '/conversation-report/' + id : baseUrl + '/message-report/' + id;
+        fetch(url, { headers: { 'Accept': 'application/json' } })
+            .then(function(r) {
+                if (!r.ok) throw new Error('Erreur');
+                return r.json();
+            })
+            .then(function(data) {
+                modalLoading.style.display = 'none';
+                modalContent.style.display = 'block';
+                var isConv = data.type === 'conversation';
+                currentNotif.warnPreviewUrl = data.warnPreviewUrl;
+                currentNotif.warnUrl = data.warnUrl;
+                currentNotif.warnToken = data.warnToken;
+                modalTitle.innerHTML = (isConv ? '<i class="fas fa-comments"></i> Conversation signalée' : '<i class="fas fa-comment"></i> Message signalé');
+                var html = '';
+                if (data.reason) {
+                    html += '<div class="reason-block"><span class="signal-info-label">Raison du signalement</span><div class="signal-info-value">' + escapeHtml(data.reason) + '</div></div>';
+                }
+                html += '<div class="signal-info-grid">';
+                html += '<div class="signal-info-row"><span class="signal-info-label">Signalé par</span><span class="signal-info-value">' + escapeHtml(data.reportedBy || '—') + '</span></div>';
+                html += '<div class="signal-info-row"><span class="signal-info-label">Date du signalement</span><span class="signal-info-value">' + formatDate(data.reportedAt) + '</span></div>';
+                if (data.conversation) {
+                    html += '<div class="signal-info-row"><span class="signal-info-label">Conversation concernée</span><span class="signal-info-value">' + escapeHtml(data.conversation.title || '—') + '</span></div>';
+                    if (isConv && data.conversation.participants && data.conversation.participants.length) {
+                        html += '<div class="signal-info-row"><span class="signal-info-label">Participants</span><span class="signal-info-value">' + escapeHtml((data.conversation.participants || []).map(function(p) { return p.fullName; }).join(', ')) + '</span></div>';
+                    }
+                }
+                if (!isConv && data.message) {
+                    html += '<div class="signal-info-row"><span class="signal-info-label">Auteur du message</span><span class="signal-info-value">' + escapeHtml(data.message.senderName || '—') + '</span></div>';
+                    var contentLabel = (data.message.contentPreview && data.message.contentPreview.length > 0) ? escapeHtml(data.message.contentPreview) : (data.message.attachmentTypes && data.message.attachmentTypes.length > 0) ? escapeHtml(data.message.attachmentTypes.join(', ')) : '—';
+                    html += '<div class="signal-info-row"><span class="signal-info-label">Contenu du message</span><span class="signal-info-value">' + contentLabel + '</span></div>';
+                }
+                html += '</div>';
+                modalContent.innerHTML = html;
+                if (modalFooter) modalFooter.style.display = 'flex';
+                if (modalBtnWarning) modalBtnWarning.style.display = (data.warnUrl ? '' : 'none');
+                markAsRead(currentNotif.type, currentNotif.id);
+            })
+            .catch(function() {
+                modalLoading.innerHTML = '<i class="fas fa-exclamation-circle"></i> Impossible de charger le détail.';
+            });
+    }
+
+    function markAsRead(type, id) {
+        var url = type === 'conversation' ? baseUrl + '/conversation-report/' + id + '/read' : baseUrl + '/message-report/' + id + '/read';
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function() {
+                notifItems = notifItems.filter(function(item) { return !(item.type === type && item.id === id); });
+                renderList();
+            });
+    }
+
+    if (bell) {
+        bell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('is-open');
+            if (dropdown.classList.contains('is-open')) loadNotifications();
+        });
+    }
+    document.addEventListener('click', function() {
+        if (dropdown) dropdown.classList.remove('is-open');
+    });
+    if (dropdown) dropdown.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    listEl.addEventListener('click', function(e) {
+        var readBtn = e.target.closest('.admin-notif-item-read-btn');
+        if (readBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            var type = readBtn.getAttribute('data-type');
+            var id = readBtn.getAttribute('data-id');
+            if (type && id) {
+                markAsRead(type, parseInt(id, 10));
+            }
+            return;
+        }
+        var btn = e.target.closest('.admin-notif-item');
+        if (!btn) return;
+        var type = btn.getAttribute('data-type');
+        var id = btn.getAttribute('data-id');
+        if (type && id) {
+            dropdown.classList.remove('is-open');
+            openDetail(type, parseInt(id, 10));
+        }
+    });
+
+    if (modalClose) modalClose.addEventListener('click', function() { modal.classList.remove('is-open'); });
+    if (modalBtnClose) modalBtnClose.addEventListener('click', function() { modal.classList.remove('is-open'); });
+    if (modalBtnWarning) modalBtnWarning.addEventListener('click', function() {
+        if (currentNotif && typeof window.openWarnReportModal === 'function') {
+            if (currentNotif.warnPreviewUrl && currentNotif.warnUrl && currentNotif.warnToken) {
+                modal.classList.remove('is-open');
+                window.openWarnReportModal({
+                    reportId: currentNotif.id,
+                    previewUrl: currentNotif.warnPreviewUrl,
+                    warnUrl: currentNotif.warnUrl,
+                    warnToken: currentNotif.warnToken
+                });
+            } else {
+                modal.classList.remove('is-open');
+                window.openWarnReportModal({ reportId: currentNotif.id });
+            }
+        }
+    });
+    if (modal) modal.addEventListener('click', function(e) { if (e.target === modal) modal.classList.remove('is-open'); });
+
+    loadNotifications();
+})();
+</script>
+
+{% include 'back/_warn_report_modal.html.twig' %}

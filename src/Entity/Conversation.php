@@ -36,6 +36,9 @@ class Conversation
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastMessageAt = null;
 
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::TEXT, nullable: true)]
+    private ?string $summary = null;
+
     /**
      * @var Collection<int, User>
      */
@@ -130,6 +133,18 @@ class Conversation
     public function setLastMessageAt(?\DateTimeImmutable $lastMessageAt): static
     {
         $this->lastMessageAt = $lastMessageAt;
+
+        return $this;
+    }
+
+    public function getSummary(): ?string
+    {
+        return $this->summary;
+    }
+
+    public function setSummary(?string $summary): static
+    {
+        $this->summary = $summary;
 
         return $this;
     }

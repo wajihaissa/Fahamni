@@ -1,0 +1,15 @@
+# Configuration VichUploader : stockage des pièces jointes du messager.
+# Voir https://github.com/dustin10/VichUploaderBundle
+vich_uploader:
+    db_driver: orm
+    metadata:
+        type: attribute
+    mappings:
+        # Mapping pour les pièces jointes des messages (images + fichiers)
+        messenger_attachment:
+            uri_prefix: /uploads/messenger
+            upload_destination: '%kernel.project_dir%/public/uploads/messenger'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: false
+            delete_on_update: true
+            delete_on_remove: true

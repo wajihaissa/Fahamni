@@ -1,0 +1,5 @@
+# Configuration pour l'API Google Gemini (résumé de conversations)
+# gemini-flash-latest disponible en v1beta (v1 renvoie 404)
+parameters:
+    gemini_api_url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
+    gemini_model: 'gemini-flash-latest'

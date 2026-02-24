@@ -11,34 +11,7 @@ import './bootstrap.js';
 // Clé localStorage pour le thème : 'theme' (valeurs 'light' | 'dark'). Utiliser la même clé partout.
 // S'exécute au chargement ou sur DOMContentLoaded (script chargé en module = deferred, DOMContentLoaded peut être déjà passé).
 function initFront() {
-    // Theme toggle (centralisé : une seule source pour tout le front)
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        const themeIcon = themeToggle.querySelector('i');
-        if (themeIcon) {
-            const currentTheme = localStorage.getItem('theme') || 'light';
-            if (currentTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            }
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-theme');
-                if (document.body.classList.contains('dark-theme')) {
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon');
-                    localStorage.setItem('theme', 'light');
-                }
-                document.dispatchEvent(new CustomEvent('themeChanged', {
-                    detail: { theme: document.body.classList.contains('dark-theme') ? 'dark' : 'light' }
-                }));
-            });
-        }
-    }
+    // Thème light/dark : géré uniquement par le script inline dans base_front.html.twig (une seule source, pas de double écouteur)
         
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
