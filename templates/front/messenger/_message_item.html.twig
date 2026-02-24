@@ -67,8 +67,8 @@
                                     </button>
                                 </form>
                             {% else %}
-                                <button type="button" class="dropdown-item dropdown-signal">
-                                    <i class="fas fa-flag" style="margin-right:8px;width:16px;"></i>Signaler
+                                <button type="button" class="dropdown-item dropdown-signal dropdown-signal-message{% if message_already_reported|default(false) %} message-already-reported{% endif %}" title="{{ message_already_reported|default(false) ? 'Vous avez déjà signalé ce message' : 'Signaler ce message' }}" data-conv-id="{{ current_conversation.id }}" data-message-id="{{ msg.id }}">
+                                    <i class="fas fa-flag" style="margin-right:8px;width:16px;"></i>Signaler ce message
                                 </button>
                             {% endif %}
                         </div>
@@ -108,14 +108,33 @@
                 </div>
                 {% endif %}
                 
-                {# Bulle du message #}
+                {# Bulle du message (masquée si contenu vide et pièces jointes uniquement) #}
+                {% if is_deleted %}
                 <div class="message-content">
-                    {% if is_deleted %}
-                        <span class="message-deleted-text">Ce message a été supprimé</span>
-                    {% else %}
-                        {{ msg.content }}
-                    {% endif %}
+                    <span class="message-deleted-text">Ce message a été supprimé</span>
                 </div>
+                {% elseif (msg.content|trim)|length > 0 %}
+                <div class="message-content">
+                    {{ msg.content }}
+                </div>
+                {% endif %}
+                {% if not is_deleted and msg.attachments|length > 0 %}
+                <div class="message-attachments">
+                    {% for att in msg.attachments %}
+                        {% if att.isImage %}
+                            {% set _inline = attachment_inline_srcs|default({}) %}
+                            {% set img_src = _inline[att.id]|default(path('app_messenger_attachment', { id: att.id })) %}
+                            <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" target="_blank" rel="noopener" class="message-attachment message-attachment-image">
+                                <img src="{{ img_src }}" alt="{{ att.originalName }}" loading="eager" decoding="async">
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" class="message-attachment message-attachment-file" download="{{ att.originalName }}">
+                                <i class="fas fa-file-alt"></i> {{ att.originalName }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
             
             {% if not is_deleted %}

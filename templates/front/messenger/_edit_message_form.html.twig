@@ -1,0 +1,12 @@
+{# Fragment du formulaire d'édition pour le mode réduit (float) #}
+<div class="float-edit-message-wrap" data-conv-id="{{ current_conversation.id }}">
+    <p class="float-edit-message-label"><i class="fas fa-edit"></i> Modifier le message :</p>
+    <form method="post" action="{{ path('app_messenger_edit_message', { convId: current_conversation.id, messageId: editing_message.id }) }}" class="float-edit-message-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('edit_msg_' ~ editing_message.id) }}">
+        <textarea name="content" rows="3" class="float-edit-message-textarea" required>{{ editing_message.content }}</textarea>
+        <div class="float-edit-message-actions">
+            <button type="submit" class="float-edit-btn float-edit-submit"><i class="fas fa-check"></i> Enregistrer</button>
+            <button type="button" class="float-edit-btn float-edit-cancel"><i class="fas fa-times"></i> Annuler</button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,120 @@
+<script>
+(function() {
+    var root = document.getElementById('chatbotAssistantRoot');
+    var panel = document.getElementById('chatbotAssistantPanel');
+    var toggle = document.getElementById('chatbotAssistantToggle');
+    var minimize = document.getElementById('chatbotAssistantMinimize');
+    var closeBtn = document.getElementById('chatbotAssistantClose');
+    var messagesEl = document.getElementById('chatbotAssistantMessages');
+    var welcomeEl = document.getElementById('chatbotAssistantWelcome');
+    var form = document.getElementById('chatbotAssistantForm');
+    var input = document.getElementById('chatbotAssistantInput');
+    var sendBtn = document.getElementById('chatbotAssistantSend');
+    var chatUrl = '{{ path('app_chatbot_message') }}';
+
+    if (!root || !panel || !form || !messagesEl) return;
+
+    function openPanel() {
+        root.classList.add('is-open');
+        root.setAttribute('aria-hidden', 'false');
+        input.focus();
+    }
+    function closePanel() {
+        root.classList.remove('is-open');
+        root.setAttribute('aria-hidden', 'true');
+    }
+
+    toggle && toggle.addEventListener('click', openPanel);
+    closeBtn && closeBtn.addEventListener('click', closePanel);
+    minimize && minimize.addEventListener('click', closePanel);
+
+    function sendMessage(text) {
+        text = (text || '').trim();
+        if (!text) return;
+        input.value = '';
+        if (input.style.height) input.style.height = '';
+        appendMessage(text, 'user');
+        var history = getHistory();
+        history.pop();
+        sendBtn.disabled = true;
+        appendTyping();
+        fetch(chatUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ message: text, history: history })
+        })
+            .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+            .then(function(r) {
+                removeTyping();
+                if (r.ok && r.data.reply) {
+                    appendMessage(r.data.reply, 'assistant');
+                } else {
+                    appendMessage(r.data.error || 'Une erreur est survenue.', 'assistant', true);
+                }
+            })
+            .catch(function(err) {
+                removeTyping();
+                appendMessage('Impossible de joindre l\'assistant. Réessayez plus tard.', 'assistant', true);
+            })
+            .finally(function() {
+                sendBtn.disabled = false;
+            });
+    }
+
+    document.querySelectorAll('.chatbot-assistant-suggestion-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var q = this.getAttribute('data-question');
+            if (q) sendMessage(q);
+        });
+    });
+
+    function appendMessage(content, role, isError) {
+        if (welcomeEl) welcomeEl.style.display = 'none';
+        var div = document.createElement('div');
+        div.className = 'chatbot-msg chatbot-msg-' + (role === 'user' ? 'user' : (isError ? 'error' : 'assistant'));
+        div.textContent = content;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        return div;
+    }
+    function appendTyping() {
+        var div = document.createElement('div');
+        div.className = 'chatbot-msg chatbot-msg-typing';
+        div.id = 'chatbotTyping';
+        div.innerHTML = '<span></span><span></span><span></span>';
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        return div;
+    }
+    function removeTyping() {
+        var el = document.getElementById('chatbotTyping');
+        if (el) el.remove();
+    }
+    function getHistory() {
+        var history = [];
+        var msgs = messagesEl.querySelectorAll('.chatbot-msg-user, .chatbot-msg-assistant, .chatbot-msg-error');
+        for (var i = 0; i < msgs.length; i++) {
+            var m = msgs[i];
+            var role = m.classList.contains('chatbot-msg-user') ? 'user' : 'assistant';
+            history.push({ role: role, content: m.textContent.trim() });
+        }
+        return history;
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        sendMessage(input.value);
+    });
+
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.dispatchEvent(new Event('submit'));
+        }
+    });
+})();
+</script>

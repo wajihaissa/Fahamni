@@ -1,0 +1,38 @@
+{# Pagination moderne harmonisée avec le back-office FAHIMNI #}
+{% if pageCount > 1 %}
+    <nav class="back-pagination" role="navigation" aria-label="Pagination">
+        <div class="back-pagination__info">
+            {% if firstItemNumber is defined and lastItemNumber is defined and totalCount is defined %}
+                <span class="back-pagination__range">{{ firstItemNumber }}–{{ lastItemNumber }}</span>
+                <span class="back-pagination__sep" aria-hidden="true">sur</span>
+                <span class="back-pagination__total">{{ totalCount }}</span>
+                <span class="back-pagination__label">conversation{{ totalCount > 1 ? 's' : '' }}</span>
+            {% endif %}
+        </div>
+        <ul class="back-pagination__list">
+            {% if previous is defined %}
+                <li class="back-pagination__item">
+                    <a class="back-pagination__link back-pagination__link--nav" rel="prev" href="{{ path(route, knp_pagination_query(query, previous, options)) }}" aria-label="Page précédente">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    </a>
+                </li>
+            {% endif %}
+            {% for page in pagesInRange %}
+                <li class="back-pagination__item">
+                    {% if page != current %}
+                        <a class="back-pagination__link" href="{{ path(route, knp_pagination_query(query, page, options)) }}" aria-label="Page {{ page }}">{{ page }}</a>
+                    {% else %}
+                        <span class="back-pagination__link back-pagination__link--current" aria-current="page">{{ page }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+            {% if next is defined %}
+                <li class="back-pagination__item">
+                    <a class="back-pagination__link back-pagination__link--nav" rel="next" href="{{ path(route, knp_pagination_query(query, next, options)) }}" aria-label="Page suivante">
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

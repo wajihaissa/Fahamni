@@ -776,3 +776,66 @@ footer {
         padding: 0 12px;
     }
 }
+
+/* ========== Messenger : zone scroll conversation (n'affecte que body.page-messenger) ========== */
+body.page-messenger .main-content {
+    overflow: visible;
+    min-height: calc(100vh - 100px);
+}
+body.page-messenger .main-content .container.messenger-page {
+    overflow: visible;
+    height: 100%;
+}
+body.page-messenger .messenger-layout {
+    height: calc(100vh - 100px) !important;
+    max-height: calc(100vh - 100px) !important;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+}
+body.page-messenger .chat-column {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+body.page-messenger .chat-view,
+body.page-messenger .chat-view-inner {
+/* .chat-main en relative pour que #chatMessages en absolute soit positionné dedans */
+    min-height: 0 !important;
+    overflow: hidden;
+    position: relative !important;
+}
+body.page-messenger .chat-main {
+    min-height: 0 !important;
+    overflow: hidden;
+    flex: 1 1 0;
+    display: flex !important;
+    flex-direction: column !important;
+}
+/* Wrapper scroll : prend la place dispo, contraint la hauteur pour que l’enfant défile */
+body.page-messenger .chat-main .chat-messages-scroll-wrap {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+body.page-messenger .chat-main .chat-messages-scroll-wrap > #chatMessages.chat-messages {
+/* Réserver l'espace en bas pour la zone de saisie (éviter que le contenu soit caché sous l'input) */
+body.page-messenger .chat-main {
+    padding-bottom: 0;
+}
+body.page-messenger .chat-main > .chat-messages:not(.chat-messages-empty) {
+    bottom: 0;
+}
+/* Le bloc .message-input-area doit rester en flux sous la zone scroll (chat-main = flex column) */
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+}
+body.page-messenger .chat-main .message-input-area {
+    flex-shrink: 0 !important;
+}

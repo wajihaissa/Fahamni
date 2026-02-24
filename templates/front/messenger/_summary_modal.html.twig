@@ -1,0 +1,32 @@
+{# Modal Résumé de la conversation. Var: current_conversation #}
+<div class="summary-conv-modal-overlay" id="summaryConvModalOverlay" aria-hidden="true" data-summary-url="{{ path('app_messenger_summary', { id: current_conversation.id }) }}">
+    <div class="summary-conv-modal" id="summaryConvModal" role="dialog" aria-labelledby="summaryConvModalTitle">
+        <div class="summary-conv-modal-header">
+            <div class="summary-conv-modal-header-icon"><i class="fas fa-file-alt"></i></div>
+            <h2 class="summary-conv-modal-title" id="summaryConvModalTitle">Résumé de la conversation</h2>
+            <p class="summary-conv-modal-subtitle">Résumé généré par IA à partir des messages de la conversation.</p>
+            <button type="button" class="summary-conv-modal-close" id="summaryConvModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="summary-conv-modal-body">
+            <div class="summary-conv-loading" id="summaryConvLoading">
+                <div class="summary-conv-spinner"></div>
+                <p class="summary-conv-loading-text">Génération du résumé en cours…</p>
+                <p class="summary-conv-loading-hint">Cela peut prendre 5 à 15 secondes.</p>
+            </div>
+            <div class="summary-conv-content" id="summaryConvContent" style="display: none;">
+                <div class="summary-conv-text" id="summaryConvText"></div>
+                <p class="summary-conv-saved-hint"><i class="fas fa-check-circle"></i> Résumé enregistré pour cette conversation.</p>
+                <button type="button" class="summary-conv-btn summary-conv-btn-regenerate" id="summaryConvRegenerate"><i class="fas fa-sync-alt"></i> Régénérer</button>
+            </div>
+            <div class="summary-conv-error" id="summaryConvError" style="display: none;">
+                <i class="fas fa-exclamation-triangle summary-conv-error-icon"></i>
+                <p class="summary-conv-error-text" id="summaryConvErrorText"></p>
+                <p class="summary-conv-error-debug" id="summaryConvErrorDebug"></p>
+                <button type="button" class="summary-conv-btn summary-conv-btn-retry" id="summaryConvRetry">Réessayer</button>
+            </div>
+            <div class="summary-conv-actions">
+                <button type="button" class="summary-conv-btn summary-conv-btn-close" id="summaryConvBtnClose">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
