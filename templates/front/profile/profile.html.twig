@@ -412,11 +412,15 @@
         <div class="profile-header">
             <div class="avatar-container">
                 <div class="avatar-image" id="avatarImage">
-                    {%- set parts = user.fullName|split(' ') -%}
-                    {%- if parts|length >= 2 -%}
-                        {{ (parts[0][0:1])|upper }}{{ (parts[1][0:1])|upper }}
+                    {%- if user.avatarPath -%}
+                        <img src="{{ asset(user.avatarPath|trim('/')) }}" alt="Profile image" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
                     {%- else -%}
-                        {{ (user.fullName[0:1])|upper }}
+                        {%- set parts = user.fullName|split(' ') -%}
+                        {%- if parts|length >= 2 -%}
+                            {{ (parts[0][0:1])|upper }}{{ (parts[1][0:1])|upper }}
+                        {%- else -%}
+                            {{ (user.fullName[0:1])|upper }}
+                        {%- endif -%}
                     {%- endif -%}
                 </div>
             </div>
@@ -483,9 +487,15 @@
                         <p class="section-description">Update your personal details and profile information</p>
                     </div>
                     
-                    <form class="profile-form" id="personalForm" method="post" action="{{ path('app_profile', {'id': user.id}) }}">
+                    <form class="profile-form" id="personalForm" method="post" enctype="multipart/form-data" action="{{ path('app_profile', {'id': user.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
                         <input type="hidden" name="_form" value="personal">
+
+                        <div class="form-group">
+                            <label for="avatar">Profile Picture</label>
+                            <input type="file" id="avatar" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                            <div class="form-hint">Accepted: JPG, PNG, WEBP. Max size: 5MB.</div>
+                        </div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -601,6 +611,30 @@
                         <div class="form-hint">Registers a secure passkey on this device (Windows Hello / Face ID).</div>
                         <div id="passkeyStatus" class="form-hint" style="margin-top: 8px;"></div>
                     </div>
+
+                    <div class="form-group" style="margin-top: 1.25rem;">
+                        <label>Authenticator 2FA (TOTP)</label>
+                        <div id="twoFactorStatus" class="form-hint" style="margin-bottom: 8px;">
+                            Status: {{ user.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+                        </div>
+
+                        <div id="twoFactorSetupBlock" {% if user.twoFactorEnabled %}style="display:none;"{% endif %}>
+                            <button type="button" class="btn btn-primary" id="twoFactorStartBtn">Start 2FA Setup</button>
+                            <div id="twoFactorSetupArea" style="display:none; margin-top: 10px;">
+                                <img id="twoFactorQr" src="" alt="2FA QR Code" style="max-width:220px; border:1px solid #e2e8f0; border-radius:12px; padding:8px; background:#fff;">
+                                <div class="form-hint" id="twoFactorSecretText" style="margin-top: 8px;"></div>
+                                <input type="text" id="twoFactorSetupCode" placeholder="Enter 6-digit code from app" style="margin-top: 10px;">
+                                <button type="button" class="btn btn-primary" id="twoFactorConfirmBtn" style="margin-top: 10px;">Confirm & Enable</button>
+                            </div>
+                        </div>
+
+                        <div id="twoFactorDisableBlock" {% if not user.twoFactorEnabled %}style="display:none;"{% endif %}>
+                            <input type="text" id="twoFactorDisableCode" placeholder="Enter code to disable 2FA">
+                            <button type="button" class="btn btn-primary" id="twoFactorDisableBtn" style="margin-top: 10px;">Disable 2FA</button>
+                        </div>
+
+                        <div id="twoFactorRecoveryBox" class="form-hint" style="margin-top: 10px; display:none;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -613,19 +647,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const navItems = document.querySelectorAll('.nav-item');
     const contentSections = document.querySelectorAll('.content-section');
 
+    function activateSection(sectionId) {
+        if (!sectionId) return;
+        const target = document.getElementById(sectionId);
+        const targetNav = document.querySelector('.nav-item[data-section="' + sectionId + '"]');
+        if (!target || !targetNav) return;
+        navItems.forEach(nav => nav.classList.remove('active'));
+        contentSections.forEach(section => section.classList.remove('active'));
+        targetNav.classList.add('active');
+        target.classList.add('active');
+    }
+
     navItems.forEach(item => {
         item.addEventListener('click', function() {
             const sectionId = this.getAttribute('data-section');
-            
-            // Remove active class from all nav items and sections
-            navItems.forEach(nav => nav.classList.remove('active'));
-            contentSections.forEach(section => section.classList.remove('active'));
-            
-            // Add active class to clicked item and corresponding section
-            this.classList.add('active');
-            document.getElementById(sectionId).classList.add('active');
+            activateSection(sectionId);
+            if (history.replaceState) {
+                history.replaceState(null, '', '#' + sectionId);
+            }
         });
     });
+
+    const url = new URL(window.location.href);
+    const fromQuery = url.searchParams.get('section');
+    const fromHash = window.location.hash ? window.location.hash.substring(1) : '';
+    activateSection(fromQuery || fromHash);
 
     // Form validation
     document.getElementById('personalForm').addEventListener('submit', function(e) {
@@ -640,6 +686,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const enablePasskeyBtn = document.getElementById('enablePasskeyBtn');
     const passkeyStatus = document.getElementById('passkeyStatus');
+    const twoFactorStatus = document.getElementById('twoFactorStatus');
+    const twoFactorStartBtn = document.getElementById('twoFactorStartBtn');
+    const twoFactorSetupArea = document.getElementById('twoFactorSetupArea');
+    const twoFactorQr = document.getElementById('twoFactorQr');
+    const twoFactorSecretText = document.getElementById('twoFactorSecretText');
+    const twoFactorSetupCode = document.getElementById('twoFactorSetupCode');
+    const twoFactorConfirmBtn = document.getElementById('twoFactorConfirmBtn');
+    const twoFactorDisableCode = document.getElementById('twoFactorDisableCode');
+    const twoFactorDisableBtn = document.getElementById('twoFactorDisableBtn');
+    const twoFactorSetupBlock = document.getElementById('twoFactorSetupBlock');
+    const twoFactorDisableBlock = document.getElementById('twoFactorDisableBlock');
+    const twoFactorRecoveryBox = document.getElementById('twoFactorRecoveryBox');
 
     function setPasskeyStatus(message, ok) {
         if (!passkeyStatus) return;
@@ -731,6 +789,114 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 enablePasskeyBtn.disabled = false;
                 enablePasskeyBtn.textContent = originalText;
+            }
+        });
+    }
+
+    function setTwoFactorStatus(message, ok) {
+        if (!twoFactorStatus) return;
+        twoFactorStatus.textContent = message;
+        twoFactorStatus.style.color = ok ? '#166534' : '#991b1b';
+    }
+
+    if (twoFactorStartBtn) {
+        twoFactorStartBtn.addEventListener('click', async function () {
+            twoFactorStartBtn.disabled = true;
+            try {
+                const res = await fetch('{{ path('app_2fa_setup_start') }}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to start 2FA setup');
+                }
+
+                twoFactorSetupArea.style.display = 'block';
+                twoFactorQr.src = data.qr_url;
+                twoFactorSecretText.textContent = 'Secret: ' + data.secret;
+                setTwoFactorStatus('Scan QR in Google Authenticator/Microsoft Authenticator, then confirm code.', true);
+                if (twoFactorRecoveryBox) twoFactorRecoveryBox.style.display = 'none';
+            } catch (e) {
+                setTwoFactorStatus(e.message || 'Failed to start 2FA setup', false);
+            } finally {
+                twoFactorStartBtn.disabled = false;
+            }
+        });
+    }
+
+    if (twoFactorConfirmBtn) {
+        twoFactorConfirmBtn.addEventListener('click', async function () {
+            const code = (twoFactorSetupCode.value || '').trim();
+            if (!code) {
+                setTwoFactorStatus('Enter your authenticator code first.', false);
+                return;
+            }
+
+            twoFactorConfirmBtn.disabled = true;
+            try {
+                const formData = new FormData();
+                formData.append('code', code);
+                const res = await fetch('{{ path('app_2fa_setup_confirm') }}', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to enable 2FA');
+                }
+
+                twoFactorSetupBlock.style.display = 'none';
+                twoFactorDisableBlock.style.display = 'block';
+                setTwoFactorStatus('Status: Enabled', true);
+
+                if (twoFactorRecoveryBox && data.recovery_codes && data.recovery_codes.length) {
+                    twoFactorRecoveryBox.style.display = 'block';
+                    twoFactorRecoveryBox.textContent = 'Recovery codes (save now): ' + data.recovery_codes.join(', ');
+                }
+            } catch (e) {
+                setTwoFactorStatus(e.message || 'Failed to enable 2FA', false);
+            } finally {
+                twoFactorConfirmBtn.disabled = false;
+            }
+        });
+    }
+
+    if (twoFactorDisableBtn) {
+        twoFactorDisableBtn.addEventListener('click', async function () {
+            const code = (twoFactorDisableCode.value || '').trim();
+            if (!code) {
+                setTwoFactorStatus('Enter authenticator/recovery code to disable 2FA.', false);
+                return;
+            }
+
+            twoFactorDisableBtn.disabled = true;
+            try {
+                const formData = new FormData();
+                formData.append('code', code);
+                const res = await fetch('{{ path('app_2fa_disable') }}', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to disable 2FA');
+                }
+
+                twoFactorDisableBlock.style.display = 'none';
+                twoFactorSetupBlock.style.display = 'block';
+                twoFactorSetupArea.style.display = 'none';
+                if (twoFactorRecoveryBox) twoFactorRecoveryBox.style.display = 'none';
+                setTwoFactorStatus('Status: Disabled', true);
+            } catch (e) {
+                setTwoFactorStatus(e.message || 'Failed to disable 2FA', false);
+            } finally {
+                twoFactorDisableBtn.disabled = false;
             }
         });
     }

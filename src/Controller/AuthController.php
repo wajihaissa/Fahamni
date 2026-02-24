@@ -4,12 +4,14 @@ namespace App\Controller;
 
 use App\Entity\Student;
 use App\Entity\User;
+use App\Service\TwoFactorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,7 +33,12 @@ final class AuthController extends AbstractController
     private const PASSKEY_REGISTER_CHALLENGE = 'passkey_register_challenge';
     private const PASSKEY_LOGIN_CHALLENGE = 'passkey_login_challenge';
     private const PASSKEY_LOGIN_USER_ID = 'passkey_login_user_id';
-    private const PASSKEY_RP_ID = 'localhost';
+    private const TWO_FACTOR_LOGIN_USER_ID = 'two_factor_login_user_id';
+    private const TWO_FACTOR_LOGIN_EXPIRES_AT = 'two_factor_login_expires_at';
+    private const TWO_FACTOR_LOGIN_ATTEMPTS = 'two_factor_login_attempts';
+    private const TWO_FACTOR_SETUP_SECRET = 'two_factor_setup_secret';
+    private const TWO_FACTOR_MAX_ATTEMPTS = 5;
+    private const TWO_FACTOR_WINDOW_SECONDS = 300;
 
    #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(
@@ -64,6 +71,10 @@ final class AuthController extends AbstractController
                 return new JsonResponse(['success' => false, 'message' => 'Your account is not active. Contact support.'], Response::HTTP_FORBIDDEN);
             }
 
+            if ($user->isTwoFactorEnabled() && $user->getTwoFactorSecret()) {
+                return $this->startTwoFactorChallenge($request, $user);
+            }
+
             $userData = $this->createLoginSession($request, $user, $tokenStorage);
 
             return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_home'), 'user' => $userData]);
@@ -82,12 +93,102 @@ final class AuthController extends AbstractController
         throw new \LogicException('This method should never be reached directly.');
     }
 
+    #[Route('/login/2fa', name: 'app_login_2fa', methods: ['POST'])]
+    public function loginTwoFactorVerify(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TokenStorageInterface $tokenStorage,
+        TwoFactorService $twoFactorService
+    ): JsonResponse {
+        $session = $request->getSession();
+        $userId = (int) $session->get(self::TWO_FACTOR_LOGIN_USER_ID, 0);
+        $expiresAt = (int) $session->get(self::TWO_FACTOR_LOGIN_EXPIRES_AT, 0);
+        $attempts = (int) $session->get(self::TWO_FACTOR_LOGIN_ATTEMPTS, 0);
+        $code = trim((string) $request->request->get('code', ''));
+
+        if ($userId <= 0 || $expiresAt < time()) {
+            $this->clearTwoFactorChallenge($session);
+            return new JsonResponse([
+                'success' => false,
+                'message' => '2FA session expired. Please login again.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($attempts >= self::TWO_FACTOR_MAX_ATTEMPTS) {
+            $this->clearTwoFactorChallenge($session);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Too many invalid 2FA attempts. Please login again.',
+            ], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        if ($code === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => '2FA code is required.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $entityManager->getRepository(User::class)->find($userId);
+        if (!$user instanceof User || !$user->isStatus()) {
+            $this->clearTwoFactorChallenge($session);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid account state for 2FA login.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $ok = false;
+        $secretEncrypted = (string) ($user->getTwoFactorSecret() ?? '');
+        if ($secretEncrypted !== '') {
+            $secret = $twoFactorService->decryptSecret($secretEncrypted, (string) ($_ENV['APP_SECRET'] ?? ''));
+            if (is_string($secret) && $secret !== '' && $twoFactorService->verifyCode($secret, $code)) {
+                $ok = true;
+            }
+        }
+
+        if (!$ok) {
+            $recoveryResult = $twoFactorService->consumeRecoveryCode($code, $user->getTwoFactorRecoveryCodes() ?? []);
+            if ($recoveryResult['ok'] === true) {
+                $ok = true;
+                $user->setTwoFactorRecoveryCodes($recoveryResult['hashes']);
+                $entityManager->persist($user);
+                $entityManager->flush();
+            }
+        }
+
+        if (!$ok) {
+            $session->set(self::TWO_FACTOR_LOGIN_ATTEMPTS, $attempts + 1);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid 2FA code.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $this->clearTwoFactorChallenge($session);
+        $userData = $this->createLoginSession($request, $user, $tokenStorage);
+
+        return new JsonResponse([
+            'success' => true,
+            'redirect' => $this->generateUrl('app_home'),
+            'user' => $userData,
+        ]);
+    }
+
     #[Route('/passkey/register/options', name: 'app_passkey_register_options', methods: ['POST'])]
     public function passkeyRegisterOptions(Request $request): JsonResponse
     {
         $sessionUser = $request->getSession()->get('user');
         if (!is_array($sessionUser) || empty($sessionUser['id'])) {
             return new JsonResponse(['success' => false, 'message' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $rpId = $this->resolvePasskeyRpId($request);
+        if ($rpId === null) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid domain for passkey. Use localhost or a real domain name (not an IP address).',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $challenge = $this->base64UrlEncode(random_bytes(32));
@@ -99,7 +200,7 @@ final class AuthController extends AbstractController
                 'challenge' => $challenge,
                 'rp' => [
                     'name' => 'FAHIMNI',
-                    'id' => self::PASSKEY_RP_ID,
+                    'id' => $rpId,
                 ],
                 'user' => [
                     'id' => $this->base64UrlEncode((string) $sessionUser['id']),
@@ -182,6 +283,14 @@ final class AuthController extends AbstractController
     #[Route('/passkey/login/options', name: 'app_passkey_login_options', methods: ['POST'])]
     public function passkeyLoginOptions(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
+        $rpId = $this->resolvePasskeyRpId($request);
+        if ($rpId === null) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid domain for passkey. Use localhost or a real domain name (not an IP address).',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $email = trim((string) $request->request->get('email', ''));
         if ($email === '') {
             $payload = json_decode((string) $request->getContent(), true);
@@ -212,7 +321,7 @@ final class AuthController extends AbstractController
             'success' => true,
             'publicKey' => [
                 'challenge' => $challenge,
-                'rpId' => self::PASSKEY_RP_ID,
+                'rpId' => $rpId,
                 'allowCredentials' => [
                     [
                         'type' => 'public-key',
@@ -319,6 +428,10 @@ final class AuthController extends AbstractController
         if ($counter > 0) {
             $user->setPasskeySignCount($counter);
             $entityManager->flush();
+        }
+
+        if ($user->isTwoFactorEnabled() && $user->getTwoFactorSecret()) {
+            return $this->startTwoFactorChallenge($request, $user);
         }
 
         $this->createLoginSession($request, $user, $tokenStorage);
@@ -497,10 +610,137 @@ final class AuthController extends AbstractController
         // Clear session user data
         $request->getSession()->remove('user');
         $request->getSession()->remove('_security_main');
+        $this->clearTwoFactorChallenge($request->getSession());
+        $request->getSession()->remove(self::TWO_FACTOR_SETUP_SECRET);
         $tokenStorage->setToken(null);
         
         // Redirect to login page
         return $this->redirectToRoute('app_login');
+    }
+
+    #[Route('/2fa/setup/start', name: 'app_2fa_setup_start', methods: ['POST'])]
+    public function startTwoFactorSetup(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TwoFactorService $twoFactorService
+    ): JsonResponse
+    {
+        $user = $this->resolveSessionUser($request, $entityManager);
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $secret = $twoFactorService->generateSecret();
+        $request->getSession()->set(self::TWO_FACTOR_SETUP_SECRET, $secret);
+        $issuer = 'FAHIMNI';
+        $email = (string) ($user->getEmail() ?? ('user-' . $user->getId()));
+        $otpauth = $twoFactorService->buildOtpAuthUri($issuer, $email, $secret);
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . rawurlencode($otpauth);
+
+        return new JsonResponse([
+            'success' => true,
+            'secret' => $secret,
+            'otpauth' => $otpauth,
+            'qr_url' => $qrUrl,
+        ]);
+    }
+
+    #[Route('/2fa/setup/confirm', name: 'app_2fa_setup_confirm', methods: ['POST'])]
+    public function confirmTwoFactorSetup(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TwoFactorService $twoFactorService
+    ): JsonResponse {
+        $user = $this->resolveSessionUser($request, $entityManager);
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $secret = (string) $request->getSession()->get(self::TWO_FACTOR_SETUP_SECRET, '');
+        if ($secret === '') {
+            return new JsonResponse(['success' => false, 'message' => 'Start 2FA setup first.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $code = trim((string) $request->request->get('code', ''));
+        if (!$twoFactorService->verifyCode($secret, $code)) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid authenticator code.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $encrypted = $twoFactorService->encryptSecret($secret, (string) ($_ENV['APP_SECRET'] ?? ''));
+        $recoveryCodes = $twoFactorService->generateRecoveryCodes();
+        $recoveryHashes = $twoFactorService->hashRecoveryCodes($recoveryCodes);
+
+        $user->setTwoFactorSecret($encrypted);
+        $user->setTwoFactorEnabled(true);
+        $user->setTwoFactorRecoveryCodes($recoveryHashes);
+        $user->setTwoFactorConfirmedAt(new \DateTimeImmutable());
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $request->getSession()->remove(self::TWO_FACTOR_SETUP_SECRET);
+        $sessionData = (array) $request->getSession()->get('user', []);
+        $sessionData['twoFactorEnabled'] = true;
+        $request->getSession()->set('user', $sessionData);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => '2FA enabled successfully.',
+            'recovery_codes' => $recoveryCodes,
+        ]);
+    }
+
+    #[Route('/2fa/disable', name: 'app_2fa_disable', methods: ['POST'])]
+    public function disableTwoFactor(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TwoFactorService $twoFactorService
+    ): JsonResponse {
+        $user = $this->resolveSessionUser($request, $entityManager);
+        if (!$user instanceof User) {
+            return new JsonResponse(['success' => false, 'message' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if (!$user->isTwoFactorEnabled()) {
+            return new JsonResponse(['success' => false, 'message' => '2FA is already disabled.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $code = trim((string) $request->request->get('code', ''));
+        if ($code === '') {
+            return new JsonResponse(['success' => false, 'message' => '2FA code is required.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $ok = false;
+        $secretEncrypted = (string) ($user->getTwoFactorSecret() ?? '');
+        if ($secretEncrypted !== '') {
+            $secret = $twoFactorService->decryptSecret($secretEncrypted, (string) ($_ENV['APP_SECRET'] ?? ''));
+            if (is_string($secret) && $secret !== '' && $twoFactorService->verifyCode($secret, $code)) {
+                $ok = true;
+            }
+        }
+
+        if (!$ok) {
+            $consume = $twoFactorService->consumeRecoveryCode($code, $user->getTwoFactorRecoveryCodes() ?? []);
+            if ($consume['ok']) {
+                $ok = true;
+            }
+        }
+
+        if (!$ok) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid 2FA code.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user->setTwoFactorEnabled(false);
+        $user->setTwoFactorSecret(null);
+        $user->setTwoFactorRecoveryCodes(null);
+        $user->setTwoFactorConfirmedAt(null);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $sessionData = (array) $request->getSession()->get('user', []);
+        $sessionData['twoFactorEnabled'] = false;
+        $request->getSession()->set('user', $sessionData);
+
+        return new JsonResponse(['success' => true, 'message' => '2FA disabled.']);
     }
 
     #[Route('/api/check-email', name: 'api_check_email', methods: ['POST'])]
@@ -818,7 +1058,7 @@ final class AuthController extends AbstractController
         return str_contains((string) $request->headers->get('Accept', ''), 'application/json');
     }
 
-    private function clearForgotPasswordSession(\Symfony\Component\HttpFoundation\Session\SessionInterface $session): void
+    private function clearForgotPasswordSession(SessionInterface $session): void
     {
         $session->remove(self::RESET_SESSION_PREFIX . 'user_id');
         $session->remove(self::RESET_SESSION_PREFIX . 'code_hash');
@@ -829,7 +1069,7 @@ final class AuthController extends AbstractController
     }
 
     /**
-     * @return array{id:int|null,email:?string,fullName:?string,roles:array}
+     * @return array{id:int|null,email:?string,fullName:?string,roles:array,avatarPath:?string,twoFactorEnabled:bool}
      */
     private function createLoginSession(Request $request, User $user, TokenStorageInterface $tokenStorage): array
     {
@@ -839,6 +1079,8 @@ final class AuthController extends AbstractController
             'email' => $user->getEmail(),
             'fullName' => method_exists($user, 'getFullName') ? $user->getFullName() : null,
             'roles' => $user->getRoles(),
+            'avatarPath' => method_exists($user, 'getAvatarPath') ? $user->getAvatarPath() : null,
+            'twoFactorEnabled' => $user->isTwoFactorEnabled(),
         ];
 
         $session->set('user', $userData);
@@ -847,6 +1089,47 @@ final class AuthController extends AbstractController
         $session->set('_security_main', serialize($token));
 
         return $userData;
+    }
+
+    private function startTwoFactorChallenge(Request $request, User $user): JsonResponse
+    {
+        $session = $request->getSession();
+        $session->set(self::TWO_FACTOR_LOGIN_USER_ID, $user->getId());
+        $session->set(self::TWO_FACTOR_LOGIN_EXPIRES_AT, time() + self::TWO_FACTOR_WINDOW_SECONDS);
+        $session->set(self::TWO_FACTOR_LOGIN_ATTEMPTS, 0);
+
+        // Clear passkey challenge state once the second factor challenge starts.
+        $session->remove(self::PASSKEY_LOGIN_CHALLENGE);
+        $session->remove(self::PASSKEY_LOGIN_USER_ID);
+
+        return new JsonResponse([
+            'success' => true,
+            'requires2fa' => true,
+            'message' => 'Enter your 2FA code to complete login.',
+        ]);
+    }
+
+    private function clearTwoFactorChallenge(SessionInterface $session): void
+    {
+        $session->remove(self::TWO_FACTOR_LOGIN_USER_ID);
+        $session->remove(self::TWO_FACTOR_LOGIN_EXPIRES_AT);
+        $session->remove(self::TWO_FACTOR_LOGIN_ATTEMPTS);
+    }
+
+    private function resolveSessionUser(Request $request, EntityManagerInterface $entityManager): ?User
+    {
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        $sessionData = (array) $request->getSession()->get('user', []);
+        $sessionId = (int) ($sessionData['id'] ?? 0);
+        if ($sessionId <= 0) {
+            return null;
+        }
+
+        return $entityManager->getRepository(User::class)->find($sessionId);
     }
 
     private function base64UrlEncode(string $data): string
@@ -868,6 +1151,19 @@ final class AuthController extends AbstractController
     {
         $expected = $request->getSchemeAndHttpHost();
         return $origin !== '' && hash_equals($expected, $origin);
+    }
+
+    private function resolvePasskeyRpId(Request $request): ?string
+    {
+        $configured = trim((string) ($_ENV['PASSKEY_RP_ID'] ?? ''));
+        $rpId = strtolower($configured !== '' ? $configured : (string) $request->getHost());
+        $rpId = trim($rpId, " \t\n\r\0\x0B.");
+
+        if ($rpId === '' || filter_var($rpId, FILTER_VALIDATE_IP)) {
+            return null;
+        }
+
+        return $rpId;
     }
 
     private function maskEmail(string $email): string

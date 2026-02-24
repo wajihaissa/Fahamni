@@ -4,8 +4,10 @@ namespace App\Controller\Back;
 
 use App\Entity\User;
 use App\Entity\Student;
+use App\Service\RegistrationFraudScoringService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,43 +22,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class UsersCrudController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(Request $request, EntityManagerInterface $entityManager): Response
+    public function index(): Response
     {
-        $filter = (string) $request->query->get('filter', 'all');
-        $allowedFilters = ['all', 'active', 'inactive', 'suspended'];
-        if (!in_array($filter, $allowedFilters, true)) {
-            $filter = 'all';
-        }
-
-        $qb = $entityManager->getRepository(User::class)->createQueryBuilder('u')
-            ->leftJoin('u.profile', 'p')
-            ->addSelect('p')
-            ->orderBy('u.createdAt', 'DESC');
-
-        if ($filter === 'active') {
-            $qb->andWhere('u.status = :active')
-                ->andWhere('(p.id IS NULL OR p.isActive = :profileActive)')
-                ->andWhere('(p.validationStatus IS NULL OR p.validationStatus != :suspended)')
-                ->setParameter('active', true)
-                ->setParameter('profileActive', true)
-                ->setParameter('suspended', 'suspended');
-        } elseif ($filter === 'inactive') {
-            $qb->andWhere('(u.status = :inactive OR p.isActive = :profileInactive)')
-                ->andWhere('(p.validationStatus IS NULL OR p.validationStatus != :suspended)')
-                ->setParameter('inactive', false)
-                ->setParameter('profileInactive', false)
-                ->setParameter('suspended', 'suspended');
-        } elseif ($filter === 'suspended') {
-            $qb->andWhere('p.validationStatus = :suspended')
-                ->setParameter('suspended', 'suspended');
-        }
-
-        $users = $qb->getQuery()->getResult();
-
-        return $this->render('back/users/index.html.twig', [
-            'users' => $users,
-            'currentFilter' => $filter,
-        ]);
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/create', name: 'create', methods: ['GET', 'POST'])]
@@ -66,11 +34,15 @@ final class UsersCrudController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         ValidatorInterface $validator
     ): Response {
+        if (!$request->isMethod('POST')) {
+            return $this->redirectToDashboardUsers();
+        }
+
         if ($request->isMethod('POST')) {
             // Validate CSRF token
             if (!$this->isCsrfTokenValid('add_user', $request->request->get('_token'))) {
                 $this->addFlash('error', 'Invalid security token');
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
             
             $fullName = trim((string) $request->request->get('fullName', ''));
@@ -180,22 +152,17 @@ final class UsersCrudController extends AbstractController
                     }
                 }
 
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
         }
 
-        return $this->render('back/users/create.html.twig');
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/show', name: 'show', methods: ['GET'])]
-    public function show(User $user): Response
+    public function show(): Response
     {
-        $student = $user->getProfile();
-
-        return $this->render('back/users/show.html.twig', [
-            'user' => $user,
-            'student' => $student,
-        ]);
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
@@ -205,11 +172,15 @@ final class UsersCrudController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
+        if (!$request->isMethod('POST')) {
+            return $this->redirectToDashboardUsers();
+        }
+
         if ($request->isMethod('POST')) {
             // Validate CSRF token
             if (!$this->isCsrfTokenValid('edit_user_' . $user->getId(), $request->request->get('_token'))) {
                 $this->addFlash('error', 'Invalid security token');
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
             
             $fullName = $request->request->get('fullName');
@@ -260,16 +231,11 @@ final class UsersCrudController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success', 'User updated successfully!');
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
         }
 
-        $student = $user->getProfile();
-
-        return $this->render('back/users/edit.html.twig', [
-            'user' => $user,
-            'student' => $student,
-        ]);
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
@@ -281,7 +247,7 @@ final class UsersCrudController extends AbstractController
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
             if ($this->getUser() instanceof User && $this->getUser()->getId() === $user->getId()) {
                 $this->addFlash('error', 'You cannot delete your own account.');
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
 
             // Delete related student profile first
@@ -295,23 +261,34 @@ final class UsersCrudController extends AbstractController
             $this->addFlash('success', 'User deleted successfully!');
         }
 
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/toggle-status', name: 'toggle_status', methods: ['POST'])]
     public function toggleStatus(
         Request $request,
         User $user,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        RegistrationFraudScoringService $registrationFraudScoringService
     ): Response {
         $token = (string) $request->request->get('_token');
         if ($this->isCsrfTokenValid('toggle_status_' . $user->getId(), $token) || $this->isCsrfTokenValid('toggle' . $user->getId(), $token)) {
             if ($this->getUser() instanceof User && $this->getUser()->getId() === $user->getId() && $user->isStatus() === true) {
                 $this->addFlash('error', 'You cannot deactivate your own account.');
-                return $this->redirectToRoute('admin_users_index');
+                return $this->redirectToDashboardUsers();
             }
 
             $newStatus = !$user->isStatus();
+            if ($newStatus === true) {
+                $fraud = $registrationFraudScoringService->score($user, $user->getProfile());
+                if ((int) ($fraud['score'] ?? 0) >= 50) {
+                    $this->addFlash('error', sprintf(
+                        'Activation blocked: fraud score is %d/100 (must be below 50).',
+                        (int) $fraud['score']
+                    ));
+                    return $this->redirectToDashboardUsers();
+                }
+            }
             $user->setStatus($newStatus);
 
             $profile = $user->getProfile();
@@ -334,7 +311,7 @@ final class UsersCrudController extends AbstractController
             $this->addFlash('success', "Account {$status} successfully.");
         }
 
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/toggle-activity', name: 'toggle_activity', methods: ['POST'])]
@@ -346,17 +323,17 @@ final class UsersCrudController extends AbstractController
         $profile = $user->getProfile();
         if (!$profile instanceof Student) {
             $this->addFlash('error', 'This user has no profile activity state.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         if (!$this->isCsrfTokenValid('toggle_activity_' . $user->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid security token.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         if (!$user->isStatus()) {
             $this->addFlash('error', 'Cannot activate activity while account status is inactive.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         $newActivity = !$profile->isActive();
@@ -377,7 +354,7 @@ final class UsersCrudController extends AbstractController
         $state = $newActivity ? 'active' : 'inactive';
         $this->addFlash('success', "Profile activity set to {$state}.");
 
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/bulk-status', name: 'bulk_status', methods: ['POST'])]
@@ -387,7 +364,7 @@ final class UsersCrudController extends AbstractController
     ): Response {
         if (!$this->isCsrfTokenValid('bulk_users_status', $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid security token.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         $action = (string) $request->request->get('bulk_action', '');
@@ -395,12 +372,12 @@ final class UsersCrudController extends AbstractController
         $userIds = array_values(array_unique(array_map('intval', is_array($ids) ? $ids : [])));
         if (empty($userIds)) {
             $this->addFlash('error', 'Select at least one user.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         if (!in_array($action, ['activate', 'deactivate'], true)) {
             $this->addFlash('error', 'Invalid bulk action.');
-            return $this->redirectToRoute('admin_users_index');
+            return $this->redirectToDashboardUsers();
         }
 
         $users = $entityManager->getRepository(User::class)->createQueryBuilder('u')
@@ -460,14 +437,28 @@ final class UsersCrudController extends AbstractController
             $this->addFlash('error', sprintf('%d user(s) skipped (already in target state or protected).', $skipped));
         }
 
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirectToDashboardUsers();
     }
 
     #[Route('/{id}/accept', name: 'accept', methods: ['POST'])]
-    public function acceptRegistration(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    public function acceptRegistration(
+        Request $request,
+        User $user,
+        EntityManagerInterface $entityManager,
+        RegistrationFraudScoringService $registrationFraudScoringService
+    ): Response
     {
         if (!$this->isCsrfTokenValid('accept' . $user->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid security token');
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        $fraud = $registrationFraudScoringService->score($user, $user->getProfile());
+        if ((int) ($fraud['score'] ?? 0) >= 50) {
+            $this->addFlash('error', sprintf(
+                'Acceptance blocked: fraud score is %d/100 (must be below 50).',
+                (int) $fraud['score']
+            ));
             return $this->redirectToRoute('admin_dashboard');
         }
 
@@ -507,6 +498,35 @@ final class UsersCrudController extends AbstractController
 
         $this->addFlash('success', 'Registration declined.');
         return $this->redirectToRoute('admin_dashboard');
+    }
+
+    #[Route('/{id}/move-to-pending', name: 'move_to_pending', methods: ['POST'])]
+    public function moveToPendingReview(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('move_to_pending' . $user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token');
+            return $this->redirectToDashboardUsers();
+        }
+
+        $user->setStatus(false);
+        if ($user->getProfile()) {
+            $student = $user->getProfile();
+            $student->setIsActive(false);
+            $student->setValidationStatus('pending');
+            $entityManager->persist($student);
+        }
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'User moved to pending review queue.');
+
+        return $this->redirectToDashboardUsers();
+    }
+
+    private function redirectToDashboardUsers(): RedirectResponse
+    {
+        return $this->redirect($this->generateUrl('admin_dashboard') . '#users');
     }
 
 }

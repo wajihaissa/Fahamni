@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -60,8 +61,14 @@ final class FrontOfficeController extends AbstractController
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
-        
-        return $this->redirectToRoute('app_profile', ['id' => $user['id']]);
+
+        $section = (string) $request->query->get('section', '');
+        $params = ['id' => $user['id']];
+        if ($section !== '') {
+            $params['section'] = $section;
+        }
+
+        return $this->redirectToRoute('app_profile', $params);
     }
 
     #[Route('/profile/{id}', name: 'app_profile', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
@@ -103,9 +110,45 @@ final class FrontOfficeController extends AbstractController
                 $lastName = $request->request->get('lastName');
                 $phone = $request->request->get('phone');
                 $bio = $request->request->get('bio');
+                /** @var UploadedFile|null $avatarFile */
+                $avatarFile = $request->files->get('avatar');
                 
                 if ($firstName && $lastName) {
                     $user->setFullName($firstName . ' ' . $lastName);
+                }
+
+                if ($avatarFile instanceof UploadedFile && $avatarFile->isValid()) {
+                    $maxBytes = 5 * 1024 * 1024;
+                    if ($avatarFile->getSize() > $maxBytes) {
+                        $this->addFlash('error', 'Profile image must be smaller than 5MB.');
+                        return $this->redirectToRoute('app_profile', ['id' => $id]);
+                    }
+
+                    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    if (!in_array((string) $avatarFile->getMimeType(), $allowedMimeTypes, true)) {
+                        $this->addFlash('error', 'Only JPG, PNG, or WEBP images are allowed.');
+                        return $this->redirectToRoute('app_profile', ['id' => $id]);
+                    }
+
+                    $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/avatars';
+                    if (!is_dir($uploadDir) && !@mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+                        $this->addFlash('error', 'Could not create avatar upload directory.');
+                        return $this->redirectToRoute('app_profile', ['id' => $id]);
+                    }
+
+                    $extension = $avatarFile->guessExtension() ?: 'jpg';
+                    $fileName = sprintf('avatar_%d_%s.%s', $user->getId(), bin2hex(random_bytes(8)), $extension);
+                    $avatarFile->move($uploadDir, $fileName);
+
+                    $oldAvatar = $user->getAvatarPath();
+                    if (is_string($oldAvatar) && str_starts_with($oldAvatar, '/uploads/avatars/')) {
+                        $oldAvatarFile = $this->getParameter('kernel.project_dir') . '/public' . $oldAvatar;
+                        if (is_file($oldAvatarFile)) {
+                            @unlink($oldAvatarFile);
+                        }
+                    }
+
+                    $user->setAvatarPath('/uploads/avatars/' . $fileName);
                 }
                 
                 if ($student) {
@@ -118,6 +161,12 @@ final class FrontOfficeController extends AbstractController
                 
                 $entityManager->persist($user);
                 $entityManager->flush();
+
+                $session = $request->getSession();
+                $sessionData = (array) $session->get('user', []);
+                $sessionData['fullName'] = $user->getFullName();
+                $sessionData['avatarPath'] = $user->getAvatarPath();
+                $session->set('user', $sessionData);
                 
                 $this->addFlash('success', 'Personal information updated successfully');
             } elseif ($formType === 'account') {

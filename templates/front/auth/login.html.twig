@@ -39,6 +39,15 @@
                         Sign In with Face ID
                     </button>
                     <span class="error-message" id="passkeyError"></span>
+
+                    <div class="form-group" id="twoFactorGroup" style="display:none; margin-top: 12px;">
+                        <label for="twoFactorCode">2FA Code</label>
+                        <input type="text" id="twoFactorCode" name="twoFactorCode" placeholder="Enter 6-digit code" autocomplete="one-time-code" inputmode="numeric">
+                        <span class="error-message" id="twoFactorError"></span>
+                        <button type="button" class="btn btn-primary btn-full" id="twoFactorVerifyBtn" style="margin-top: 10px;">
+                            Verify 2FA
+                        </button>
+                    </div>
                 </form>
 
                 <div class="auth-footer">
@@ -80,6 +89,63 @@
             var passwordError = document.getElementById('passwordError');
             var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
             var passkeyError = document.getElementById('passkeyError');
+            var twoFactorGroup = document.getElementById('twoFactorGroup');
+            var twoFactorCode = document.getElementById('twoFactorCode');
+            var twoFactorError = document.getElementById('twoFactorError');
+            var twoFactorVerifyBtn = document.getElementById('twoFactorVerifyBtn');
+            var twoFactorPending = false;
+
+            function enterTwoFactorMode(message) {
+                twoFactorPending = true;
+                twoFactorGroup.style.display = 'block';
+                if (message) twoFactorError.textContent = message;
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+                if (passkeyLoginBtn) passkeyLoginBtn.disabled = true;
+                var submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                twoFactorCode.focus();
+            }
+
+            function verifyTwoFactor() {
+                if (!twoFactorPending) return;
+
+                twoFactorError.textContent = '';
+                var code = (twoFactorCode.value || '').trim();
+                if (!code) {
+                    twoFactorError.textContent = '2FA code is required';
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('code', code);
+
+                twoFactorVerifyBtn.disabled = true;
+                var originalText = twoFactorVerifyBtn.textContent;
+                twoFactorVerifyBtn.textContent = 'Verifying...';
+
+                fetch('{{ path('app_login_2fa') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data: data })))
+                .then(result => {
+                    if (result.status === 200 && result.data.success) {
+                        window.location.href = result.data.redirect || '/';
+                        return;
+                    }
+                    twoFactorError.textContent = result.data.message || '2FA verification failed';
+                })
+                .catch(error => {
+                    twoFactorError.textContent = 'Network error: ' + error.message;
+                })
+                .finally(() => {
+                    twoFactorVerifyBtn.disabled = false;
+                    twoFactorVerifyBtn.textContent = originalText;
+                });
+            }
 
             function isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -88,6 +154,10 @@
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    if (twoFactorPending) {
+                        verifyTwoFactor();
+                        return;
+                    }
                     var isValid = true;
                     emailError.textContent = '';
                     passwordError.textContent = '';
@@ -143,6 +213,12 @@
                             console.log('User data from JSON:', result.data.user);
                             var data = result.data;
                             if (result.status === 200 && data.success) {
+                                if (data.requires2fa) {
+                                    submitBtn.textContent = originalText;
+                                    submitBtn.disabled = false;
+                                    enterTwoFactorMode(data.message || '2FA required');
+                                    return;
+                                }
                                 // Show user data before redirect
                                 
                                 // Redirect to home on succes
@@ -160,6 +236,18 @@
                             submitBtn.disabled = false;
                             console.error('Login error:', error);
                         });
+                    }
+                });
+            }
+
+            if (twoFactorVerifyBtn) {
+                twoFactorVerifyBtn.addEventListener('click', verifyTwoFactor);
+            }
+
+            if (twoFactorCode) {
+                twoFactorCode.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyTwoFactor();
                     }
                 });
             }
@@ -252,6 +340,11 @@
                         var verifyData = await verifyRes.json();
                         if (!verifyRes.ok || !verifyData.success) {
                             throw new Error(verifyData.message || 'Passkey login failed');
+                        }
+
+                        if (verifyData.requires2fa) {
+                            enterTwoFactorMode(verifyData.message || '2FA required');
+                            return;
                         }
 
                         window.location.href = verifyData.redirect || '/home';

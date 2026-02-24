@@ -33,9 +33,14 @@
                     {% if user %}
                     <!-- User Profile Dropdown -->
                     <div class="user-dropdown" style="position: relative;">
+                        {% set avatarPath = user.avatarPath|default(app.user ? app.user.avatarPath : null) %}
                         <button class="user-profile-btn" id="userProfileBtn" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 20px; background: var(--primary-color); color: white; font-weight: 500;">
-                            <div style="width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary-color);">
-                                {{ user.fullName|first|upper }}
+                            <div style="width: 32px; height: 32px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--primary-color); overflow: hidden;">
+                                {% if avatarPath %}
+                                    <img src="{{ asset(avatarPath|trim('/')) }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    {{ user.fullName|first|upper }}
+                                {% endif %}
                             </div>
                             <span>{{ user.fullName }}</span>
                             <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
@@ -46,10 +51,10 @@
                                 <p style="margin: 0; font-weight: 600; color: var(--text-color);">{{ user.fullName }}</p>
                                 <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-light);">{{ user.email }}</p>
                             </div>
-                            <a href="/profile" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                            <a href="{{ path('app_profile_current') }}" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
                                 <i class="fas fa-user" style="margin-right: 8px; color: var(--primary-color);"></i> My Profile
                             </a>
-                            <a href="/settings" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
+                            <a href="{{ path('app_profile_current', { section: 'account' }) }}#account" style="display: block; padding: 12px 16px; color: var(--text-color); text-decoration: none; border-bottom: 1px solid var(--border-color);" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='transparent'">
                                 <i class="fas fa-cog" style="margin-right: 8px; color: var(--primary-color);"></i> Settings
                             </a>
                             {% if canAccessAdmin %}

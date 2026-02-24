@@ -1232,6 +1232,84 @@
             background: #e0ecff;
             color: #1d4ed8;
         }
+        #users .scope-tabs {
+            display: inline-flex;
+            gap: 8px;
+            margin: 0 0 14px 2px;
+            flex-wrap: wrap;
+        }
+        #users .scope-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 94px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            background: #eff6ff;
+            transition: all .18s ease;
+        }
+        #users .scope-tab:hover {
+            transform: translateY(-1px);
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+        #users .scope-tab.active {
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 10px 18px rgba(37, 99, 235, 0.28);
+        }
+        #users .directory-tools {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 12px 2px;
+            flex-wrap: wrap;
+        }
+        #users .directory-search {
+            flex: 1 1 260px;
+            min-width: 220px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+            color: #0f172a;
+            font-size: 0.9rem;
+        }
+        #users .directory-search:focus,
+        #users .directory-filter:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        #users .directory-filter {
+            flex: 0 0 170px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+            color: #0f172a;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        #users .directory-no-results {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border: 1px solid #bfdbfe;
+        }
 
         #users .card {
             background: rgba(255, 255, 255, 0.03);
@@ -1556,18 +1634,53 @@
                             <div class="card">
                                 <table class="data-table" style="width:100%;">
                                     <thead>
-                                        <tr><th>Name</th><th>Email</th><th>Requested</th><th>Actions</th></tr>
+                                        <tr><th>Name</th><th>Email</th><th>Requested</th><th>Fraud Risk</th><th>Actions</th></tr>
                                     </thead>
                                     <tbody>
                                         {% for u in pendingUsers %}
+                                            {% set fraud = pendingFraudScores[u.id]|default(null) %}
                                             <tr>
                                                 <td>{{ u.fullName }}</td>
                                                 <td>{{ u.email }}</td>
                                                 <td>{{ u.createdAt ? u.createdAt|date('M d, Y H:i') : '-' }}</td>
                                                 <td>
-                                                    <form method="POST" action="{{ path('admin_users_accept', {id: u.id}) }}" style="display:inline-block;margin-right:6px;">
+                                                    {% if fraud %}
+                                                        {% set fraudClass = fraud.level == 'high' ? 'badge-inactive' : (fraud.level == 'medium' ? 'badge-tutor' : 'badge-active') %}
+                                                        <span class="badge {{ fraudClass }}" title="{{ fraud.recommendation }}">{{ fraud.level|upper }} ({{ fraud.score }}/100)</span>
+                                                        <div style="font-size:12px;color:#64748b;margin-top:4px;">
+                                                            {{ fraud.reasons|slice(0,2)|join(' ') }}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            class="btn-secondary btn-fraud-reasons"
+                                                            style="margin-top:6px;padding:4px 8px;font-size:12px;"
+                                                            data-user-name="{{ u.fullName }}"
+                                                            data-fraud-level="{{ fraud.level }}"
+                                                            data-fraud-score="{{ fraud.score }}"
+                                                            data-fraud-recommendation="{{ fraud.recommendation }}"
+                                                            data-fraud-reasons="{{ fraud.reasons|join(' || ') }}"
+                                                        >
+                                                            View full reasons
+                                                        </button>
+                                                    {% else %}
+                                                        <span class="badge badge-active">LOW (0/100)</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ path('admin_users_accept', {id: u.id}) }}"
+                                                        style="display:inline-block;margin-right:6px;"
+                                                        class="pending-accept-form"
+                                                        data-user-name="{{ u.fullName }}"
+                                                        data-fraud-level="{{ fraud ? fraud.level : 'low' }}"
+                                                        data-fraud-score="{{ fraud ? fraud.score : 0 }}"
+                                                        data-fraud-recommendation="{{ fraud ? fraud.recommendation : 'Safe for normal review flow.' }}"
+                                                    >
                                                         <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ u.id) }}">
-                                                        <button class="btn-primary" type="submit">Accept</button>
+                                                        <button class="btn-primary" type="submit" title="{% if fraud and fraud.score >= 50 %}Blocked: fraud score >= 50{% else %}Accept{% endif %}">
+                                                            Accept
+                                                        </button>
                                                     </form>
                                                     <form method="POST" action="{{ path('admin_users_decline', {id: u.id}) }}" style="display:inline-block;">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('decline' ~ u.id) }}">
@@ -1580,9 +1693,41 @@
                                 </table>
                             </div>
                         </div>
+                        <div id="fraud-reasons-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:10020;align-items:center;justify-content:center;padding:16px;">
+                            <div style="width:100%;max-width:560px;background:#fff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 20px 48px rgba(15,23,42,.2);overflow:hidden;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;">
+                                    <h3 style="margin:0;font-size:1rem;color:#0f172a;"><i class="fas fa-shield-alt"></i> Fraud Scoring Details</h3>
+                                    <button type="button" id="fraud-modal-close" style="background:none;border:none;font-size:1.2rem;line-height:1;cursor:pointer;color:#64748b;">&times;</button>
+                                </div>
+                                <div style="padding:14px 16px;">
+                                    <p id="fraud-modal-headline" style="margin:0 0 10px 0;color:#334155;font-size:0.92rem;"></p>
+                                    <p id="fraud-modal-recommendation" style="margin:0 0 10px 0;color:#475569;font-size:0.9rem;"></p>
+                                    <p style="margin:0 0 6px 0;font-weight:700;color:#0f172a;font-size:0.85rem;">Reasons</p>
+                                    <ul id="fraud-modal-reasons" style="margin:0;padding-left:18px;color:#475569;font-size:0.9rem;"></ul>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                     <div class="content-card">
-                        <span class="list-header-label">User Directory</span>
+                        {% set usersScope = users_scope|default('all') %}
+                        {% set usersScopeLabel = usersScope == 'approved' ? 'Approved Users' : (usersScope == 'declined' ? 'Declined Registrations' : 'Reviewed User Directory') %}
+                        <span class="list-header-label">{{ usersScopeLabel }}</span>
+                        <div class="scope-tabs">
+                            <a class="scope-tab {{ usersScope == 'all' ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_scope: 'all', users_page: 1 }) }}#users">All</a>
+                            <a class="scope-tab {{ usersScope == 'approved' ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_scope: 'approved', users_page: 1 }) }}#users">Approved</a>
+                            <a class="scope-tab {{ usersScope == 'declined' ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_scope: 'declined', users_page: 1 }) }}#users">Declined</a>
+                        </div>
+                        <div class="directory-tools">
+                            <input type="text" id="usersDirectorySearch" class="directory-search" placeholder="Search by name or email...">
+                            <select id="usersDirectoryFilter" class="directory-filter">
+                                <option value="all">All</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="student">Student</option>
+                                <option value="tutor">Tutor</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
                         <div id="add-user-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;z-index:9999;"></div>
                         <div id="add-user-form" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:12px;padding:2rem;width:90%;max-width:600px;display:none;z-index:10000;box-shadow:0 10px 40px rgba(0,0,0,0.3);">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -1635,14 +1780,22 @@
                                         <th>Email</th>
                                         <th>Role</th>
                                         <th>Status</th>
+                                        <th>Fraud Risk</th>
                                         <th>Created</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% if users is defined and users|length > 0 %}
-                                        {% for user in users %}
-                                            <tr>
+                                            {% for user in users %}
+                                            {% set userAi = aiUserSummaries[user.id]|default(null) %}
+                                            {% set fraud = usersFraudScores[user.id]|default(null) %}
+                                            {% set roleKey = user.roles[0]|replace({'ROLE_': ''})|lower %}
+                                            <tr class="users-directory-row"
+                                                data-name="{{ user.fullName|lower }}"
+                                                data-email="{{ user.email|lower }}"
+                                                data-role="{{ roleKey }}"
+                                                data-status="{{ user.status ? 'active' : 'inactive' }}">
                                                 <td>
                                                     <div class="user-cell">
                                                         <div class="user-avatar">
@@ -1659,7 +1812,7 @@
                                                 <td>{{ user.email }}</td>
                                                 <td>
                                                     <span class="badge {% if 'ROLE_TUTOR' in user.roles %}badge-tutor{% else %}badge-student{% endif %}">
-                                                        {{ user.roles[0]|replace({'ROLE_': ''})|lower }}
+                                                        {{ roleKey }}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -1667,16 +1820,61 @@
                                                         {{ user.status ? 'Active' : 'Inactive' }}
                                                     </span>
                                                 </td>
+                                                <td>
+                                                    {% if fraud %}
+                                                        {% set fraudClass = fraud.level == 'high' ? 'badge-inactive' : (fraud.level == 'medium' ? 'badge-tutor' : 'badge-active') %}
+                                                        <span class="badge {{ fraudClass }}" title="{{ fraud.recommendation }}">{{ fraud.level|upper }} ({{ fraud.score }}/100)</span>
+                                                        <div style="font-size:12px;color:#64748b;margin-top:4px;">
+                                                            {{ fraud.reasons|slice(0,2)|join(' ') }}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            class="btn-secondary btn-fraud-reasons"
+                                                            style="margin-top:6px;padding:4px 8px;font-size:12px;"
+                                                            data-user-name="{{ user.fullName }}"
+                                                            data-fraud-level="{{ fraud.level }}"
+                                                            data-fraud-score="{{ fraud.score }}"
+                                                            data-fraud-recommendation="{{ fraud.recommendation }}"
+                                                            data-fraud-reasons="{{ fraud.reasons|join(' || ') }}"
+                                                        >
+                                                            View full reasons
+                                                        </button>
+                                                    {% else %}
+                                                        <span class="badge badge-active">LOW (0/100)</span>
+                                                    {% endif %}
+                                                </td>
                                                 <td>{{ user.createdAt|date('M d, Y') }}</td>
                                                 <td>
                                                     <div class="actions">
-                                                        <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn-action btn-view" title="View">
+                                                        <a href="{{ path('admin_users_show', {id: user.id}) }}"
+                                                           class="btn-action btn-view"
+                                                           title="View"
+                                                           data-user-id="{{ user.id }}"
+                                                           data-user-name="{{ user.fullName }}"
+                                                           data-user-email="{{ user.email }}"
+                                                           data-user-role="{{ user.roles[0]|replace({'ROLE_': ''})|lower }}"
+                                                           data-user-status="{{ user.status ? 'Active' : 'Inactive' }}"
+                                                           data-ai-summary="{{ userAi ? userAi|json_encode : '' }}">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <form method="POST" action="{{ path('admin_users_toggle_status', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                        <form
+                                                            method="POST"
+                                                            action="{{ path('admin_users_toggle_status', {id: user.id}) }}"
+                                                            style="display:inline-block; margin:0;"
+                                                            class="status-toggle-form"
+                                                            data-user-name="{{ user.fullName }}"
+                                                            data-fraud-score="{{ fraud ? fraud.score : 0 }}"
+                                                            data-will-activate="{{ user.status ? '0' : '1' }}"
+                                                        >
                                                             <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ user.id) }}">
                                                             <button type="submit" class="btn-action {% if user.status %}btn-deactivate{% else %}btn-activate{% endif %}" title="{% if user.status %}Deactivate{% else %}Activate{% endif %}">
                                                                 <i class="fas {% if user.status %}fa-ban{% else %}fa-check{% endif %}"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" action="{{ path('admin_users_move_to_pending', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('move_to_pending' ~ user.id) }}">
+                                                            <button type="submit" class="btn-action btn-secondary" title="Decline to pending queue">
+                                                                <i class="fas fa-arrow-up"></i>
                                                             </button>
                                                         </form>
                                                         <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" style="display:inline-block; margin:0;">
@@ -1691,18 +1889,27 @@
                                         {% endfor %}
                                     {% else %}
                                         <tr>
-                                            <td colspan="6" class="empty">No users found</td>
+                                            <td colspan="7" class="empty">
+                                                {% if usersScope == 'approved' %}
+                                                    No approved users found
+                                                {% elseif usersScope == 'declined' %}
+                                                    No declined users found
+                                                {% else %}
+                                                    No reviewed users found
+                                                {% endif %}
+                                            </td>
                                         </tr>
                                     {% endif %}
                                 </tbody>
                             </table>
+                            <div id="usersDirectoryNoResults" class="directory-no-results">No users match your search/filter.</div>
                             {% if users_total_pages is defined and users_total_pages > 1 %}
                                 <div class="table-pagination">
-                                    <a class="page-link {{ users_page <= 1 ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_page: users_page - 1 }) }}#users">Prev</a>
+                                    <a class="page-link {{ users_page <= 1 ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_scope: usersScope, users_page: users_page - 1 }) }}#users">Prev</a>
                                     {% for p in 1..users_total_pages %}
-                                        <a class="page-link {{ p == users_page ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_page: p }) }}#users">{{ p }}</a>
+                                        <a class="page-link {{ p == users_page ? 'active' : '' }}" href="{{ path('admin_dashboard', { users_scope: usersScope, users_page: p }) }}#users">{{ p }}</a>
                                     {% endfor %}
-                                    <a class="page-link {{ users_page >= users_total_pages ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_page: users_page + 1 }) }}#users">Next</a>
+                                    <a class="page-link {{ users_page >= users_total_pages ? 'disabled' : '' }}" href="{{ path('admin_dashboard', { users_scope: usersScope, users_page: users_page + 1 }) }}#users">Next</a>
                                 </div>
                             {% endif %}
                         </div>
@@ -2138,27 +2345,7 @@
             }
 
             function reloadUsersTable() {
-                const usersSection = document.getElementById('users');
-                fetch('/admin/users', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(res => res.text())
-                    .then(html => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const card = doc.querySelector('.card');
-                        if (card) {
-                            const usersContent = usersSection.querySelector('#users-content');
-                            usersContent.innerHTML = card.innerHTML;
-                            // Store the table content for later restoration
-                            if (!document.getElementById('users-table-backup')) {
-                                const backup = document.createElement('div');
-                                backup.id = 'users-table-backup';
-                                backup.style.display = 'none';
-                                document.body.appendChild(backup);
-                            }
-                            document.getElementById('users-table-backup').innerHTML = card.innerHTML;
-                        }
-                    })
-                    .catch(err => console.error('Reload error:', err));
+                loadUsersPage(getCurrentUsersPageUrl());
             }
 
             function showSuccessMessage(msg) {
@@ -2172,6 +2359,7 @@
                 const usersContent = usersSection.querySelector('#users-content');
                 if (!usersContent) return;
 
+                captureUsersDirectoryFilters();
                 usersContent.classList.add('is-loading');
                 fetch(url, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -2184,6 +2372,8 @@
                     const nextContent = doc.querySelector('#users #users-content');
                     if (nextContent) {
                         usersContent.innerHTML = nextContent.innerHTML;
+                        restoreUsersDirectoryFilters();
+                        applyUsersDirectoryFilters();
                         // keep an up-to-date backup for "Back to Users" behavior
                         if (!document.getElementById('users-table-backup')) {
                             const backup = document.createElement('div');
@@ -2209,6 +2399,61 @@
                     return activePage.getAttribute('href');
                 }
                 return window.location.pathname + window.location.search + '#users';
+            }
+
+            let usersDirectorySearchState = '';
+            let usersDirectoryFilterState = 'all';
+
+            function captureUsersDirectoryFilters() {
+                const usersSection = document.getElementById('users');
+                if (!usersSection) return;
+                const searchInput = usersSection.querySelector('#usersDirectorySearch');
+                const filterSelect = usersSection.querySelector('#usersDirectoryFilter');
+                if (searchInput) usersDirectorySearchState = searchInput.value || '';
+                if (filterSelect) usersDirectoryFilterState = filterSelect.value || 'all';
+            }
+
+            function restoreUsersDirectoryFilters() {
+                const usersSection = document.getElementById('users');
+                if (!usersSection) return;
+                const searchInput = usersSection.querySelector('#usersDirectorySearch');
+                const filterSelect = usersSection.querySelector('#usersDirectoryFilter');
+                if (searchInput) searchInput.value = usersDirectorySearchState;
+                if (filterSelect) filterSelect.value = usersDirectoryFilterState;
+            }
+
+            function applyUsersDirectoryFilters() {
+                const usersSection = document.getElementById('users');
+                if (!usersSection) return;
+                const searchInput = usersSection.querySelector('#usersDirectorySearch');
+                const filterSelect = usersSection.querySelector('#usersDirectoryFilter');
+                const noResults = usersSection.querySelector('#usersDirectoryNoResults');
+                const rows = usersSection.querySelectorAll('.users-directory-row');
+                if (!searchInput || !filterSelect || rows.length === 0) {
+                    if (noResults) noResults.style.display = 'none';
+                    return;
+                }
+
+                const q = (searchInput.value || '').trim().toLowerCase();
+                const filter = (filterSelect.value || 'all').toLowerCase();
+                let visibleCount = 0;
+
+                rows.forEach(function (row) {
+                    const name = (row.getAttribute('data-name') || '').toLowerCase();
+                    const email = (row.getAttribute('data-email') || '').toLowerCase();
+                    const role = (row.getAttribute('data-role') || '').toLowerCase();
+                    const status = (row.getAttribute('data-status') || '').toLowerCase();
+
+                    const searchMatch = q === '' || name.includes(q) || email.includes(q);
+                    const filterMatch = filter === 'all' || status === filter || role === filter;
+                    const show = searchMatch && filterMatch;
+                    row.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+
+                if (noResults) {
+                    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
             }
 
             function submitUsersFormAjax(form) {
@@ -2240,9 +2485,9 @@
             function isUsersActionUrl(action) {
                 try {
                     const url = new URL(action, window.location.origin);
-                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline)$/.test(url.pathname);
+                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline|move-to-pending)$/.test(url.pathname);
                 } catch (e) {
-                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline)$/.test(action);
+                    return /\/admin\/users\/\d+\/(toggle-status|delete|accept|decline|move-to-pending)$/.test(action);
                 }
             }
 
@@ -2263,9 +2508,53 @@
             
             // Store initial table on page load
             setTimeout(storeUsersTableBackup, 100);
+            const fraudModal = document.getElementById('fraud-reasons-modal');
+            const fraudModalClose = document.getElementById('fraud-modal-close');
+            const fraudModalHeadline = document.getElementById('fraud-modal-headline');
+            const fraudModalRecommendation = document.getElementById('fraud-modal-recommendation');
+            const fraudModalReasons = document.getElementById('fraud-modal-reasons');
+
+            function closeFraudModal() {
+                if (!fraudModal) return;
+                fraudModal.style.display = 'none';
+            }
+
+            function openFraudModal(payload) {
+                if (!fraudModal || !fraudModalHeadline || !fraudModalRecommendation || !fraudModalReasons) return;
+                const userName = payload.userName || 'Pending user';
+                const level = String(payload.level || 'low').toUpperCase();
+                const score = String(payload.score ?? '0');
+                const recommendation = payload.recommendation || 'Safe for normal review flow.';
+                const reasons = Array.isArray(payload.reasons) ? payload.reasons : [];
+                fraudModalHeadline.textContent = userName + ': ' + level + ' risk (' + score + '/100)';
+                fraudModalRecommendation.textContent = 'Recommendation: ' + recommendation;
+                fraudModalReasons.innerHTML = reasons.map(function (reason) {
+                    return '<li style="margin:0 0 6px 0;">' + reason.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</li>';
+                }).join('');
+                fraudModal.style.display = 'flex';
+            }
+
+            if (fraudModalClose) {
+                fraudModalClose.addEventListener('click', closeFraudModal);
+            }
+            if (fraudModal) {
+                fraudModal.addEventListener('click', function (e) {
+                    if (e.target === fraudModal) closeFraudModal();
+                });
+            }
 
             // Action buttons functionality
             document.addEventListener('click', function(e) {
+                const scopeTab = e.target.closest('#users .scope-tab');
+                if (scopeTab) {
+                    e.preventDefault();
+                    const href = scopeTab.getAttribute('href');
+                    if (href) {
+                        loadUsersPage(href);
+                    }
+                    return;
+                }
+
                 const pageLink = e.target.closest('#users .table-pagination .page-link');
                 if (pageLink && !pageLink.classList.contains('disabled')) {
                     e.preventDefault();
@@ -2273,6 +2562,20 @@
                     if (href) {
                         loadUsersPage(href);
                     }
+                    return;
+                }
+
+                const fraudReasonsBtn = e.target.closest('.btn-fraud-reasons');
+                if (fraudReasonsBtn) {
+                    e.preventDefault();
+                    const reasonsRaw = fraudReasonsBtn.getAttribute('data-fraud-reasons') || '';
+                    openFraudModal({
+                        userName: fraudReasonsBtn.getAttribute('data-user-name') || 'Pending user',
+                        level: fraudReasonsBtn.getAttribute('data-fraud-level') || 'low',
+                        score: fraudReasonsBtn.getAttribute('data-fraud-score') || '0',
+                        recommendation: fraudReasonsBtn.getAttribute('data-fraud-recommendation') || 'Safe for normal review flow.',
+                        reasons: reasonsRaw ? reasonsRaw.split(' || ').filter(Boolean) : []
+                    });
                     return;
                 }
 
@@ -2287,9 +2590,23 @@
                 const emailCell = row.querySelector('td:nth-child(2)');
                 const roleCell = row.querySelector('td:nth-child(3) .badge');
                 const statusCell = row.querySelector('td:nth-child(4) .badge');
+                const dataUserName = button.getAttribute('data-user-name');
+                const dataUserEmail = button.getAttribute('data-user-email');
+                const dataUserRole = button.getAttribute('data-user-role');
+                const dataUserStatus = button.getAttribute('data-user-status');
                 
                 // Get user ID from the button's data attribute
                 let userId = button.getAttribute('data-user-id');
+                const aiRaw = button.getAttribute('data-ai-summary') || '';
+
+                function escapeHtml(value) {
+                    return String(value ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                }
                 
                 if (button.classList.contains('btn-view')) {
                     e.preventDefault();
@@ -2301,7 +2618,56 @@
                     usersSection.classList.add('active');
                     
                     // Get user name for detail view
-                    const userName = nameCell ? nameCell.textContent.trim() : 'User';
+                    const userName = (dataUserName && dataUserName.trim()) || (nameCell ? nameCell.textContent.trim() : 'User');
+                    const userEmail = (dataUserEmail && dataUserEmail.trim()) || (emailCell ? emailCell.textContent.trim() : '-');
+                    const userRole = (dataUserRole && dataUserRole.trim()) || (roleCell ? roleCell.textContent.trim() : '-');
+                    const userStatus = (dataUserStatus && dataUserStatus.trim()) || (statusCell ? statusCell.textContent.trim() : '-');
+                    let aiSummary = null;
+                    if (aiRaw) {
+                        try {
+                            aiSummary = JSON.parse(aiRaw);
+                        } catch (err) {
+                            aiSummary = null;
+                        }
+                    }
+
+                    let aiHtml = '';
+                    if (aiSummary && typeof aiSummary === 'object') {
+                        const riskLevel = String(aiSummary.riskLevel || 'low').toLowerCase();
+                        const riskClass = riskLevel === 'high'
+                            ? 'background:#fee2e2;color:#991b1b;'
+                            : (riskLevel === 'medium' ? 'background:#fef3c7;color:#92400e;' : 'background:#dcfce7;color:#166534;');
+                        const findings = Array.isArray(aiSummary.findings) ? aiSummary.findings : [];
+                        const actions = Array.isArray(aiSummary.actions) ? aiSummary.actions : [];
+                        const findingsHtml = findings.map(function (item) {
+                            return '<li style="margin:0 0 6px 0;">' + escapeHtml(item) + '</li>';
+                        }).join('');
+                        const actionsHtml = actions.map(function (item) {
+                            return '<li style="margin:0 0 6px 0;">' + escapeHtml(item) + '</li>';
+                        }).join('');
+                        aiHtml = `
+                            <div style="margin-top:1.5rem;padding:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0.5rem;">
+                                    <h4 style="margin:0;font-size:1rem;color:var(--text-primary);"><i class="fas fa-robot"></i> AI User Summary</h4>
+                                    <div style="display:flex;gap:8px;align-items:center;">
+                                        <span style="padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;${riskClass}">${escapeHtml(riskLevel)} risk</span>
+                                        <span style="font-size:12px;font-weight:700;color:var(--text-primary);">Score: ${escapeHtml(aiSummary.score || 0)}/100</span>
+                                    </div>
+                                </div>
+                                <p style="margin:0 0 0.75rem 0;color:#334155;font-size:0.92rem;">${escapeHtml(aiSummary.headline || '')}</p>
+                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;">
+                                    <div>
+                                        <p style="margin:0 0 0.45rem 0;font-size:12px;font-weight:700;color:var(--text-primary);">Key Findings</p>
+                                        <ul style="margin:0;padding-left:18px;color:#475569;font-size:0.88rem;">${findingsHtml}</ul>
+                                    </div>
+                                    <div>
+                                        <p style="margin:0 0 0.45rem 0;font-size:12px;font-weight:700;color:var(--text-primary);">Recommended Admin Actions</p>
+                                        <ul style="margin:0;padding-left:18px;color:#475569;font-size:0.88rem;">${actionsHtml}</ul>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
                     
                     // Show detail view
                     const usersContent = usersSection.querySelector('#users-content');
@@ -2321,17 +2687,18 @@
                                 </div>
                                 <div style="padding: 1rem; background: #f8fafc; border-radius: 10px;">
                                     <p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 0.5rem 0;">Email</p>
-                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${emailCell ? emailCell.textContent.trim() : '-'}</p>
+                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${userEmail}</p>
                                 </div>
                                 <div style="padding: 1rem; background: #f8fafc; border-radius: 10px;">
                                     <p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 0.5rem 0;">Role</p>
-                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${roleCell ? roleCell.textContent.trim() : '-'}</p>
+                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${userRole}</p>
                                 </div>
                                 <div style="padding: 1rem; background: #f8fafc; border-radius: 10px;">
                                     <p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 0.5rem 0;">Status</p>
-                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${statusCell ? statusCell.textContent.trim() : '-'}</p>
+                                    <p style="font-weight: 600; color: var(--text-primary); margin: 0;">${userStatus}</p>
                                 </div>
                             </div>
+                            ${aiHtml}
                         </div>
                     `;
                     
@@ -2355,9 +2722,65 @@
                 const isUsersAction = isUsersActionUrl(action);
                 if (!isUsersAction) return;
 
+                const isPendingAccept = form.classList.contains('pending-accept-form') || /\/admin\/users\/\d+\/accept$/.test(action);
+                if (isPendingAccept) {
+                    const score = parseInt(form.getAttribute('data-fraud-score') || '0', 10);
+                    if (score >= 50) {
+                        const userName = form.getAttribute('data-user-name') || 'this user';
+                        window.alert('Cannot accept ' + userName + ': fraud score is ' + score + '/100. Minimum required is below 50.');
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                const isStatusToggle = form.classList.contains('status-toggle-form') || /\/admin\/users\/\d+\/toggle-status$/.test(action);
+                if (isStatusToggle) {
+                    const willActivate = (form.getAttribute('data-will-activate') || '0') === '1';
+                    const score = parseInt(form.getAttribute('data-fraud-score') || '0', 10);
+                    if (willActivate && score >= 50) {
+                        const userName = form.getAttribute('data-user-name') || 'this user';
+                        window.alert('Cannot activate ' + userName + ': fraud score is ' + score + '/100. Minimum required is below 50.');
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                if (isPendingAccept) {
+                    const level = String(form.getAttribute('data-fraud-level') || 'low').toLowerCase();
+                    if (level === 'high') {
+                        const score = form.getAttribute('data-fraud-score') || '0';
+                        const userName = form.getAttribute('data-user-name') || 'this user';
+                        const recommendation = form.getAttribute('data-fraud-recommendation') || '';
+                        const warning = 'High fraud risk detected for ' + userName + ' (' + score + '/100).\\n\\n' +
+                            (recommendation ? ('Recommendation: ' + recommendation + '\\n\\n') : '') +
+                            'Do you want to continue with ACCEPT?';
+                        if (!window.confirm(warning)) {
+                            e.preventDefault();
+                            return;
+                        }
+                    }
+                }
+
                 e.preventDefault();
                 submitUsersFormAjax(form);
             });
+
+            document.addEventListener('input', function (e) {
+                if (e.target && e.target.id === 'usersDirectorySearch') {
+                    usersDirectorySearchState = e.target.value || '';
+                    applyUsersDirectoryFilters();
+                }
+            });
+
+            document.addEventListener('change', function (e) {
+                if (e.target && e.target.id === 'usersDirectoryFilter') {
+                    usersDirectoryFilterState = e.target.value || 'all';
+                    applyUsersDirectoryFilters();
+                }
+            });
+
+            restoreUsersDirectoryFilters();
+            applyUsersDirectoryFilters();
 
             // Search functionality
             const searchInput = document.querySelector('.search-bar input');

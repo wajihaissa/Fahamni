@@ -11,13 +11,20 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Entity\Blog;
 use App\Entity\Student;
+use App\Service\UserAiSummaryService;
+use App\Service\RegistrationFraudScoringService;
 
 #[Route('/admin', name: 'admin_')]
 #[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
     #[Route('/', name: 'dashboard')]
-    public function dashboard(Request $request, EntityManagerInterface $entityManager): Response
+    public function dashboard(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserAiSummaryService $userAiSummaryService,
+        RegistrationFraudScoringService $registrationFraudScoringService
+    ): Response
     {
         // Get statistics for dashboard
         $totalUsers = $entityManager->getRepository(User::class)->count([]);
@@ -42,19 +49,84 @@ final class AdminController extends AbstractController
         $recentArticles = $entityManager->getRepository(Blog::class)
             ->findBy([], ['createdAt' => 'DESC'], 3);
 
-        // Get pending users (inactive status)
+        // Pending review queue: only registrations still awaiting decision.
         $pendingUsers = $entityManager->getRepository(User::class)
-            ->findBy(['status' => false], ['createdAt' => 'DESC']);
+            ->createQueryBuilder('u')
+            ->leftJoin('u.profile', 'p')->addSelect('p')
+            ->where('u.status = :inactive')
+            ->andWhere('p.validationStatus = :pending')
+            ->setParameter('inactive', false)
+            ->setParameter('pending', 'pending')
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+        $pendingFraudScores = [];
+        foreach ($pendingUsers as $pendingUser) {
+            if ($pendingUser instanceof User && $pendingUser->getId() !== null) {
+                $pendingFraudScores[$pendingUser->getId()] = $registrationFraudScoringService->score(
+                    $pendingUser,
+                    $pendingUser->getProfile()
+                );
+            }
+        }
 
-        // Paginated users for users management block
+        // Secondary list scopes for reviewed accounts.
+        $usersScope = (string) $request->query->get('users_scope', 'all');
+        $allowedScopes = ['all', 'approved', 'declined'];
+        if (!in_array($usersScope, $allowedScopes, true)) {
+            $usersScope = 'all';
+        }
+
+        // Paginated secondary list with selected scope.
         $usersPerPage = 8;
         $requestedPage = max(1, (int) $request->query->get('users_page', 1));
-        $usersTotal = $entityManager->getRepository(User::class)->count([]);
+        $usersTotalQb = $entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->leftJoin('u.profile', 'p');
+        if ($usersScope === 'approved') {
+            $usersTotalQb->where('p.validationStatus = :approved')->setParameter('approved', 'approved');
+        } elseif ($usersScope === 'declined') {
+            $usersTotalQb->where('p.validationStatus = :rejected')->setParameter('rejected', 'rejected');
+        } else {
+            $usersTotalQb
+                ->where('(p.validationStatus IS NULL OR p.validationStatus != :pending)')
+                ->setParameter('pending', 'pending');
+        }
+        $usersTotal = (int) $usersTotalQb->getQuery()->getSingleScalarResult();
         $usersTotalPages = max(1, (int) ceil($usersTotal / $usersPerPage));
         $usersPage = min($requestedPage, $usersTotalPages);
         $usersOffset = ($usersPage - 1) * $usersPerPage;
-        $users = $entityManager->getRepository(User::class)
-            ->findBy([], ['createdAt' => 'DESC'], $usersPerPage, $usersOffset);
+        $usersQb = $entityManager->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->leftJoin('u.profile', 'p')
+            ->addSelect('p');
+        if ($usersScope === 'approved') {
+            $usersQb->where('p.validationStatus = :approved')->setParameter('approved', 'approved');
+        } elseif ($usersScope === 'declined') {
+            $usersQb->where('p.validationStatus = :rejected')->setParameter('rejected', 'rejected');
+        } else {
+            $usersQb
+                ->where('(p.validationStatus IS NULL OR p.validationStatus != :pending)')
+                ->setParameter('pending', 'pending');
+        }
+        $users = $usersQb
+            ->orderBy('u.createdAt', 'DESC')
+            ->setFirstResult($usersOffset)
+            ->setMaxResults($usersPerPage)
+            ->getQuery()
+            ->getResult();
+        $aiUserSummaries = [];
+        $usersFraudScores = [];
+        foreach ($users as $dashboardUser) {
+            if ($dashboardUser instanceof User && $dashboardUser->getId() !== null) {
+                $aiUserSummaries[$dashboardUser->getId()] = $userAiSummaryService->summarize($dashboardUser);
+                $usersFraudScores[$dashboardUser->getId()] = $registrationFraudScoringService->score(
+                    $dashboardUser,
+                    $dashboardUser->getProfile()
+                );
+            }
+        }
 
         return $this->render('back/index.html.twig', [
             'totalUsers' => $totalUsers,
@@ -64,16 +136,20 @@ final class AdminController extends AbstractController
             'recentUsers' => $recentUsers,
             'recentArticles' => $recentArticles,
             'pendingUsers' => $pendingUsers,
+            'pendingFraudScores' => $pendingFraudScores,
             'users' => $users,
+            'users_scope' => $usersScope,
             'users_page' => $usersPage,
             'users_total_pages' => $usersTotalPages,
+            'aiUserSummaries' => $aiUserSummaries,
+            'usersFraudScores' => $usersFraudScores,
         ]);
     }
 
     #[Route('/users', name: 'users')]
     public function users(): Response
     {
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirect($this->generateUrl('admin_dashboard') . '#users');
     }
 
     #[Route('/articles', name: 'articles')]
