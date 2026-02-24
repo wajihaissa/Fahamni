@@ -21,7 +21,25 @@
                     </button>
 
                     {% if user %}
-                    {# Icône Messenger : ouvre la Chat Sidebar #}
+                    {# Icone Notifications #}
+                    <button type="button" class="navbar-notif-icon-btn" id="navbarNotifIconBtn" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="navbar-notif-badge" id="navbarNotifBadge" style="display:none">0</span>
+                    </button>
+
+                    {# Notification Sidebar #}
+                    <div class="navbar-notif-sidebar-overlay" id="navbarNotifSidebarOverlay" aria-hidden="true"></div>
+                    <div class="navbar-notif-sidebar" id="navbarNotifSidebar" aria-hidden="true">
+                        <div class="navbar-notif-sidebar-top">
+                            <h2>Notifications</h2>
+                            <button type="button" class="navbar-notif-sidebar-close" id="navbarNotifSidebarClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="navbar-notif-sidebar-content" id="navbarNotifSidebarContent">
+                            <div class="navbar-notif-sidebar-loading" id="navbarNotifSidebarLoading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+                        </div>
+                    </div>
+
+                    {# Icone Messenger #}
                     <button type="button" class="navbar-messenger-icon-btn" id="navbarMessengerIconBtn" aria-label="Ouvrir les messages">
                         <i class="fas fa-comments"></i>
                     </button>
@@ -371,6 +389,138 @@
                             });
                         })();
                     </script>
+
+                    {# === NOTIFICATIONS CSS + JS === #}
+                    <style>
+                        .navbar-notif-icon-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-color, #6366f1); transition: background 0.2s, color 0.2s; margin-right: 4px; position: relative; }
+                        .navbar-notif-icon-btn:hover { background: rgba(99, 102, 241, 0.1); }
+                        .navbar-notif-badge { position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; border-radius: 9px; background: #ef4444; color: #fff; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 4px; line-height: 1; }
+                        .navbar-notif-sidebar-overlay { position: fixed; top: var(--navbar-height, 72px); left: 0; right: 0; bottom: 0; background: transparent; z-index: 9996; opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s; pointer-events: none; }
+                        .navbar-notif-sidebar-overlay.is-open { opacity: 1; visibility: visible; pointer-events: auto; }
+                        .navbar-notif-sidebar { position: fixed; top: var(--navbar-height, 72px); right: 0; width: 360px; max-width: 100vw; height: calc(100vh - var(--navbar-height, 72px)); background: var(--card-bg, #fff); box-shadow: -4px 0 24px rgba(0,0,0,0.12); z-index: 9997; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s ease; border-radius: 12px 0 0 12px; overflow: hidden; visibility: hidden; }
+                        .navbar-notif-sidebar.is-open { transform: translateX(0); visibility: visible; }
+                        .navbar-notif-sidebar-top { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border-color, #e5e7eb); flex-shrink: 0; }
+                        .navbar-notif-sidebar-top h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-color, #1f2937); }
+                        .navbar-notif-sidebar-close { width: 36px; height: 36px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-light, #6b7280); background: transparent; cursor: pointer; transition: background 0.2s; }
+                        .navbar-notif-sidebar-close:hover { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); }
+                        .navbar-notif-sidebar-content { flex: 1; overflow-y: auto; min-height: 0; }
+                        .navbar-notif-sidebar-loading { padding: 24px; text-align: center; color: var(--text-light, #6b7280); }
+                        .notif-item:hover { background: rgba(99, 102, 241, 0.08) !important; }
+                    </style>
+                    <script>
+                        (function() {
+                            var notifBtn = document.getElementById('navbarNotifIconBtn');
+                            var notifOverlay = document.getElementById('navbarNotifSidebarOverlay');
+                            var notifSidebar = document.getElementById('navbarNotifSidebar');
+                            var notifClose = document.getElementById('navbarNotifSidebarClose');
+                            var notifContent = document.getElementById('navbarNotifSidebarContent');
+                            var notifBadge = document.getElementById('navbarNotifBadge');
+                            var notifLoaded = false;
+
+                            {% if is_granted('ROLE_TUTOR') %}
+                            var countUrl = '{{ path('app_notifications_tutor_count') }}';
+                            var listUrl = '{{ path('app_notifications_tutor_list') }}';
+                            var markAllUrl = '{{ path('app_notifications_tutor_mark_all_read') }}';
+                            var markAllBtnId = 'tutorNotifMarkAllBtn';
+                            var notifItemSelector = '.tutor-notif-item';
+                            var isTutor = true;
+                            {% else %}
+                            var countUrl = '{{ path('app_notifications_count') }}';
+                            var listUrl = '{{ path('app_notifications_list') }}';
+                            var markAllUrl = '{{ path('app_notifications_mark_all_read') }}';
+                            var markAllBtnId = 'notifMarkAllReadBtn';
+                            var notifItemSelector = '.notif-item';
+                            var isTutor = false;
+                            {% endif %}
+
+                            function closeNotifSidebar() {
+                                if (notifOverlay) { notifOverlay.classList.remove('is-open'); notifOverlay.setAttribute('aria-hidden', 'true'); }
+                                if (notifSidebar) { notifSidebar.classList.remove('is-open'); notifSidebar.setAttribute('aria-hidden', 'true'); }
+                            }
+
+                            function openNotifSidebar() {
+                                notifOverlay.classList.add('is-open');
+                                notifSidebar.classList.add('is-open');
+                                notifOverlay.setAttribute('aria-hidden', 'false');
+                                notifSidebar.setAttribute('aria-hidden', 'false');
+                                loadNotifications();
+                            }
+
+                            function loadNotifications() {
+                                notifContent.innerHTML = '<div class="navbar-notif-sidebar-loading"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+                                fetch(listUrl, { credentials: 'same-origin' })
+                                    .then(function(r) { return r.text(); })
+                                    .then(function(html) {
+                                        notifContent.innerHTML = html;
+                                        notifLoaded = true;
+                                        // Attach mark-all-read
+                                        var markAllBtn = document.getElementById(markAllBtnId);
+                                        if (markAllBtn) {
+                                            markAllBtn.addEventListener('click', function() {
+                                                fetch(markAllUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                                    .then(function() {
+                                                        updateNotifCount();
+                                                        loadNotifications();
+                                                    });
+                                            });
+                                        }
+                                        // Attach mark-read on click
+                                        notifContent.querySelectorAll(notifItemSelector).forEach(function(item) {
+                                            item.addEventListener('click', function() {
+                                                if (isTutor) {
+                                                    var type = item.getAttribute('data-type');
+                                                    var id = item.getAttribute('data-id');
+                                                    if (!id) return;
+                                                    if (type === 'status') {
+                                                        fetch('/notifications/tutor/mark-status-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                                    } else {
+                                                        fetch('/notifications/mark-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                                    }
+                                                } else {
+                                                    var id = item.getAttribute('data-notif-id');
+                                                    if (id) {
+                                                        fetch('/notifications/mark-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                                                    }
+                                                }
+                                                updateNotifCount();
+                                            });
+                                        });
+                                    })
+                                    .catch(function() {
+                                        notifContent.innerHTML = '<p style="padding:16px;color:#b91c1c;">Erreur de chargement.</p>';
+                                    });
+                            }
+
+                            function updateNotifCount() {
+                                fetch(countUrl, { credentials: 'same-origin' })
+                                    .then(function(r) { return r.json(); })
+                                    .then(function(data) {
+                                        var c = data.count || 0;
+                                        if (c > 0) {
+                                            notifBadge.textContent = c > 99 ? '99+' : c;
+                                            notifBadge.style.display = 'flex';
+                                        } else {
+                                            notifBadge.style.display = 'none';
+                                        }
+                                    })
+                                    .catch(function() {});
+                            }
+
+                            if (notifBtn) {
+                                notifBtn.addEventListener('click', function() {
+                                    if (notifSidebar && notifSidebar.classList.contains('is-open')) closeNotifSidebar();
+                                    else openNotifSidebar();
+                                });
+                            }
+                            if (notifClose) notifClose.addEventListener('click', closeNotifSidebar);
+                            if (notifOverlay) notifOverlay.addEventListener('click', closeNotifSidebar);
+
+                            // Poll count every 30s
+                            updateNotifCount();
+                            setInterval(updateNotifCount, 30000);
+                        })();
+                    </script>
+
                     {% else %}
                     <!-- Login/Register Buttons -->
                     <a href="/login" class="btn btn-secondary">Login</a>

@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\InteractionRepository;
-use BcMath\Number;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InteractionRepository::class)]
@@ -31,6 +29,15 @@ class Interaction
     #[ORM\ManyToOne(inversedBy: 'interactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Blog $blog = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isNotifRead = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isFlagged = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isDeletedByAdmin = false;
 
     public function getId(): ?int
     {
@@ -93,6 +100,42 @@ class Interaction
     public function setBlog(?Blog $blog): static
     {
         $this->blog = $blog;
+
+        return $this;
+    }
+
+    public function isNotifRead(): bool
+    {
+        return $this->isNotifRead;
+    }
+
+    public function setIsNotifRead(bool $isNotifRead): static
+    {
+        $this->isNotifRead = $isNotifRead;
+
+        return $this;
+    }
+
+    public function isFlagged(): bool
+    {
+        return $this->isFlagged;
+    }
+
+    public function setIsFlagged(bool $isFlagged): static
+    {
+        $this->isFlagged = $isFlagged;
+
+        return $this;
+    }
+
+    public function isDeletedByAdmin(): bool
+    {
+        return $this->isDeletedByAdmin;
+    }
+
+    public function setIsDeletedByAdmin(bool $isDeletedByAdmin): static
+    {
+        $this->isDeletedByAdmin = $isDeletedByAdmin;
 
         return $this;
     }

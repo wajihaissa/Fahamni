@@ -15,6 +15,7 @@ body{margin:0;padding:0;}
     z-index:100;
     backdrop-filter:blur(6px);
     border-bottom:1px solid #e6eef8;
+    transition:background 0.3s ease,border-color 0.3s ease;
 }
 .admin-navbar-left{display:flex;align-items:center;gap:1rem;}
 .admin-search-bar{position:relative;}
@@ -24,12 +25,23 @@ body{margin:0;padding:0;}
     border:1px solid #e6eef8;
     border-radius:10px;
     font-size:0.875rem;
+    background:transparent;
+    color:inherit;
     transition:border-color 0.2s ease,box-shadow 0.2s ease;
 }
 .admin-search-bar .admin-search-input:focus{
     outline:none;
     border-color:#667eea;
     box-shadow:0 0 0 3px rgba(102,126,234,0.1);
+}
+.search-no-results td{
+    background:#fafbff;
+    border-radius:8px;
+    font-style:italic;
+}
+body.admin-dark .search-no-results td{
+    background:rgba(255,255,255,.02);
+    color:#64748b;
 }
 .admin-search-bar .fa-search{
     position:absolute;
@@ -39,7 +51,28 @@ body{margin:0;padding:0;}
     color:#64748b;
     font-size:0.9rem;
 }
-.admin-navbar-right{display:flex;align-items:center;gap:1rem;}
+.admin-navbar-right{display:flex;align-items:center;gap:0.75rem;}
+
+/* Dark mode toggle */
+.admin-darkmode-btn{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    border:1px solid #e6eef8;
+    background:#fff;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1rem;
+    color:#64748b;
+    transition:all 0.2s ease;
+}
+.admin-darkmode-btn:hover{
+    background:#f1f5f9;
+    color:#6366f1;
+}
+
 .admin-profile-btn{
     display:flex;
     align-items:center;
@@ -71,6 +104,86 @@ body{margin:0;padding:0;}
 }
 .admin-profile-name{font-weight:500;}
 .admin-profile-chevron{font-size:0.7rem;color:#64748b;}
+
+/* ===== DARK MODE - Navbar ===== */
+body.admin-dark .admin-top-navbar{
+    background:rgba(30,30,40,0.98);
+    border-bottom-color:#2a2a3a;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+}
+body.admin-dark .admin-search-bar .admin-search-input{
+    border-color:#3a3a4a;
+    color:#e2e8f0;
+}
+body.admin-dark .admin-search-bar .admin-search-input::placeholder{color:#64748b;}
+body.admin-dark .admin-search-bar .fa-search{color:#64748b;}
+body.admin-dark .admin-darkmode-btn{
+    background:#2a2a3a;
+    border-color:#3a3a4a;
+    color:#fbbf24;
+}
+body.admin-dark .admin-darkmode-btn:hover{background:#3a3a4a;}
+body.admin-dark .admin-profile-btn{
+    background:#2a2a3a;
+    border-color:#3a3a4a;
+    color:#e2e8f0;
+}
+body.admin-dark .admin-profile-btn:hover{background:#3a3a4a;}
+body.admin-dark .admin-profile-chevron{color:#94a3b8;}
+
+/* Flag notification button */
+.admin-flag-btn{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    border:1px solid #e6eef8;
+    background:#fff;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1rem;
+    color:#64748b;
+    transition:all 0.2s ease;
+    position:relative;
+    text-decoration:none;
+}
+.admin-flag-btn:hover{
+    background:#fef2f2;
+    color:#ef4444;
+    border-color:#fecaca;
+}
+.admin-flag-badge{
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    min-width:18px;
+    height:18px;
+    border-radius:9px;
+    background:#ef4444;
+    color:#fff;
+    font-size:0.65rem;
+    font-weight:700;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:0 4px;
+    line-height:1;
+    border:2px solid #fff;
+}
+body.admin-dark .admin-flag-btn{
+    background:#2a2a3a;
+    border-color:#3a3a4a;
+    color:#94a3b8;
+}
+body.admin-dark .admin-flag-btn:hover{
+    background:rgba(239,68,68,.15);
+    color:#fca5a5;
+    border-color:rgba(239,68,68,.3);
+}
+body.admin-dark .admin-flag-badge{
+    border-color:#1e1e2e;
+}
 </style>
 <nav class="admin-top-navbar">
     <div class="admin-navbar-left">
@@ -80,6 +193,13 @@ body{margin:0;padding:0;}
         </div>
     </div>
     <div class="admin-navbar-right">
+        <a href="{{ path('admin_comments') }}" class="admin-flag-btn" id="adminFlagBtn" aria-label="Commentaires signales" data-tooltip="Commentaires signales">
+            <i class="fas fa-flag"></i>
+            <span class="admin-flag-badge" id="adminFlagBadge"></span>
+        </a>
+        <button type="button" class="admin-darkmode-btn" id="adminDarkToggle" aria-label="Mode sombre">
+            <i class="fas fa-moon"></i>
+        </button>
         <button type="button" class="admin-profile-btn" aria-label="Profil">
             <span class="admin-profile-avatar">
                 {%- set name = app.user.fullName|default(app.user.username|default('A')) -%}
@@ -91,3 +211,92 @@ body{margin:0;padding:0;}
         </button>
     </div>
 </nav>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search
+    var searchInput = document.querySelector('.admin-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var query = this.value.toLowerCase().trim();
+            // Normalize accents for better matching
+            var normalize = function(str) {
+                return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            };
+            var nQuery = normalize(query);
+
+            document.querySelectorAll('.data-table, .tbl').forEach(function(table) {
+                var tbody = table.querySelector('tbody');
+                if (!tbody) return;
+
+                // Ensure a no-results row exists
+                var noRow = tbody.querySelector('.search-no-results');
+                if (!noRow) {
+                    noRow = document.createElement('tr');
+                    noRow.className = 'search-no-results';
+                    var colCount = table.querySelectorAll('thead th').length || 7;
+                    noRow.innerHTML = '<td colspan="' + colCount + '" style="text-align:center;padding:1.8rem 1rem;color:#94a3b8;font-size:.82rem"><i class="fas fa-search" style="margin-right:6px;color:#cbd5e1"></i>Aucun résultat pour cette recherche</td>';
+                    noRow.style.display = 'none';
+                    tbody.appendChild(noRow);
+                }
+
+                var visible = 0;
+                tbody.querySelectorAll('tr:not(.search-no-results)').forEach(function(row) {
+                    var text = normalize(row.textContent);
+                    var show = query === '' || text.includes(nQuery);
+                    row.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+
+                noRow.style.display = (query !== '' && visible === 0) ? '' : 'none';
+            });
+
+            // Show/hide section cards when all their rows are hidden
+            document.querySelectorAll('.card').forEach(function(card) {
+                var tbl = card.querySelector('.tbl');
+                var emptyDiv = card.querySelector('.empty');
+                if (!tbl || emptyDiv) return; // skip cards without table or already empty
+                // card stays visible; table handles its own no-results row
+            });
+        });
+    }
+
+    // Dark mode toggle
+    var toggle = document.getElementById('adminDarkToggle');
+    if (toggle) {
+        var icon = toggle.querySelector('i');
+        // Restore saved state
+        if (localStorage.getItem('admin-dark') === 'true') {
+            document.body.classList.add('admin-dark');
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+        toggle.addEventListener('click', function() {
+            document.body.classList.toggle('admin-dark');
+            var isDark = document.body.classList.contains('admin-dark');
+            icon.classList.toggle('fa-moon', !isDark);
+            icon.classList.toggle('fa-sun', isDark);
+            localStorage.setItem('admin-dark', isDark);
+        });
+    }
+    // Flagged comments badge
+    var flagBadge = document.getElementById('adminFlagBadge');
+    function updateFlagCount() {
+        fetch('{{ path('admin_comments_count') }}', { credentials: 'same-origin' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var c = data.count || 0;
+                if (c > 0) {
+                    flagBadge.textContent = c;
+                    flagBadge.style.display = 'flex';
+                } else {
+                    flagBadge.style.display = 'none';
+                }
+            })
+            .catch(function() {});
+    }
+    if (flagBadge) {
+        updateFlagCount();
+        setInterval(updateFlagCount, 30000);
+    }
+});
+</script>

@@ -1,0 +1,506 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FAHIMNI - Moderation des Articles{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:#f5f6fa;color:#1e293b;line-height:1.5}
+        :root{--sidebar-width:280px}
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes countUp{from{opacity:0;transform:translateY(10px) scale(.5)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.3)}50%{box-shadow:0 0 0 8px rgba(249,115,22,0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+        /* Sidebar (keep same) */
+        .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,#3b2f63,#2b2350);color:#fff;box-shadow:0 12px 40px rgba(19,24,44,0.25);z-index:1000;overflow-y:auto}
+        .sidebar-header{padding:1rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:6px}
+        .logo h2{color:#fff;font-size:18px;font-weight:700;margin:0 0 4px 8px}
+        .logo .brand-sub{color:rgba(255,255,255,0.75);font-size:12px;margin-left:8px}
+        .admin-profile{padding:12px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .avatar{width:44px;height:44px;border-radius:10px;overflow:hidden;display:inline-block}
+        .avatar img{width:100%;height:100%;object-fit:cover}
+        .admin-info{display:inline-block;vertical-align:middle;margin-left:10px}
+        .admin-info h4{color:#fff;margin:0;font-size:14px}
+        .admin-info p{color:rgba(255,255,255,0.65);margin:2px 0 0;font-size:12px}
+        .sidebar-nav ul{list-style:none;padding:6px;margin:6px 0}
+        .sidebar-nav li{margin:6px 0}
+        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:rgba(255,255,255,0.86);text-decoration:none;border-radius:10px;position:relative;transition:background .18s,transform .12s}
+        .sidebar-nav a i{width:26px;text-align:center;font-size:14px}
+        .sidebar-nav a .label{font-size:14px}
+        .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px)}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;transition:margin-left .3s}
+
+        /* Page layout */
+        .page-body{padding:1.5rem 2rem}
+
+        /* Page title row */
+        .page-title-row{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;animation:fadeInLeft .5s ease}
+        .page-title-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;transition:transform .3s,box-shadow .3s}
+        .page-title-icon:hover{transform:rotate(15deg) scale(1.1);box-shadow:0 4px 15px rgba(99,102,241,.4)}
+        .page-title-row h1{font-size:1.35rem;font-weight:700;color:#1e293b}
+
+        /* Stat cards row */
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.75rem}
+        .s-card{background:#fff;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid #eef1f6;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;animation:fadeInUp .5s ease backwards;position:relative;overflow:hidden}
+        .s-card:nth-child(1){animation-delay:.1s}
+        .s-card:nth-child(2){animation-delay:.2s}
+        .s-card:nth-child(3){animation-delay:.3s}
+        .s-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 8px 25px rgba(0,0,0,.1)}
+        .s-card::after{content:'';position:absolute;top:0;left:-200%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:left .6s}
+        .s-card:hover::after{left:200%}
+        .s-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:#fff;flex-shrink:0;transition:transform .3s}
+        .s-card:hover .s-icon{transform:scale(1.15) rotate(-5deg)}
+        .s-icon.orange{background:linear-gradient(135deg,#fb923c,#f97316)}
+        .s-icon.green{background:linear-gradient(135deg,#4ade80,#22c55e)}
+        .s-icon.red{background:linear-gradient(135deg,#fb7185,#ef4444)}
+        .s-card h3{font-size:1.5rem;font-weight:800;color:#1e293b;line-height:1}
+        .s-card p{font-size:.75rem;color:#94a3b8;margin-top:3px;font-weight:500}
+
+        /* Section title */
+        .sec-title{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:.6rem;display:flex;align-items:center;gap:8px}
+        .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .sec-dot.orange{background:#f97316;animation:pulseGlow 2s infinite}
+        .sec-dot.green{background:#22c55e}
+        .sec-dot.red{background:#ef4444}
+
+        /* Card wrapper */
+        .card{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid #eef1f6;margin-bottom:1.5rem;overflow:hidden}
+
+        /* ===== TABLE ===== */
+        table.tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+        /* height on td (not tr) = seule méthode fiable pour des lignes uniformes */
+        .tbl th{height:42px;padding:0 14px;text-align:left;font-size:.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #eef1f6;white-space:nowrap;overflow:hidden;background:#f8f9fb;vertical-align:middle}
+        .tbl td{height:60px;padding:0 14px;text-align:left;font-size:.82rem;vertical-align:middle;overflow:hidden}
+        .tbl td:last-child{overflow:visible}
+        /* Ligne de séparation */
+        .tbl tbody tr{border-bottom:1px solid #f1f5f9;transition:background .15s ease}
+        .tbl tbody tr:last-child{border-bottom:none}
+        /* Hover: fond + accent gauche via border-left sur td (fiable sur tous navigateurs) */
+        .tbl tbody tr:hover td{background:#f0f4ff}
+        .tbl tbody tr:hover td:first-child{border-left:3px solid #6366f1;padding-left:11px}
+        /* Ligne cliquable */
+        .tbl tbody tr[data-href]{cursor:pointer}
+        .tbl tbody tr[data-href]:hover td:last-child::after{content:'↗';font-size:.7rem;color:#6366f1;margin-left:6px;opacity:.6}
+
+        /* Article cell */
+        .a-cell{display:flex;align-items:center;gap:10px;min-width:0}
+        .a-cell>div{min-width:0}
+        .a-img{width:38px;height:38px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid #eef1f6}
+        .a-img-ph{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#ede9fe,#ddd6fe);display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:.85rem;flex-shrink:0}
+        .a-name{font-weight:600;color:#1e293b;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .a-desc{font-size:.7rem;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+
+        /* User cell */
+        .u-cell{display:flex;align-items:center;gap:8px;min-width:0}
+        .u-cell>div{min-width:0;overflow:hidden}
+        .u-av{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;flex-shrink:0;transition:transform .3s,box-shadow .3s}
+        .tbl tbody tr:hover .u-av{transform:scale(1.15);box-shadow:0 3px 10px rgba(99,102,241,.3)}
+        .u-name{font-weight:600;color:#1e293b;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+        .u-email{font-size:.68rem;color:#94a3b8;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        /* Category badge */
+        .cat{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:600;background:#f0f0ff;color:#6366f1;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+
+        /* Status badge */
+        .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+        .badge::before{content:'';width:6px;height:6px;border-radius:50%}
+        .badge.pending{background:#fff7ed;color:#c2410c;transition:all .2s}.badge.pending::before{background:#f97316;animation:blink 2s infinite}
+        .tbl tbody tr:hover .badge{transform:scale(1.05)}
+        .badge.published{background:#f0fdf4;color:#15803d}.badge.published::before{background:#22c55e}
+        .badge.rejected{background:#fef2f2;color:#b91c1c}.badge.rejected::before{background:#ef4444}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+        /* Date */
+        .d-date{font-size:.8rem;color:#475569}
+        .d-date small{display:block;font-size:.68rem;color:#94a3b8;margin-top:1px}
+
+        /* Action btns */
+        .acts{display:flex;gap:6px;justify-content:flex-end}
+        .btn-a,.btn-r{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.75rem;font-weight:600;color:#fff;transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden}
+        .btn-a::before,.btn-r::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,255,255,.2);transform:translate(-50%,-50%);transition:width .4s,height .4s}
+        .btn-a:hover::before,.btn-r:hover::before{width:200px;height:200px}
+        .btn-a{background:#22c55e;box-shadow:0 2px 6px rgba(34,197,94,.2)}
+        .btn-a:hover{background:#16a34a;box-shadow:0 6px 20px rgba(34,197,94,.35);transform:translateY(-2px) scale(1.05)}
+        .btn-a:active{transform:translateY(0) scale(.95)}
+        .btn-r{background:#ef4444;box-shadow:0 2px 6px rgba(239,68,68,.2)}
+        .btn-r:hover{background:#dc2626;box-shadow:0 6px 20px rgba(239,68,68,.35);transform:translateY(-2px) scale(1.05)}
+        .btn-r:active{transform:translateY(0) scale(.95)}
+        .btn-a i,.btn-r i{transition:transform .25s}
+        .btn-a:hover i{transform:scale(1.3)}
+        .btn-r:hover i{transform:rotate(-10deg) scale(1.2)}
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        @keyframes toastIn{0%{opacity:0;transform:translateX(110%) scale(.85)}70%{transform:translateX(-6px) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(110%) scale(.85)}}
+        @keyframes iconPop{0%{transform:scale(0) rotate(-20deg)}70%{transform:scale(1.25) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+        @keyframes shimmer{from{left:-100%}to{left:160%}}
+        @keyframes progressShrink{from{width:100%}to{width:0}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        .toast-container{position:fixed;top:24px;right:24px;z-index:10000;display:flex;flex-direction:column;gap:12px;pointer-events:none}
+        .toast{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 20px;border-radius:18px;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 24px 64px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);min-width:320px;max-width:460px;position:relative;overflow:hidden;animation:toastIn .5s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:all;border:1px solid rgba(255,255,255,.8)}
+        .toast.hiding{animation:toastOut .35s ease forwards}
+        .toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:18px 0 0 18px}
+        .toast::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer .9s ease .15s forwards;pointer-events:none}
+        .toast.success::before{background:linear-gradient(180deg,#22c55e,#4ade80,#86efac)}
+        .toast.error::before{background:linear-gradient(180deg,#ef4444,#f97316,#fb923c)}
+        .toast.warning::before{background:linear-gradient(180deg,#f59e0b,#fbbf24,#fcd34d)}
+        .toast-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;animation:iconPop .55s cubic-bezier(.34,1.56,.64,1) .1s both}
+        .toast.success .toast-icon{background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#16a34a;box-shadow:0 4px 12px rgba(34,197,94,.25)}
+        .toast.error .toast-icon{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626;box-shadow:0 4px 12px rgba(239,68,68,.25)}
+        .toast.warning .toast-icon{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706;box-shadow:0 4px 12px rgba(245,158,11,.25)}
+        .toast-body{flex:1;min-width:0;padding-top:1px}
+        .toast-title{font-size:.82rem;font-weight:800;letter-spacing:.01em;margin-bottom:3px}
+        .toast.success .toast-title{color:#166534}
+        .toast.error .toast-title{color:#991b1b}
+        .toast.warning .toast-title{color:#92400e}
+        .toast-msg{font-size:.76rem;color:#475569;line-height:1.55;white-space:normal}
+        .toast-close{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.78rem;flex-shrink:0;transition:all .2s;border-radius:7px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .toast-close:hover{color:#1e293b;background:rgba(0,0,0,.06);transform:scale(1.1)}
+        .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 18px 18px}
+        .toast.success .toast-progress{background:linear-gradient(90deg,#22c55e,#4ade80);animation:progressShrink 5s linear forwards}
+        .toast.error .toast-progress{background:linear-gradient(90deg,#ef4444,#fb923c);animation:progressShrink 5s linear forwards}
+        .toast.warning .toast-progress{background:linear-gradient(90deg,#f59e0b,#fbbf24);animation:progressShrink 5s linear forwards}
+        .flash-data{display:none}
+
+        /* Empty */
+        .empty{text-align:center;padding:2.5rem 1rem;animation:fadeInUp .6s ease .4s backwards}
+        .empty i{font-size:2rem;color:#cbd5e1;display:block;margin-bottom:8px;animation:float 3s ease-in-out infinite}
+        .empty h4{font-size:.9rem;font-weight:600;color:#475569;margin-bottom:2px}
+        .empty p{font-size:.78rem;color:#94a3b8}
+
+        /* ============ DARK MODE ============ */
+        body.admin-dark{background:#0f1117;color:#cbd5e1}
+        body.admin-dark .main-content,
+        body.admin-dark .page-body{background:#0f1117}
+        body.admin-dark .page-title-row h1{color:#f1f5f9}
+
+        body.admin-dark .page-title-icon:hover{box-shadow:0 4px 15px rgba(99,102,241,.25)}
+        body.admin-dark .s-card{background:#1a1b26;border-color:#252636;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+        body.admin-dark .s-card:hover{box-shadow:0 8px 25px rgba(0,0,0,.3)}
+        body.admin-dark .s-card::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
+        body.admin-dark .s-card h3{color:#f1f5f9}
+        body.admin-dark .s-card p{color:#64748b}
+
+        body.admin-dark .sec-title{color:#e2e8f0}
+        body.admin-dark .card{background:#1a1b26;border-color:#252636;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+        body.admin-dark .tbl th{background:#14151f;color:#64748b;border-bottom-color:#252636}
+        body.admin-dark .tbl tbody tr{border-bottom-color:#1e1f2e}
+        body.admin-dark .tbl td{color:#cbd5e1;background:#1a1b26}
+        body.admin-dark .tbl tbody tr:hover td{background:#22233a}
+        body.admin-dark .tbl tbody tr:hover td:first-child{border-left-color:#818cf8}
+
+        body.admin-dark .a-name{color:#e2e8f0}
+        body.admin-dark .a-desc{color:#64748b}
+        body.admin-dark .a-img{border-color:#252636}
+        body.admin-dark .a-img-ph{background:linear-gradient(135deg,#2a2a4a,#3a3a5a);color:#a78bfa}
+        body.admin-dark .u-name{color:#e2e8f0}
+        body.admin-dark .u-email{color:#64748b}
+        body.admin-dark .d-date{color:#94a3b8}
+        body.admin-dark .d-date small{color:#64748b}
+
+        body.admin-dark .cat{background:rgba(129,140,248,.1);color:#a5b4fc}
+        body.admin-dark .badge.pending{background:rgba(249,115,22,.1);color:#fdba74}
+        body.admin-dark .badge.published{background:rgba(34,197,94,.1);color:#86efac}
+        body.admin-dark .badge.rejected{background:rgba(239,68,68,.1);color:#fca5a5}
+
+        body.admin-dark .btn-a{background:#16a34a;box-shadow:0 2px 6px rgba(22,163,74,.25)}
+        body.admin-dark .btn-a:hover{background:#22c55e}
+        body.admin-dark .btn-r{background:#dc2626;box-shadow:0 2px 6px rgba(220,38,38,.25)}
+        body.admin-dark .btn-r:hover{background:#ef4444}
+
+        body.admin-dark .flash.ok{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#86efac}
+        body.admin-dark .flash.err{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#fca5a5}
+        body.admin-dark .empty i{color:#475569}
+        body.admin-dark .empty h4{color:#e2e8f0}
+        body.admin-dark .empty p{color:#64748b}
+
+        /* Responsive */
+        @media(max-width:1024px){:root{--sidebar-width:250px}.stats-grid{grid-template-columns:1fr}.page-body{padding:1rem}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.acts{flex-direction:column;gap:4px}.stats-grid{grid-template-columns:1fr}}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+
+        <main class="page-body">
+            {% for message in app.flashes('success') %}
+                <div class="flash-data" data-type="success" data-message="{{ message }}"></div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="flash-data" data-type="error" data-message="{{ message }}"></div>
+            {% endfor %}
+
+            <!-- Title -->
+            <div class="page-title-row">
+                <div class="page-title-icon"><i class="fas fa-newspaper"></i></div>
+                <h1>Moderation des Articles</h1>
+            </div>
+
+            <!-- Stats -->
+            {% set publishedArticles = articles|filter(a => a.status == 'published') %}
+            <div class="stats-grid">
+                <div class="s-card">
+                    <div class="s-icon orange"><i class="fas fa-clock"></i></div>
+                    <div>
+                        <h3>{{ pendingArticles|length }}</h3>
+                        <p>En attente</p>
+                    </div>
+                </div>
+                <div class="s-card">
+                    <div class="s-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div>
+                        <h3>{{ publishedArticles|length }}</h3>
+                        <p>Publies</p>
+                    </div>
+                </div>
+                <div class="s-card">
+                    <div class="s-icon red"><i class="fas fa-times-circle"></i></div>
+                    <div>
+                        <h3>{{ rejectedArticles|length }}</h3>
+                        <p>Rejetes</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PENDING -->
+            <h2 class="sec-title"><span class="sec-dot orange"></span> Articles en attente ({{ pendingArticles|length }})</h2>
+            <div class="card">
+                {% if pendingArticles|length > 0 %}
+                <div style="overflow-x:auto">
+                    <table class="tbl" style="min-width:840px">
+                        <colgroup>
+                            <col>
+                            <col style="width:175px">
+                            <col style="width:120px">
+                            <col style="width:100px">
+                            <col style="width:90px">
+                            <col style="width:195px">
+                        </colgroup>
+                        <thead><tr><th>Article</th><th>Auteur</th><th>Categorie</th><th>Date</th><th>Statut</th><th style="text-align:right">Actions</th></tr></thead>
+                        <tbody>
+                        {% for article in pendingArticles %}
+                            <tr data-href="{{ path('admin_article_show', {id: article.id}) }}" title="Voir l'article">
+                                <td>
+                                    <div class="a-cell">
+                                        {% if article.images and article.images|length > 0 %}
+                                            <img src="/uploads/images/{{ article.images[0] }}" class="a-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                            <div class="a-img-ph" style="display:none"><i class="fas fa-newspaper"></i></div>
+                                        {% else %}
+                                            <div class="a-img-ph"><i class="fas fa-newspaper"></i></div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="a-name">{{ article.titre }}</div>
+                                            <div class="a-desc">{{ article.content|length > 55 ? article.content|slice(0,55) ~ '...' : article.content }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av">
+                                            {%- set n = article.publisher.fullName|default(article.publisher.email) -%}
+                                            {%- set p = n|split(' ') -%}
+                                            {%- if p|length >= 2 -%}{{ p[0][0:1]|upper }}{{ p[1][0:1]|upper }}{%- else -%}{{ n[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div>
+                                            <span class="u-name">{{ article.publisher.fullName|default('Inconnu') }}</span>
+                                            <span class="u-email">{{ article.publisher.email|default('') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{% if article.category %}<span class="cat">{{ article.category }}</span>{% else %}<span style="color:#94a3b8">--</span>{% endif %}</td>
+                                <td><div class="d-date">{{ article.createdAt|date('d/m/Y') }}<small>{{ article.createdAt|date('H:i') }}</small></div></td>
+                                <td><span class="badge pending">En attente</span></td>
+                                <td>
+                                    <div class="acts">
+                                        <form method="post" action="{{ path('admin_article_approve', {id: article.id}) }}" style="margin:0">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ article.id) }}">
+                                            <button type="submit" class="btn-a"><i class="fas fa-check"></i> Accepter</button>
+                                        </form>
+                                        <form method="post" action="{{ path('admin_article_reject', {id: article.id}) }}" style="margin:0" onsubmit="return confirm('Rejeter cet article ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ article.id) }}">
+                                            <button type="submit" class="btn-r"><i class="fas fa-times"></i> Rejeter</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty"><i class="fas fa-check-double"></i><h4>Aucun article en attente</h4><p>Tous les articles ont ete moderes</p></div>
+                {% endif %}
+            </div>
+
+            <!-- PUBLISHED -->
+            <h2 class="sec-title"><span class="sec-dot green"></span> Articles publies ({{ publishedArticles|length }})</h2>
+            <div class="card">
+                {% if publishedArticles|length > 0 %}
+                <div style="overflow-x:auto">
+                    <table class="tbl" style="min-width:760px">
+                        <colgroup>
+                            <col>
+                            <col style="width:165px">
+                            <col style="width:120px">
+                            <col style="width:110px">
+                            <col style="width:90px">
+                        </colgroup>
+                        <thead><tr><th>Article</th><th>Auteur</th><th>Categorie</th><th>Publication</th><th>Statut</th></tr></thead>
+                        <tbody>
+                        {% for article in publishedArticles %}
+                            <tr data-href="{{ path('admin_article_show', {id: article.id}) }}" title="Voir l'article">
+                                <td>
+                                    <div class="a-cell">
+                                        {% if article.images and article.images|length > 0 %}
+                                            <img src="/uploads/images/{{ article.images[0] }}" class="a-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                            <div class="a-img-ph" style="display:none"><i class="fas fa-newspaper"></i></div>
+                                        {% else %}
+                                            <div class="a-img-ph"><i class="fas fa-newspaper"></i></div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="a-name">{{ article.titre }}</div>
+                                            <div class="a-desc">{{ article.content|length > 55 ? article.content|slice(0,55) ~ '...' : article.content }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av">
+                                            {%- set n = article.publisher.fullName|default(article.publisher.email) -%}
+                                            {%- set p = n|split(' ') -%}
+                                            {%- if p|length >= 2 -%}{{ p[0][0:1]|upper }}{{ p[1][0:1]|upper }}{%- else -%}{{ n[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div><span class="u-name">{{ article.publisher.fullName|default('Inconnu') }}</span></div>
+                                    </div>
+                                </td>
+                                <td>{% if article.category %}<span class="cat">{{ article.category }}</span>{% else %}<span style="color:#94a3b8">--</span>{% endif %}</td>
+                                <td><div class="d-date">{{ article.publishedAt ? article.publishedAt|date('d/m/Y') : article.createdAt|date('d/m/Y') }}<small>{{ article.publishedAt ? article.publishedAt|date('H:i') : article.createdAt|date('H:i') }}</small></div></td>
+                                <td><span class="badge published">Publie</span></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty"><i class="fas fa-newspaper"></i><h4>Aucun article publie</h4><p>Les articles acceptes apparaitront ici</p></div>
+                {% endif %}
+            </div>
+
+            <!-- REJECTED -->
+            <h2 class="sec-title"><span class="sec-dot red"></span> Articles rejetes ({{ rejectedArticles|length }})</h2>
+            <div class="card">
+                {% if rejectedArticles|length > 0 %}
+                <div style="overflow-x:auto">
+                    <table class="tbl" style="min-width:760px">
+                        <colgroup>
+                            <col>
+                            <col style="width:165px">
+                            <col style="width:120px">
+                            <col style="width:110px">
+                            <col style="width:90px">
+                        </colgroup>
+                        <thead><tr><th>Article</th><th>Auteur</th><th>Categorie</th><th>Date</th><th>Statut</th></tr></thead>
+                        <tbody>
+                        {% for article in rejectedArticles %}
+                            <tr data-href="{{ path('admin_article_show', {id: article.id}) }}" title="Voir l'article">
+                                <td>
+                                    <div class="a-cell">
+                                        {% if article.images and article.images|length > 0 %}
+                                            <img src="/uploads/images/{{ article.images[0] }}" class="a-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                            <div class="a-img-ph" style="display:none"><i class="fas fa-newspaper"></i></div>
+                                        {% else %}
+                                            <div class="a-img-ph"><i class="fas fa-newspaper"></i></div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="a-name">{{ article.titre }}</div>
+                                            <div class="a-desc">{{ article.content|length > 55 ? article.content|slice(0,55) ~ '...' : article.content }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av">
+                                            {%- set n = article.publisher.fullName|default(article.publisher.email) -%}
+                                            {%- set p = n|split(' ') -%}
+                                            {%- if p|length >= 2 -%}{{ p[0][0:1]|upper }}{{ p[1][0:1]|upper }}{%- else -%}{{ n[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div><span class="u-name">{{ article.publisher.fullName|default('Inconnu') }}</span></div>
+                                    </div>
+                                </td>
+                                <td>{% if article.category %}<span class="cat">{{ article.category }}</span>{% else %}<span style="color:#94a3b8">--</span>{% endif %}</td>
+                                <td><div class="d-date">{{ article.createdAt|date('d/m/Y') }}<small>{{ article.createdAt|date('H:i') }}</small></div></td>
+                                <td><span class="badge rejected">Rejete</span></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty"><i class="fas fa-ban"></i><h4>Aucun article rejete</h4><p>Les articles rejetes apparaitront ici</p></div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Rendre les lignes du tableau cliquables
+        document.querySelectorAll('.tbl tbody tr[data-href]').forEach(function(row) {
+            row.addEventListener('click', function(e) {
+                // Ignorer le clic si on clique sur un bouton, lien, input ou formulaire
+                if (e.target.closest('button, a, input, form, .acts')) return;
+                window.open(this.dataset.href, '_blank');
+            });
+        });
+
+        var icons = { success: 'check-circle', error: 'times-circle', warning: 'exclamation-triangle' };
+        var labels = { success: 'Succès', error: 'Erreur', warning: 'Attention' };
+
+        function showToast(type, msg, duration) {
+            duration = duration || 5000;
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML =
+                '<div class="toast-icon"><i class="fas fa-' + (icons[type] || 'info-circle') + '"></i></div>' +
+                '<div class="toast-body">' +
+                    '<div class="toast-title">' + (labels[type] || '') + '</div>' +
+                    '<div class="toast-msg">' + msg + '</div>' +
+                '</div>' +
+                '<button class="toast-close" title="Fermer"><i class="fas fa-times"></i></button>' +
+                '<div class="toast-progress"></div>';
+            container.appendChild(toast);
+
+            toast.querySelector('.toast-close').addEventListener('click', function() { dismiss(toast); });
+            setTimeout(function() { dismiss(toast); }, duration);
+        }
+
+        function dismiss(toast) {
+            if (!toast.parentNode) return;
+            toast.classList.add('hiding');
+            setTimeout(function() { if (toast.parentNode) toast.remove(); }, 380);
+        }
+
+        document.querySelectorAll('.flash-data').forEach(function(el) {
+            showToast(el.dataset.type || 'success', el.dataset.message);
+        });
+    });
+    </script>
+{% endblock %}

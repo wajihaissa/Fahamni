@@ -176,16 +176,21 @@ final class AuthController extends AbstractController
                     'role' => $role
                 ]);
 
-                // Do NOT auto-login the newly registered user; require manual login
+                // Auto-login après inscription
+                $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+                $tokenStorage->setToken($token);
+                $request->getSession()->set('_security_main', serialize($token));
+                $eventDispatcher->dispatch(new InteractiveLoginEvent($request, $token));
+
                 if ($request->getAcceptableContentTypes() && in_array('application/json', $request->getAcceptableContentTypes())) {
                     return new JsonResponse([
                         'success' => true,
                         'message' => 'Registration successful',
-                        'redirect' => $this->generateUrl('app_login')
+                        'redirect' => $this->generateUrl('app_home')
                     ]);
                 }
 
-                return $this->redirectToRoute('app_login');
+                return $this->redirectToRoute('app_home');
             } catch (\Exception $e) {
                 $logger->error('Registration error: ' . $e->getMessage(), [
                     'exception' => $e,

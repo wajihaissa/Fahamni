@@ -1,0 +1,38 @@
+{% if notifications is empty %}
+    <div style="padding: 32px 16px; text-align: center; color: var(--text-light, #6b7280);">
+        <i class="fas fa-bell-slash" style="font-size: 2rem; margin-bottom: 8px; opacity: 0.4;"></i>
+        <p style="margin: 0; font-size: 0.9rem;">Aucune notification</p>
+    </div>
+{% else %}
+    <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color, #e5e7eb); display: flex; justify-content: flex-end;">
+        <button type="button" id="notifMarkAllReadBtn" style="background: none; border: none; color: var(--primary-color, #6366f1); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s;">
+            Tout marquer comme lu
+        </button>
+    </div>
+    {% for notif in notifications %}
+        {% set isUnread = not notif.notifRead %}
+        <a href="/articles/{{ notif.blog.id }}" class="notif-item" data-notif-id="{{ notif.id }}"
+           style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; text-decoration: none; color: inherit; border-bottom: 1px solid var(--border-color, #e5e7eb); transition: background 0.2s; background: {{ isUnread ? 'rgba(99, 102, 241, 0.07)' : 'transparent' }};">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: {{ notif.reaction ? '#f59e0b' : '#6366f1' }}; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8rem; opacity: {{ isUnread ? '1' : '0.5' }};">
+                <i class="fas {{ notif.reaction ? 'fa-heart' : 'fa-comment' }}"></i>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <p style="margin: 0; font-size: 0.85rem; color: {{ isUnread ? 'var(--text-color, #1f2937)' : 'var(--text-light, #6b7280)' }}; line-height: 1.4;">
+                    <strong>{{ notif.innteractor.fullName ?: notif.innteractor.email|split('@')[0] }}</strong>
+                    {% if notif.reaction %}
+                        a aimé votre article
+                    {% else %}
+                        a commenté votre article
+                    {% endif %}
+                    "<strong>{{ notif.blog.titre|length > 30 ? notif.blog.titre[:30] ~ '...' : notif.blog.titre }}</strong>"
+                </p>
+                <span style="font-size: 0.75rem; color: var(--text-light, #9ca3af); margin-top: 2px; display: block;">
+                    {{ notif.createdAt|date('d/m/Y H:i') }}
+                </span>
+            </div>
+            {% if isUnread %}
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #6366f1; flex-shrink: 0; margin-top: 4px;"></span>
+            {% endif %}
+        </a>
+    {% endfor %}
+{% endif %}

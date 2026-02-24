@@ -26,15 +26,6 @@ final class FrontOfficeController extends AbstractController
         ]);
     }
 
-    #[Route('/articles', name: 'app_articles')]
-    public function articles(): Response
-    {
-        return $this->render('front/article/articles.html.twig', [
-            'controller_name' => 'QuizController',
-            'user' => $this->getUser(),
-        ]);
-    }
-
     #[Route('/tutor', name: 'app_tutor')]
     public function tutor(): Response
     {

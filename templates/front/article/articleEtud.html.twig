@@ -91,8 +91,7 @@
             gap: 8px;
         }
         .flash-msg.success { background: linear-gradient(135deg, #10b981, #059669); }
-        .flash-msg.error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .flash-msg.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .flash-msg.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
         @keyframes slideInRight {
             from { transform: translateX(100px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -138,10 +137,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -0.5px;
-        }
-
-        .logo span {
-            /* inherits gradient from parent */
         }
 
         nav ul {
@@ -264,7 +259,7 @@
 
         /* Hero Banner - Compact */
         .hero-banner {
-            background: linear-gradient(135deg, #4361ee 0%, #7209b7 50%, #f72585 100%);
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 50%, #6366f1 100%);
             padding: 18px 20px 16px;
             text-align: center;
             position: relative;
@@ -294,8 +289,6 @@
             flex-wrap: wrap;
         }
 
-        .hero-left { display: flex; align-items: center; gap: 10px; }
-
         .articles-header h1 {
             font-size: 20px;
             font-weight: 700;
@@ -310,11 +303,13 @@
             font-size: 18px;
         }
 
-        .hero-subtitle {
+        .articles-header p {
             display: none;
         }
 
-        .articles-header p {
+        .hero-left { display: flex; align-items: center; gap: 10px; }
+
+        .hero-subtitle {
             display: none;
         }
 
@@ -328,7 +323,7 @@
             border: 1px solid rgba(255,255,255,0.18);
             border-radius: 12px;
             padding: 6px 16px;
-            animation: fadeInUp 0.5s ease 0.3s both;
+            animation: fadeInUp 0.5s ease 0.3s forwards;
         }
         .hero-stat {
             display: flex;
@@ -353,30 +348,6 @@
             width: 1px;
             height: 24px;
             background: rgba(255,255,255,0.2);
-        }
-
-        .hero-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .articles-header .btn {
-            padding: 7px 18px;
-            font-size: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .articles-header .btn-primary {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .articles-header .btn-primary:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
         /* Article Badges */
@@ -414,34 +385,6 @@
         }
         .reading-time i {
             font-size: 10px;
-        }
-
-        /* Status badge for pending/rejected */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        .status-badge.pending {
-            background: rgba(245,158,11,0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245,158,11,0.2);
-        }
-        .status-badge.published {
-            background: rgba(16,185,129,0.1);
-            color: #10b981;
-            border: 1px solid rgba(16,185,129,0.2);
-        }
-        .status-badge.rejected {
-            background: rgba(239,68,68,0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239,68,68,0.2);
         }
 
         /* Like animation */
@@ -577,10 +520,17 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .article-card {
+            transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+            position: relative;
+        }
         .article-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-hover);
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.15);
             border-color: rgba(67, 97, 238, 0.2);
+        }
+        .article-card:hover .article-image img {
+            transform: scale(1.08);
         }
 
         .article-card.featured {
@@ -725,69 +675,6 @@
             font-size: 12px;
         }
 
-        .article-actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 5px 12px;
-            border-radius: 8px;
-            border: none;
-            background-color: var(--bg-secondary);
-            color: var(--text-color);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 12px;
-        }
-
-        .action-btn:hover {
-            background-color: var(--primary-color);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        /* Edit/Delete action buttons */
-        .edit-action-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-        .edit-action-btn.edit {
-            background: var(--primary-light);
-            color: var(--primary-color);
-            border: 1px solid rgba(67, 97, 238, 0.2);
-        }
-        .edit-action-btn.edit:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.3);
-        }
-        .edit-action-btn.delete {
-            background: rgba(239, 68, 68, 0.08);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-        .edit-action-btn.delete:hover {
-            background: #ef4444;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
-        }
-
         /* Interaction buttons */
         .interactions-section {
             margin-top: 10px;
@@ -852,11 +739,6 @@
             font-weight: 600;
             letter-spacing: 0.3px;
         }
-        .owner-badge.article-owner {
-            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(114, 9, 183, 0.1));
-            color: var(--primary-color);
-            border: 1px solid rgba(67, 97, 238, 0.2);
-        }
         .owner-badge.comment-owner {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
             color: #10b981;
@@ -916,15 +798,12 @@
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
         @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(67,97,238,.4)}70%{box-shadow:0 0 0 12px rgba(67,97,238,0)}100%{box-shadow:0 0 0 0 rgba(67,97,238,0)}}
         @keyframes gradientFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-        @keyframes borderGlow{0%,100%{border-color:rgba(67,97,238,.15)}50%{border-color:rgba(67,97,238,.4)}}
         @keyframes heartBeat{0%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}60%{transform:scale(1)}}
-        @keyframes typewriter{from{width:0}to{width:100%}}
         @keyframes slideUp{from{opacity:0;transform:translateY(40px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes ripple{to{transform:translate(-50%,-50%) scale(3);opacity:0}}
 
         /* Hero Banner - Animated gradient */
         .hero-banner {
-            background: linear-gradient(135deg, #4361ee 0%, #7209b7 30%, #f72585 60%, #4361ee 100%);
+            background: linear-gradient(135deg, #10b981 0%, #3b82f6 30%, #6366f1 60%, #10b981 100%);
             background-size: 300% 300%;
             animation: gradientFlow 8s ease infinite;
         }
@@ -944,15 +823,66 @@
             display: inline-block;
             animation: float 3s ease-in-out infinite;
         }
-        .articles-header .btn {
-            animation: fadeInRight .6s ease .2s forwards;
+
+        /* Article cards - enhanced animations */
+        .article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#10b981,#3b82f6,#6366f1);transform:scaleX(0);transition:transform .35s ease;transform-origin:left;z-index:2;border-radius:16px 16px 0 0}
+        .article-card:hover::before{transform:scaleX(1)}
+
+        .article-image::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            z-index: 1;
+            transition: left 0.6s ease;
+        }
+        .article-card:hover .article-image::before {
+            left: 200%;
+        }
+
+        /* Author avatar hover */
+        .author-avatar {
+            transition: all .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .article-card:hover .author-avatar {
+            transform: scale(1.15) rotate(-5deg);
+            box-shadow: 0 4px 12px rgba(67,97,238,.3);
+        }
+
+        /* Category badge animation */
+        .article-category {
+            transition: all .25s ease;
+        }
+        .article-card:hover .article-category {
+            transform: scale(1.05);
+        }
+
+        /* Interaction buttons - enhanced */
+        .interaction-btn {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
             position: relative;
             overflow: hidden;
         }
-        .articles-header .btn::after {
-            content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.3);border-radius:50%;transform:translate(-50%,-50%);transition:width .5s,height .5s;
+        .interaction-btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.25);border-radius:50%;transform:translate(-50%,-50%);transition:width .4s,height .4s}
+        .interaction-btn:active::after{width:200px;height:200px}
+
+        .like-btn:hover {
+            transform: translateY(-2px) scale(1.05);
         }
-        .articles-header .btn:active::after {width:300px;height:300px}
+        .like-btn:hover i {
+            animation: heartBeat .8s ease;
+        }
+
+        .comment-toggle-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .interaction-btn .count {
+            transition: transform .2s ease;
+        }
+        .interaction-btn:hover .count {
+            transform: scale(1.1);
+        }
 
         /* Filter bar animated entrance */
         .articles-filters {
@@ -992,7 +922,7 @@
             transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
             position: relative;
         }
-        .article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color),var(--accent-color));transform:scaleX(0);transition:transform .35s ease;transform-origin:left;z-index:2;border-radius:16px 16px 0 0}
+        .article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#10b981,#3b82f6,#6366f1);transform:scaleX(0);transition:transform .35s ease;transform-origin:left;z-index:2;border-radius:16px 16px 0 0}
         .article-card:hover::before{transform:scaleX(1)}
         .article-card:hover {
             transform: translateY(-6px) scale(1.01);
@@ -1057,26 +987,6 @@
         }
         .interaction-btn:hover .count {
             transform: scale(1.1);
-        }
-
-        /* Edit/Delete buttons enhanced */
-        .edit-action-btn {
-            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
-            position: relative;
-            overflow: hidden;
-        }
-        .edit-action-btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.2);border-radius:50%;transform:translate(-50%,-50%);transition:width .3s,height .3s}
-        .edit-action-btn:active::after{width:150px;height:150px}
-        .edit-action-btn.edit:hover {
-            transform: translateY(-2px) scale(1.05);
-        }
-        .edit-action-btn.edit:hover i { transform: rotate(15deg); }
-        .edit-action-btn.delete:hover {
-            transform: translateY(-2px) scale(1.05);
-        }
-        .edit-action-btn.delete:hover i { transform: rotate(-10deg); }
-        .edit-action-btn i {
-            transition: transform .2s ease;
         }
 
         /* Comment section slide animation */
@@ -1302,152 +1212,6 @@
             .article-title { font-size: 15px; }
             .article-card.featured .article-title { font-size: 17px; }
         }
-
-        /* === TUTOR NOTIFICATION BELL + SIDEBAR === */
-        .tutor-notif-bell {
-            position: relative;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(8px);
-            color: #fff;
-            font-size: 1.15rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
-        }
-        .tutor-notif-bell:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.5);
-            transform: scale(1.1);
-        }
-        .tutor-notif-bell:hover .fa-bell {
-            animation: bellShake 0.6s ease;
-        }
-        @keyframes bellShake {
-            0%, 100% { transform: rotate(0); }
-            15% { transform: rotate(14deg); }
-            30% { transform: rotate(-12deg); }
-            45% { transform: rotate(10deg); }
-            60% { transform: rotate(-6deg); }
-            75% { transform: rotate(3deg); }
-        }
-        .tutor-notif-badge {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            min-width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            background: #ef4444;
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-            line-height: 1;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
-            animation: badgePulse 2s ease infinite;
-        }
-        @keyframes badgePulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
-
-        .tutor-notif-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 9998;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 0.25s ease, visibility 0.25s ease;
-        }
-        .tutor-notif-overlay.is-open {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-        }
-
-        .tutor-notif-sidebar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 380px;
-            max-width: 90vw;
-            height: 100vh;
-            background: var(--card-bg, #fff);
-            box-shadow: -8px 0 32px rgba(0,0,0,0.15);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            transform: translateX(100%);
-            transition: transform 0.35s cubic-bezier(.22,1,.36,1);
-            overflow: hidden;
-            visibility: hidden;
-        }
-        .tutor-notif-sidebar.is-open {
-            transform: translateX(0);
-            visibility: visible;
-        }
-
-        .tutor-notif-sidebar-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary-color, #4361ee), var(--secondary-color, #7209b7));
-            color: #fff;
-            flex-shrink: 0;
-        }
-        .tutor-notif-sidebar-top h2 {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tutor-notif-sidebar-top h2 i {
-            font-size: 1rem;
-        }
-        .tutor-notif-sidebar-close {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            background: rgba(255,255,255,0.15);
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 1rem;
-        }
-        .tutor-notif-sidebar-close:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .tutor-notif-sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            min-height: 0;
-        }
-
-        .tutor-notif-item:hover {
-            background: rgba(99, 102, 241, 0.08) !important;
-        }
     </style>
 </head>
 <body class="light-theme">
@@ -1483,7 +1247,7 @@
         <div class="flash-messages">
             {% for message in messages %}
                 <div class="flash-msg {{ label }}">
-                    <i class="fas {{ label == 'success' ? 'fa-check-circle' : (label == 'warning' ? 'fa-clock' : 'fa-exclamation-circle') }}"></i>
+                    <i class="fas {{ label == 'success' ? 'fa-check-circle' : 'fa-exclamation-circle' }}"></i>
                     {{ message }}
                 </div>
             {% endfor %}
@@ -1495,8 +1259,8 @@
             <div class="container">
                 <div class="articles-header">
                     <div class="hero-left">
-                        <h1><i class="fas fa-pen-fancy"></i> Espace Tuteur</h1>
-                        <p class="hero-subtitle">Gérez et publiez vos articles éducatifs pour la communauté</p>
+                        <h1><i class="fas fa-book-reader"></i> Espace Etudiant</h1>
+                        <p class="hero-subtitle">Decouvrez les articles educatifs publies par nos tuteurs</p>
                     </div>
                     <div class="hero-stats">
                         <div class="hero-stat">
@@ -1513,13 +1277,6 @@
                             <span class="hero-stat-number" id="heroTotalComments">{{ blogs|reduce((total, b) => total + b.commentsCount, 0) }}</span>
                             <span class="hero-stat-label">Commentaires</span>
                         </div>
-                    </div>
-                    <div class="hero-actions">
-                        <a href="{{ path('app_blog_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Publier un article</a>
-                        <button type="button" class="tutor-notif-bell" id="tutorNotifBellBtn" aria-label="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <span class="tutor-notif-badge" id="tutorNotifBadge" style="display:none;">0</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1570,11 +1327,6 @@
 
                         <div class="article-content">
                             <div class="article-meta">
-                                {% if app.user and app.user == blog.publisher %}
-                                    <span class="owner-badge article-owner">
-                                        <i class="fas fa-pen-nib"></i> Mon article
-                                    </span>
-                                {% endif %}
                                 <span class="article-category">
                                     {{ blog.category ?? 'General' }}
                                 </span>
@@ -1611,34 +1363,9 @@
                                         {% endif %}
                                     </span>
                                 </div>
-
-                                {# BOUTONS MODIFIER ET SUPPRIMER - seulement pour l'auteur #}
-                                {% if app.user and blog.publisher and app.user.id == blog.publisher.id %}
-                                <div class="article-actions">
-                                    <a href="{{ path('app_blog_edit', {id: blog.id}) }}"
-                                       class="edit-action-btn edit"
-                                       title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                        <span>Edit</span>
-                                    </a>
-
-                                    <form method="post"
-                                          action="{{ path('app_blog_delete', {id: blog.id}) }}"
-                                          onsubmit="return confirm('Supprimer cet article ?');"
-                                          style="display: inline; margin: 0;">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
-                                        <button type="submit"
-                                                class="edit-action-btn delete"
-                                                title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                            <span>Supprimer</span>
-                                        </button>
-                                    </form>
-                                </div>
-                                {% endif %}
                             </div>
 
-                            {# SECTION INTERACTIONS #}
+                            {# SECTION INTERACTIONS - Like et Commentaires (pas d'edit/delete pour etudiant) #}
                             <div class="interactions-section">
                                 <div class="interaction-buttons">
                                     {# Bouton Like #}
@@ -1757,25 +1484,12 @@
                     <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
                         <i class="fas fa-newspaper empty-float" style="font-size: 48px; color: var(--text-light); opacity: 0.4; margin-bottom: 15px; display: block;"></i>
                         <h3 style="color: var(--text-color); margin-bottom: 8px; font-size: 18px;">Aucun article pour le moment</h3>
-                        <p style="color: var(--text-light); margin-bottom: 16px;">Commencez par publier votre premier article.</p>
-                        <a href="{{ path('app_blog_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Publier un article</a>
+                        <p style="color: var(--text-light);">Les tuteurs n'ont pas encore publie d'articles.</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </main>
-
-    {# === TUTOR NOTIFICATION SIDEBAR === #}
-    <div class="tutor-notif-overlay" id="tutorNotifOverlay"></div>
-    <div class="tutor-notif-sidebar" id="tutorNotifSidebar">
-        <div class="tutor-notif-sidebar-top">
-            <h2><i class="fas fa-bell"></i> Notifications</h2>
-            <button type="button" class="tutor-notif-sidebar-close" id="tutorNotifClose"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="tutor-notif-sidebar-content" id="tutorNotifContent">
-            <div style="padding: 24px; text-align: center; color: var(--text-light, #6b7280);"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
-        </div>
-    </div>
 
     <footer class="site-footer">
         <div class="container">
@@ -1874,11 +1588,10 @@
                 searchInput.addEventListener('input', performSearch);
             }
 
-                // ===== AJAX : Like =====
+            // ===== AJAX : Like =====
             document.querySelectorAll('form.like-form').forEach(function(form) {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const blogId = form.dataset.blogId;
                     const btn = form.querySelector('button[type="submit"]');
                     const countEl = btn.querySelector('.count');
                     btn.disabled = true;
@@ -1897,7 +1610,6 @@
                             btn.querySelector('i').style.animation = 'heartBeat 0.6s ease';
                             setTimeout(() => { if (btn.querySelector('i')) btn.querySelector('i').style.animation = ''; }, 700);
                             showToast(data.message, 'success');
-                            // Mettre à jour le total hero
                             const heroLikes = document.getElementById('heroTotalLikes');
                             if (heroLikes) heroLikes.textContent = parseInt(heroLikes.textContent) + (data.liked ? 1 : -1);
                         }
@@ -1937,13 +1649,11 @@
                     .then(data => {
                         if (data.success) {
                             textarea.value = '';
-                            // Mettre à jour le compteur de commentaires
                             const card = form.closest('[data-article-id]');
                             if (card) {
                                 const commentCountEl = card.querySelector('.comment-toggle-btn .count');
                                 if (commentCountEl) commentCountEl.textContent = data.commentsCount;
                             }
-                            // Ajouter le commentaire dans la liste
                             const commentsList = document.querySelector('#comments-' + blogId + ' .comments-list');
                             if (commentsList) {
                                 const noComment = commentsList.querySelector('p[style*="italic"]');
@@ -1964,16 +1674,14 @@
                                                 <div style="font-size:10px;color:var(--text-light);">${escHtml(c.date)}</div>
                                             </div>
                                         </div>
-                                        <form class="delete-comment-form" data-comment-id="${c.id}" method="post" action="/interaction/comment/${c.id}/delete" style="margin:0;">
+                                        <form class="delete-comment-form" method="post" action="/interaction/comment/${c.id}/delete" style="margin:0;">
                                             <input type="hidden" name="_token" value="">
                                             <button type="submit" class="delete-comment-btn" title="Supprimer" style="font-size:10px;padding:2px 8px;"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     </div>
                                     <div style="color:var(--text-color);line-height:1.5;font-size:13px;margin-left:34px;word-wrap:break-word;">${escHtml(c.text)}</div>`;
                                 commentsList.insertBefore(div, commentsList.firstChild);
-                                // Attacher l'événement AJAX sur le nouveau formulaire de suppression
                                 attachDeleteForm(div.querySelector('.delete-comment-form'), blogId);
-                                // Mettre à jour le compteur affiché
                                 const countLabel = commentsList.closest('.comments-section').querySelector('div[style*="margin-bottom: 8px"]');
                                 if (countLabel) {
                                     const n = commentsList.querySelectorAll('.comment-item').length;
@@ -1981,7 +1689,6 @@
                                 }
                             }
                             showToast('Commentaire ajouté !', 'success');
-                            // Mettre à jour le total hero
                             const heroComments = document.getElementById('heroTotalComments');
                             if (heroComments) heroComments.textContent = parseInt(heroComments.textContent) + 1;
                             // Fermer la section automatiquement
@@ -2012,13 +1719,11 @@
                         if (data.success) {
                             const item = form.closest('.comment-item');
                             if (item) item.remove();
-                            // Mettre à jour le compteur de la carte
                             const card = document.querySelector('[data-article-id="' + blogId + '"]');
                             if (card) {
                                 const commentCountEl = card.querySelector('.comment-toggle-btn .count');
                                 if (commentCountEl) commentCountEl.textContent = data.commentsCount;
                             }
-                            // Mettre à jour le total hero
                             const heroComments = document.getElementById('heroTotalComments');
                             if (heroComments) heroComments.textContent = Math.max(0, parseInt(heroComments.textContent) - 1);
                             showToast('Commentaire supprimé', 'success');
@@ -2033,7 +1738,7 @@
                 attachDeleteForm(form, blogId);
             });
 
-            // Fonction utilitaire : toast
+            // Toast
             function showToast(message, type) {
                 const container = document.querySelector('.flash-messages') || (() => {
                     const c = document.createElement('div');
@@ -2048,7 +1753,6 @@
                 setTimeout(() => toast.remove(), 3600);
             }
 
-            // Échapper le HTML
             function escHtml(str) {
                 return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
             }
@@ -2061,96 +1765,6 @@
                 section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
             }
         }
-    </script>
-
-    {# === TUTOR NOTIFICATION JS === #}
-    <script>
-    (function() {
-        var bellBtn = document.getElementById('tutorNotifBellBtn');
-        var badge = document.getElementById('tutorNotifBadge');
-        var overlay = document.getElementById('tutorNotifOverlay');
-        var sidebar = document.getElementById('tutorNotifSidebar');
-        var closeBtn = document.getElementById('tutorNotifClose');
-        var content = document.getElementById('tutorNotifContent');
-
-        var countUrl = '{{ path('app_notifications_tutor_count') }}';
-        var listUrl = '{{ path('app_notifications_tutor_list') }}';
-        var markAllUrl = '{{ path('app_notifications_tutor_mark_all_read') }}';
-
-        function closeSidebar() {
-            if (overlay) { overlay.classList.remove('is-open'); }
-            if (sidebar) { sidebar.classList.remove('is-open'); sidebar.setAttribute('aria-hidden', 'true'); }
-        }
-
-        function openSidebar() {
-            if (overlay) overlay.classList.add('is-open');
-            if (sidebar) { sidebar.classList.add('is-open'); sidebar.setAttribute('aria-hidden', 'false'); }
-            loadNotifications();
-        }
-
-        function loadNotifications() {
-            content.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-light,#6b7280);"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
-            fetch(listUrl, { credentials: 'same-origin' })
-                .then(function(r) { return r.text(); })
-                .then(function(html) {
-                    content.innerHTML = html;
-                    // Attach mark-all-read
-                    var markAllBtn = document.getElementById('tutorNotifMarkAllBtn');
-                    if (markAllBtn) {
-                        markAllBtn.addEventListener('click', function() {
-                            fetch(markAllUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                                .then(function() {
-                                    updateCount();
-                                    loadNotifications();
-                                });
-                        });
-                    }
-                    // Attach mark-read on click for individual items
-                    content.querySelectorAll('.tutor-notif-item').forEach(function(item) {
-                        item.addEventListener('click', function() {
-                            var type = item.getAttribute('data-type');
-                            var id = item.getAttribute('data-id');
-                            if (type === 'status' && id) {
-                                fetch('/notifications/tutor/mark-status-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                            } else if (type === 'interaction' && id) {
-                                fetch('/notifications/mark-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                            }
-                        });
-                    });
-                })
-                .catch(function() {
-                    content.innerHTML = '<p style="padding:16px;color:#ef4444;">Erreur de chargement.</p>';
-                });
-        }
-
-        function updateCount() {
-            fetch(countUrl, { credentials: 'same-origin' })
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    var c = data.count || 0;
-                    if (c > 0) {
-                        badge.textContent = c > 99 ? '99+' : c;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                })
-                .catch(function() {});
-        }
-
-        if (bellBtn) {
-            bellBtn.addEventListener('click', function() {
-                if (sidebar && sidebar.classList.contains('is-open')) closeSidebar();
-                else openSidebar();
-            });
-        }
-        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-        if (overlay) overlay.addEventListener('click', closeSidebar);
-
-        // Initial count + poll every 30s
-        updateCount();
-        setInterval(updateCount, 30000);
-    })();
     </script>
 </body>
 </html>

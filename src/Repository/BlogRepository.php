@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Blog;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,39 @@ class BlogRepository extends ServiceEntityRepository
         parent::__construct($registry, Blog::class);
     }
 
-    //    /**
-    //     * @return Blog[] Returns an array of Blog objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Articles du tuteur dont le statut a change (accepte/rejete) et pas encore lu
+     * @return Blog[]
+     */
+    public function findStatusNotifications(User $user, bool $onlyUnread = false): array
+    {
+        $qb = $this->createQueryBuilder('b')
+            ->where('b.publisher = :user')
+            ->andWhere('b.status IN (:statuses)')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', ['published', 'rejected'])
+            ->orderBy('b.createdAt', 'DESC');
 
-    //    public function findOneBySomeField($value): ?Blog
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($onlyUnread) {
+            $qb->andWhere('b.isStatusNotifRead = false');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Nombre d'articles avec notification de statut non lue
+     */
+    public function countStatusNotifications(User $user): int
+    {
+        return $this->createQueryBuilder('b')
+            ->select('COUNT(b.id)')
+            ->where('b.publisher = :user')
+            ->andWhere('b.isStatusNotifRead = false')
+            ->andWhere('b.status IN (:statuses)')
+            ->setParameter('user', $user)
+            ->setParameter('statuses', ['published', 'rejected'])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

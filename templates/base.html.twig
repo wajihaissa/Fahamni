@@ -14,7 +14,7 @@
     <body>
     {% set _route = app.request.attributes.get('_route') ?? '' %}
     {% if not (_route starts with 'admin') %}
-        {% include 'front/_navbar.html.twig' with { current_page: 'home' } %}
+        {% include 'front/_navbar.html.twig' with { current_page: block('current_page')|default('home'), user: app.user } %}
     {% endif %}
         {% block body %}{% endblock %}
     </body>
