@@ -1,0 +1,114 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}FAHIMNI Messenger{% endblock %}
+{% block current_page %}messenger{% endblock %}
+{% block body_class %}page-messenger{% endblock %}
+
+{% block stylesheets %}
+<style>{% include 'front/messenger/_messenger_styles.html.twig' %}</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container messenger-page">
+        <div class="messenger-layout">
+            {# Colonne liste des conversations #}
+            <div class="messages-column">
+                <div class="messages-header">
+                    <h1>FAHIMNI</h1>
+                    <h2>Messages</h2>
+                    <p class="messenger-actor-bar"><strong>{{ actor.FullName }}</strong></p>
+                </div>
+                <div class="conversations-search" id="conversationsSearchWrap" data-search-url="{{ path('app_messenger_search_users') }}" data-archived="{{ show_archived|default(false) ? '1' : '0' }}" data-current-conv-id="{{ current_conversation is defined and current_conversation ? current_conversation.id : '' }}">
+                    <div class="conversations-search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="conversationsSearch" placeholder="Rechercher un utilisateur..." autocomplete="off">
+                    </div>
+                </div>
+                <div class="messenger-extra-links">
+                    <a href="{{ path('app_messenger_new_conversation') }}" class="btn btn-primary">Nouvelle conversation</a>
+                    <a href="{{ path('app_messenger_new_group') }}" class="btn btn-outline-primary">Nouveau groupe</a>
+                    {% if show_archived|default(false) %}
+                        <a href="{{ path('app_messenger_index') }}" class="link-archived">Voir les conversations actives</a>
+                    {% else %}
+                        <a href="{{ path('app_messenger_index', { archived: 1 }) }}" class="link-archived">Voir les archivées</a>
+                    {% endif %}
+                </div>
+                <div class="threads-container">
+                    <div class="threads-list" id="threadsList">
+                        {% for conv in conversations %}
+                            {% include 'front/messenger/_thread_item.html.twig' with { conv: conv, actor: actor, current_conversation: current_conversation|default(null) } %}
+                        {% else %}
+                            <div class="thread-item thread-item-empty">
+                                <div class="thread-preview">Aucune conversation. Cliquez sur « Nouvelle conversation ».</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {# Colonne chat #}
+            <div class="chat-column">
+                {% if current_conversation %}
+                    {% set other = other|default(current_conversation.participants|filter(p => p.id != actor.id)|first) %}
+                    {% include 'front/messenger/_chat_header.html.twig' with { current_conversation: current_conversation, other: other, other_display_name: other_display_name|default(other ? other.FullName : 'Conversation') } %}
+
+                    <div class="chat-view">
+                        <div class="chat-view-inner">
+                            <div class="chat-main">
+                                <div class="chat-messages" id="chatMessages">
+                                    {% for msg in messages %}
+                                        {% set is_mine = msg.sender.id == actor.id %}
+                                        {% include 'front/messenger/_message_item.html.twig' with { msg: msg, is_mine: is_mine, actor: actor, current_conversation: current_conversation } %}
+                                    {% else %}
+                                        <div class="thread-preview" style="padding: 20px;">Aucun message. Envoyez le premier.</div>
+                                    {% endfor %}
+                                </div>
+                                {% include 'front/messenger/_message_input.html.twig' with { current_conversation: current_conversation, editing_message: editing_message|default(null) } %}
+                            </div>
+                            {% include 'front/messenger/_chat_info_panel.html.twig' with { current_conversation: current_conversation, other: other, actor: actor, other_display_name: other_display_name|default(other ? other.FullName : ''), current_nickname: current_nickname|default(null) } %}
+                        </div>
+                    </div>
+
+                    {% include 'front/messenger/_transfer_modal.html.twig' with { conversations: conversations, current_conversation: current_conversation, actor: actor } %}
+                {% elseif compose_with is defined and compose_with %}
+                    {# Mode brouillon : premier message — la conversation sera créée à l'envoi #}
+                    <div class="chat-header">
+                        <div class="chat-user-info">
+                            <div class="user-avatar">{{ compose_with.FullName|slice(0,2)|upper }}</div>
+                            <div class="user-details">
+                                <h3>{{ compose_with.FullName }}</h3>
+                                <div class="user-status{{ compose_with.isStatus ? ' online' : '' }}">{{ compose_with.isStatus ? 'En ligne' : compose_with.email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-view">
+                        <div class="chat-view-inner">
+                            <div class="chat-main">
+                                <div class="chat-messages" id="chatMessages">
+                                    <div class="thread-preview" style="padding: 20px;">Envoyez le premier message pour démarrer la conversation.</div>
+                                </div>
+                                {% include 'front/messenger/_message_input.html.twig' with { compose_with: compose_with } %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="chat-header">
+                        <div class="chat-user-info">
+                            <div class="user-details">
+                                <h3>Messenger</h3>
+                                <div class="user-status">Choisissez une conversation</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages chat-messages-empty" id="chatMessages">
+                        <p class="chat-empty-text">Choisissez une conversation dans la liste ou <a href="{{ path('app_messenger_new_conversation') }}">démarrez-en une nouvelle</a>.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>{% include 'front/messenger/_messenger_scripts.html.twig' %}</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FAHIMNI{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {{ importmap('app') }}
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {# Appliquer le thème sauvegardé immédiatement pour éviter un flash (FOUC) #}
+    <script>(function(){var t=localStorage.getItem('theme');if(t==='dark')document.body.classList.add('dark-theme');})();</script>
+
+    {% if false %}{% block current_page %}home{% endblock %}{% endif %}
+    {% include 'front/_navbar.html.twig' with { current_page: block('current_page')|trim } %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+        {# Footer optionnel : override dans l’enfant ou inclure un partial #}
+    {% endblock %}
+
+    {# Bouton thème en script inline pour garantir qu'il marche sur toutes les pages (indépendant de app.js) #}
+    <script>
+    (function() {
+        function initTheme() {
+            var btn = document.getElementById('themeToggle');
+            if (!btn) return;
+            var icon = btn.querySelector('i');
+            if (!icon) return;
+            var theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+            btn.addEventListener('click', function() {
+                document.body.classList.toggle('dark-theme');
+                var isDark = document.body.classList.contains('dark-theme');
+                icon.classList.remove('fa-moon');
+                icon.classList.remove('fa-sun');
+                icon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTheme);
+        } else {
+            initTheme();
+        }
+    })();
+    </script>
+
+    {# Menu mobile : script inline pour garantir le fonctionnement même si app.js charge en retard ou en erreur #}
+    <script>
+    (function() {
+        function initMobileMenu() {
+            var btn = document.getElementById('mobileMenuBtn');
+            var nav = document.querySelector('header nav');
+            if (!btn || !nav) return;
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                nav.classList.toggle('active');
+            });
+            document.addEventListener('click', function(e) {
+                if (!nav.contains(e.target) && !btn.contains(e.target)) {
+                    nav.classList.remove('active');
+                }
+            });
+            nav.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    nav.classList.remove('active');
+                });
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMobileMenu);
+        } else {
+            initMobileMenu();
+        }
+    })();
+    </script>
+
+    {% block javascripts %}
+        {# Lien actif etc. dans app.js si chargé #}
+    {% endblock %}
+</body>
+</html>

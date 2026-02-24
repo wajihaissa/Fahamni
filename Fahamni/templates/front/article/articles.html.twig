@@ -1,0 +1,271 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Articles - FAHIMNI{% endblock %}
+
+{% block current_page %}articles{% endblock %}
+
+{% block stylesheets %}
+<style>
+.articles-main { padding: 120px 0 60px; min-height: 100vh; background-color: var(--bg-color); }
+.articles-header { text-align: center; margin-bottom: 50px; padding: 0 20px; }
+.articles-header h1 { font-size: 48px; font-weight: 800; margin-bottom: 15px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.articles-header p { font-size: 20px; color: var(--text-light); max-width: 600px; margin: 0 auto 30px; }
+.articles-filters { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; padding: 25px; background-color: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+.filter-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+.filter-btn { padding: 10px 24px; border-radius: 50px; border: 2px solid var(--border-color); background: transparent; color: var(--text-color); font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 15px; }
+.filter-btn:hover, .filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.filter-search { display: flex; align-items: center; gap: 10px; min-width: 300px; }
+.filter-search input { flex: 1; padding: 12px 20px; border: 2px solid var(--border-color); border-radius: 50px; font-size: 16px; background-color: var(--bg-color); color: var(--text-color); }
+.filter-search input:focus { outline: none; border-color: var(--primary-color); }
+.search-btn { width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary-color); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; margin-bottom: 60px; }
+.article-card { background-color: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: var(--transition); border: 1px solid var(--border-color); height: 100%; display: flex; flex-direction: column; }
+.article-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+.article-card.featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.article-image { position: relative; overflow: hidden; height: 200px; }
+.article-card.featured .article-image { height: 100%; min-height: 300px; }
+.article-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.article-card:hover .article-image img { transform: scale(1.05); }
+.article-content { padding: 25px; display: flex; flex-direction: column; flex: 1; }
+.article-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.article-category { padding: 6px 16px; border-radius: 50px; background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); font-weight: 600; font-size: 14px; }
+.article-date { color: var(--text-light); font-size: 14px; }
+.article-title { font-size: 22px; font-weight: 700; color: var(--text-color); margin-bottom: 15px; line-height: 1.4; }
+.article-card.featured .article-title { font-size: 28px; }
+.article-excerpt { color: var(--text-light); margin-bottom: 20px; line-height: 1.6; flex: 1; }
+.article-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.author-info { display: flex; align-items: center; gap: 12px; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; }
+.author-name { font-weight: 600; color: var(--text-color); }
+.article-actions { display: flex; gap: 15px; }
+.action-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 50px; border: none; background-color: var(--bg-secondary); color: var(--text-color); font-weight: 600; cursor: pointer; transition: var(--transition); font-size: 14px; }
+.action-btn:hover { background-color: var(--primary-color); color: white; }
+.like-btn.active { background-color: var(--primary-color); color: white; }
+.publish-form, .comment-form { padding: 30px; }
+.comments-container { padding: 20px 30px; max-height: 400px; overflow-y: auto; }
+.comment-item { padding: 20px 0; border-bottom: 1px solid var(--border-color); }
+.comment-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.comment-author { font-weight: 600; color: var(--text-color); }
+.comment-time { color: var(--text-light); font-size: 14px; }
+.comment-text { color: var(--text-color); line-height: 1.6; }
+@media (max-width: 768px) {
+    .articles-main { padding: 100px 0 40px; }
+    .articles-filters { flex-direction: column; align-items: stretch; }
+    .filter-search { min-width: 100%; }
+    .articles-grid { grid-template-columns: 1fr; }
+    .article-card.featured { grid-template-columns: 1fr; }
+}
+@media (max-width: 576px) {
+    .articles-header h1 { font-size: 32px; }
+    .filter-btn { padding: 8px 16px; font-size: 14px; }
+    .form-actions { flex-direction: column; }
+}
+@media (max-width: 480px) {
+    .articles-main { padding: 90px 0 30px; }
+    .articles-header h1 { font-size: 26px; }
+    .articles-header p { font-size: 16px; }
+    .articles-filters { padding: 16px; gap: 12px; }
+    .filter-tabs { justify-content: center; }
+    .filter-btn { padding: 10px 14px; font-size: 13px; }
+    .article-card.featured .article-image { min-height: 220px; }
+    .article-content { padding: 18px; }
+    .article-title { font-size: 18px; }
+    .article-card.featured .article-title { font-size: 20px; }
+    .action-btn { padding: 8px 12px; font-size: 13px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <main class="articles-main">
+        <div class="container">
+            <div class="articles-header">
+                <h1>Knowledge Hub</h1>
+                <p>Discover insights, tips, and educational content from our community</p>
+                <button class="btn btn-primary" id="publishBtn">✏️ Publish Article</button>
+            </div>
+
+            <div class="articles-filters">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" data-filter="all">All Articles</button>
+                    <button class="filter-btn" data-filter="mathematics">Mathematics</button>
+                    <button class="filter-btn" data-filter="science">Science</button>
+                    <button class="filter-btn" data-filter="computer-science">Computer Science</button>
+                    <button class="filter-btn" data-filter="study-tips">Study Tips</button>
+                </div>
+                <div class="filter-search">
+                    <input type="text" placeholder="Search articles..." id="searchInput">
+                    <button class="search-btn">🔍</button>
+                </div>
+            </div>
+
+            <div class="articles-grid" id="articlesGrid">
+                <article class="article-card featured" data-category="study-tips">
+                    <div class="article-image">
+                        <img src="https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg" alt="Study Tips">
+                    </div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="article-category">Study Tips</span>
+                            <span class="article-date">2 hours ago</span>
+                        </div>
+                        <h2 class="article-title">10 Proven Study Techniques That Actually Work</h2>
+                        <p class="article-excerpt">Discover evidence-based study methods that can dramatically improve your learning efficiency and retention rates.</p>
+                        <div class="article-footer">
+                            <div class="author-info">
+                                <div class="author-avatar">DR</div>
+                                <span class="author-name">Dr. Sarah Roberts</span>
+                            </div>
+                            <div class="article-actions">
+                                <button class="action-btn like-btn" data-likes="127"><span class="like-icon">👍</span><span class="like-count">127</span></button>
+                                <button class="action-btn comment-btn" data-comments="23"><span class="comment-icon">💬</span><span class="comment-count">23</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                {% for item in [
+                    { category: 'mathematics', img: '6256066', title: "Understanding Calculus: A Beginner's Guide", excerpt: "Break down complex calculus concepts into digestible parts.", author: 'MK', name: 'Prof. Michael Khan', likes: 89, comments: 15, date: '1 day ago' },
+                    { category: 'computer-science', img: '1181244', title: 'Algorithm Design Patterns Every Student Should Know', excerpt: "Master fundamental algorithm patterns for efficient problem-solving.", author: 'AL', name: 'Alex Liu', likes: 156, comments: 34, date: '2 days ago' },
+                    { category: 'science', img: '2280549', title: 'Organic Chemistry Made Simple', excerpt: "Simplify complex organic reactions with memory techniques.", author: 'EW', name: 'Dr. Emily Watson', likes: 78, comments: 19, date: '3 days ago' },
+                    { category: 'mathematics', img: '159711', title: 'Statistics for Non-Math Students', excerpt: "Learn statistical concepts using real-world examples.", author: 'JR', name: 'Prof. James Rodriguez', likes: 94, comments: 27, date: '1 week ago' },
+                    { category: 'study-tips', img: '6801872', title: 'Time Management for Students: The Ultimate Guide', excerpt: "Transform your productivity with proven time management strategies.", author: 'NK', name: 'Nina Kim', likes: 203, comments: 45, date: '1 week ago' }
+                ] %}
+                <article class="article-card" data-category="{{ item.category }}">
+                    <div class="article-image">
+                        <img src="https://images.pexels.com/photos/{{ item.img }}/pexels-photo-{{ item.img }}.jpeg" alt="{{ item.category }}">
+                    </div>
+                    <div class="article-content">
+                        <div class="article-meta">
+                            <span class="article-category">{{ item.category|replace({'-': ' '})|title }}</span>
+                            <span class="article-date">{{ item.date }}</span>
+                        </div>
+                        <h3 class="article-title">{{ item.title }}</h3>
+                        <p class="article-excerpt">{{ item.excerpt }}</p>
+                        <div class="article-footer">
+                            <div class="author-info">
+                                <div class="author-avatar">{{ item.author }}</div>
+                                <span class="author-name">{{ item.name }}</span>
+                            </div>
+                            <div class="article-actions">
+                                <button class="action-btn like-btn" data-likes="{{ item.likes }}"><span class="like-icon">👍</span><span class="like-count">{{ item.likes }}</span></button>
+                                <button class="action-btn comment-btn" data-comments="{{ item.comments }}"><span class="comment-icon">💬</span><span class="comment-count">{{ item.comments }}</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="publishModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Publish New Article</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <form class="publish-form" id="publishForm">
+                <div class="form-group">
+                    <label for="articleTitle">Title</label>
+                    <input type="text" id="articleTitle" placeholder="Enter article title..." required>
+                </div>
+                <div class="form-group">
+                    <label for="articleCategory">Category</label>
+                    <select id="articleCategory" required>
+                        <option value="">Select category</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="science">Science</option>
+                        <option value="computer-science">Computer Science</option>
+                        <option value="study-tips">Study Tips</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="articleExcerpt">Excerpt</label>
+                    <textarea id="articleExcerpt" rows="3" placeholder="Brief description..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="articleContent">Content</label>
+                    <textarea id="articleContent" rows="10" placeholder="Write your article content..." required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="saveDraft">Save Draft</button>
+                    <button type="submit" class="btn btn-primary">Publish Article</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="commentsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Comments</h2>
+                <button class="modal-close" id="closeCommentsModal">×</button>
+            </div>
+            <div class="comments-container" id="commentsContainer"></div>
+            <form class="comment-form" id="commentForm">
+                <textarea placeholder="Write a comment..." rows="3" required></textarea>
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var publishBtn = document.getElementById('publishBtn');
+    var publishModal = document.getElementById('publishModal');
+    var closeModal = document.getElementById('closeModal');
+    var saveDraft = document.getElementById('saveDraft');
+    var publishForm = document.getElementById('publishForm');
+    var closeCommentsModal = document.getElementById('closeCommentsModal');
+    var filterBtns = document.querySelectorAll('.filter-btn');
+    var searchInput = document.getElementById('searchInput');
+    var articlesGrid = document.getElementById('articlesGrid');
+
+    function openModal(el) { if (el) el.classList.add('active'); }
+    function closeModalEl(el) { if (el) el.classList.remove('active'); }
+
+    if (publishBtn) publishBtn.addEventListener('click', function() { openModal(publishModal); });
+    if (closeModal) closeModal.addEventListener('click', function() { closeModalEl(publishModal); });
+    if (saveDraft) saveDraft.addEventListener('click', function() { closeModalEl(publishModal); });
+    if (publishForm) publishForm.addEventListener('submit', function(e) { e.preventDefault(); closeModalEl(publishModal); this.reset(); });
+    if (closeCommentsModal) closeCommentsModal.addEventListener('click', function() { closeModalEl(document.getElementById('commentsModal')); });
+
+    publishModal && publishModal.addEventListener('click', function(e) { if (e.target === publishModal) closeModalEl(publishModal); });
+
+    filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            var filter = this.getAttribute('data-filter');
+            var cards = articlesGrid ? articlesGrid.querySelectorAll('.article-card') : [];
+            cards.forEach(function(card) {
+                var show = filter === 'all' || card.getAttribute('data-category') === filter;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var q = this.value.toLowerCase();
+            var cards = articlesGrid ? articlesGrid.querySelectorAll('.article-card') : [];
+            cards.forEach(function(card) {
+                var text = (card.querySelector('.article-title') || {}).textContent || '';
+                var excerpt = (card.querySelector('.article-excerpt') || {}).textContent || '';
+                card.style.display = (text + excerpt).toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+            });
+        });
+    }
+
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { this.classList.toggle('active'); });
+    });
+    document.querySelectorAll('.comment-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { openModal(document.getElementById('commentsModal')); });
+    });
+});
+</script>
+{% endblock %}
