@@ -12,7 +12,7 @@ use App\Entity\Student;
 
 final class FrontOfficeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_home')]
     public function index(): Response
     {
         return $this->render('front/index.html.twig', [
