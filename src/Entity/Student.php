@@ -31,6 +31,9 @@ class Student
     #[ORM\Column(nullable: true)]
     private ?array $Certifications = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $certificationKeywords = null;
+
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $userId = null;
@@ -108,6 +111,18 @@ class Student
     public function setCertifications(?array $Certifications): static
     {
         $this->Certifications = $Certifications;
+
+        return $this;
+    }
+
+    public function getCertificationKeywords(): ?array
+    {
+        return $this->certificationKeywords;
+    }
+
+    public function setCertificationKeywords(?array $certificationKeywords): static
+    {
+        $this->certificationKeywords = $certificationKeywords;
 
         return $this;
     }

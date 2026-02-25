@@ -572,11 +572,31 @@
                         
                         <div class="form-group">
                             <label for="certifications">Certifications</label>
-                            <textarea id="certifications" name="certifications" placeholder="e.g., AWS Certified Solutions Architect, IELTS Band 8, Microsoft Azure Fundamentals...">{% if student.Certifications is not empty %}{{ student.Certifications|join(', ') }}{% endif %}</textarea>
-                            <div class="form-hint">Enter each certification separated by commas</div>
+                            <textarea id="certifications" name="certifications" placeholder="e.g., AWS Certified Solutions Architect, IELTS Band 8, Microsoft Azure Fundamentals...">{{ certificationInput|default('') }}</textarea>
+                            <div class="form-hint">Enter each skill/certification separated by commas. After submit, you will be redirected to your skill quizzes.</div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save Certifications</button>
+                        <div class="form-group">
+                            <label>Pending Skill Quizzes</label>
+                            <div>
+                                {% if pendingKeywords is defined and pendingKeywords|length > 0 %}
+                                    {% for kw in pendingKeywords %}
+                                        <a class="btn" style="margin:0 8px 8px 0; border:1px solid #e2e8f0;" href="{{ path('app_quiz_quiz_take_by_keyword', {'keyword': kw}) }}">{{ kw }}</a>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="form-hint">No pending skills yet.</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if validatedKeywords is defined and validatedKeywords|length > 0 %}
+                            <div class="form-group">
+                                <label>Validated Skills</label>
+                                <div class="form-hint">{{ validatedKeywords|join(', ') }}</div>
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary">Save & Start Skill Quizzes</button>
                     </form>
                 </div>
 
@@ -734,6 +754,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 });
 </script>
 

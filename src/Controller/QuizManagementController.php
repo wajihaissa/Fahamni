@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Quiz;
 use App\Entity\Question;
 use App\Entity\Choice;
+use App\Entity\QuizResult;
 use App\Repository\QuizRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,12 +18,105 @@ use Symfony\Component\Routing\Attribute\Route;
 final class QuizManagementController extends AbstractController
 {
     #[Route('', name: 'admin_quiz_list')]
-    public function list(QuizRepository $quizRepository): Response
+    public function list(Request $request, QuizRepository $quizRepository, EntityManagerInterface $entityManager): Response
     {
-        $quizzes = $quizRepository->findAll();
-        
+        $search = trim((string) $request->query->get('q', ''));
+
+        $listQb = $quizRepository->createQueryBuilder('q')
+            ->leftJoin('q.questions', 'question')
+            ->addSelect('question')
+            ->orderBy('q.id', 'DESC');
+
+        if ($search !== '') {
+            $listQb
+                ->andWhere('LOWER(q.titre) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        $quizzes = $listQb->getQuery()->getResult();
+
+        $totalQuizzes = $quizRepository->count([]);
+        $totalQuestions = (int) $entityManager->createQueryBuilder()
+            ->select('COUNT(question.id)')
+            ->from(Question::class, 'question')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $totalAttempts = $entityManager->getRepository(QuizResult::class)->count([]);
+        $totalPassedAttempts = $entityManager->getRepository(QuizResult::class)->count(['passed' => true]);
+        $passRate = $totalAttempts > 0 ? round(($totalPassedAttempts / $totalAttempts) * 100, 1) : 0.0;
+        $todayStart = new DateTimeImmutable('today');
+        $tomorrowStart = $todayStart->modify('+1 day');
+        $weekStart = $todayStart->modify('-6 days');
+
+        $quizzesToday = 0;
+        $quizzesThisWeek = 0;
+        $todayAttempts = 0;
+        $avgScore = 0.0;
+
+        // Keep page usable even if DB migration for quiz.createdAt is not applied yet.
+        try {
+            $quizzesToday = (int) $entityManager->createQueryBuilder()
+                ->select('COUNT(q.id)')
+                ->from(Quiz::class, 'q')
+                ->where('q.createdAt >= :todayStart')
+                ->andWhere('q.createdAt < :tomorrowStart')
+                ->setParameter('todayStart', $todayStart)
+                ->setParameter('tomorrowStart', $tomorrowStart)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $quizzesThisWeek = (int) $entityManager->createQueryBuilder()
+                ->select('COUNT(q.id)')
+                ->from(Quiz::class, 'q')
+                ->where('q.createdAt >= :weekStart')
+                ->setParameter('weekStart', $weekStart)
+                ->getQuery()
+                ->getSingleScalarResult();
+        } catch (\Throwable) {
+            $quizzesToday = 0;
+            $quizzesThisWeek = 0;
+        }
+
+        $todayAttempts = (int) $entityManager->createQueryBuilder()
+            ->select('COUNT(qr.id)')
+            ->from(QuizResult::class, 'qr')
+            ->where('qr.completedAt >= :todayStart')
+            ->andWhere('qr.completedAt < :tomorrowStart')
+            ->setParameter('todayStart', $todayStart)
+            ->setParameter('tomorrowStart', $tomorrowStart)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $avgScore = (float) $entityManager->createQueryBuilder()
+            ->select('COALESCE(AVG(qr.percentage), 0)')
+            ->from(QuizResult::class, 'qr')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $topQuiz = $entityManager->createQueryBuilder()
+            ->select('q.titre AS title, COUNT(qr.id) AS attempts')
+            ->from(QuizResult::class, 'qr')
+            ->join('qr.quiz', 'q')
+            ->groupBy('q.id, q.titre')
+            ->orderBy('attempts', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
         return $this->render('back/quiz/list.html.twig', [
             'quizzes' => $quizzes,
+            'search' => $search,
+            'totalQuizzes' => $totalQuizzes,
+            'totalQuestions' => $totalQuestions,
+            'quizzesToday' => $quizzesToday,
+            'quizzesThisWeek' => $quizzesThisWeek,
+            'totalAttempts' => $totalAttempts,
+            'todayAttempts' => $todayAttempts,
+            'passRate' => $passRate,
+            'avgScore' => round($avgScore, 1),
+            'topQuizTitle' => $topQuiz['title'] ?? 'No attempts yet',
+            'topQuizAttempts' => isset($topQuiz['attempts']) ? (int) $topQuiz['attempts'] : 0,
         ]);
     }
 
@@ -148,10 +243,41 @@ final class QuizManagementController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'admin_quiz_delete', methods: ['POST'])]
-    public function deleteQuiz(Quiz $quiz, EntityManagerInterface $em): Response
+    public function deleteQuiz(Quiz $quiz, EntityManagerInterface $em, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('delete_quiz_' . $quiz->getId(), (string) $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid delete request.');
+            return $this->redirectToRoute('admin_quiz_list');
+        }
+
+        // Delete child rows first to satisfy foreign-key constraints.
+        $em->createQueryBuilder()
+            ->delete(Choice::class, 'c')
+            ->where('c.question IN (
+                SELECT q2.id FROM ' . Question::class . ' q2 WHERE q2.quiz = :quiz
+            )')
+            ->setParameter('quiz', $quiz)
+            ->getQuery()
+            ->execute();
+
+        $em->createQueryBuilder()
+            ->delete(Question::class, 'q')
+            ->where('q.quiz = :quiz')
+            ->setParameter('quiz', $quiz)
+            ->getQuery()
+            ->execute();
+
+        $em->createQueryBuilder()
+            ->delete(QuizResult::class, 'qr')
+            ->where('qr.quiz = :quiz')
+            ->setParameter('quiz', $quiz)
+            ->getQuery()
+            ->execute();
+
         $em->remove($quiz);
         $em->flush();
+
+        $this->addFlash('success', 'Quiz deleted successfully.');
 
         return $this->redirectToRoute('admin_quiz_list');
     }

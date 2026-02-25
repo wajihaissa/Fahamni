@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Quiz;
-use App\Entity\Question;
 use App\Entity\Choice;
-use App\Service\GeminiQuizService;
+use App\Entity\User;
+use App\Service\KeywordQuizProvisioner;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,26 +25,42 @@ use App\Service\PDFGeneratorService;
 final class QuizController extends AbstractController
 {
     #[Route('', name: 'list', methods: ['GET'])]
-    public function list(QuizRepository $quizRepository): Response
+    public function list(Request $request, QuizRepository $quizRepository, KeywordQuizProvisioner $keywordQuizProvisioner): Response
     {
         if (!$this->getUser()) {
     $this->addFlash('warning', 'Please login to take quizzes.');
     return $this->redirectToRoute('app_login');
 }
+        $skillsMode = (int) $request->query->get('skills', 0) === 1;
         $quizzes = $quizRepository->findAll();
+
+        if ($skillsMode && $this->getUser() instanceof User) {
+            $student = $this->getUser()->getProfile();
+            $pendingKeywords = $keywordQuizProvisioner->normalizeKeywords((array) ($student?->getCertificationKeywords() ?? []));
+            $targetQuizzes = [];
+
+            foreach ($pendingKeywords as $keyword) {
+                $quiz = $keywordQuizProvisioner->findQuizByKeyword($keyword);
+                if ($quiz instanceof Quiz) {
+                    $targetQuizzes[$quiz->getId()] = $quiz;
+                }
+            }
+
+            $quizzes = array_values($targetQuizzes);
+        }
 
         return $this->render('front/quiz/list.html.twig', [
             'quizzes' => $quizzes,
+            'skillsMode' => $skillsMode,
         ]);
     }
     #[Route('/take/{id}', name: 'quiz_take_by_id', requirements: ['id' => '\d+'])]
 #[Route('/take/{keyword}', name: 'quiz_take_by_keyword')]
 public function takeQuiz(
-    ?string $keyword = null,  // Make it nullable with default null
-    ?int $id = null, 
-    GeminiQuizService $aiService,
-    EntityManagerInterface $entityManager
-   
+    EntityManagerInterface $entityManager,
+    KeywordQuizProvisioner $keywordQuizProvisioner,
+    ?int $id = null,
+    ?string $keyword = null
 ): Response {
     // 1. Check if quiz exists in database
     $quiz = null;
@@ -58,46 +74,9 @@ public function takeQuiz(
             throw $this->createNotFoundException('Quiz not found');
         }
     } elseif ($keyword !== null) {
-        // Search by keyword in title
-        $quiz = $entityManager->getRepository(Quiz::class)
-            ->createQueryBuilder('q')
-            ->where('q.titre LIKE :keyword')
-            ->setParameter('keyword', '%' . $keyword . '%')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-        
-        // 2. If not found, generate with AI
-        if (!$quiz) {
-            $questionsData = $aiService->generateQuizFromKeyword($keyword);
-            
-            // Create new quiz
-            $quiz = new Quiz();
-            $quiz->setTitre($keyword . ' Certification Quiz');
-            
-            // Add questions and choices
-            foreach ($questionsData as $qData) {
-                $question = new Question();
-                $question->setQuestion($qData['question']);
-                $question->setQuiz($quiz);
-                
-                foreach ($qData['options'] as $index => $optionText) {
-                    $choice = new Choice();
-                    $choice->setChoice($optionText);
-                    $choice->setQuestion($question);
-                    $choice->setIsCorrect($index === $qData['correctAnswer']);
-                    
-                    $entityManager->persist($choice);
-                    $question->addChoice($choice);
-                }
-                
-                $entityManager->persist($question);
-                $quiz->addQuestion($question);
-            }
-            
-            $entityManager->persist($quiz);
-            $entityManager->flush();
-        }
+        // Reuse existing quiz by keyword, generate only if it does not exist.
+        $result = $keywordQuizProvisioner->ensureQuizForKeyword($keyword);
+        $quiz = $result['quiz'];
     } else {
         throw $this->createNotFoundException('No identifier provided');
     }
@@ -115,6 +94,7 @@ public function submitQuiz(
     EntityManagerInterface $entityManager,
     MailerInterface $mailer,
     PDFGeneratorService $pdfGenerator,
+    KeywordQuizProvisioner $keywordQuizProvisioner
     
 ): Response {
     $quiz = $entityManager->getRepository(Quiz::class)->find($id);
@@ -136,7 +116,7 @@ public function submitQuiz(
     }
     
     $percentage = ($correctCount / $totalQuestions) * 100;
-    $passed = $percentage >= 70;
+    $passed = $percentage >= 60;
     
     // Get current user
     $user = $this->getUser();
@@ -182,6 +162,33 @@ public function submitQuiz(
 }
     
     $entityManager->persist($result);
+
+    if ($user instanceof User) {
+        $student = $user->getProfile();
+        $quizKeyword = $quiz->getKeyword();
+
+        if ($student && $quizKeyword) {
+            $normalizedKeyword = $keywordQuizProvisioner->normalizeKeyword($quizKeyword);
+            $validatedKeywords = $keywordQuizProvisioner->normalizeKeywords((array) ($student->getCertifications() ?? []));
+            $pendingKeywords = $keywordQuizProvisioner->normalizeKeywords((array) ($student->getCertificationKeywords() ?? []));
+
+            if ($passed) {
+                if (!in_array($normalizedKeyword, $validatedKeywords, true)) {
+                    $validatedKeywords[] = $normalizedKeyword;
+                }
+                $pendingKeywords = array_values(array_diff($pendingKeywords, [$normalizedKeyword]));
+            } else {
+                if (!in_array($normalizedKeyword, $pendingKeywords, true) && !in_array($normalizedKeyword, $validatedKeywords, true)) {
+                    $pendingKeywords[] = $normalizedKeyword;
+                }
+            }
+
+            $student->setCertifications($validatedKeywords);
+            $student->setCertificationKeywords($pendingKeywords);
+            $entityManager->persist($student);
+        }
+    }
+
     $entityManager->flush();
     
     

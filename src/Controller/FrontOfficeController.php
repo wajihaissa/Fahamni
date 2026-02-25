@@ -9,6 +9,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Entity\Student;
+use App\Entity\QuizResult;
+use App\Service\KeywordQuizProvisioner;
 
 final class FrontOfficeController extends AbstractController
 {
@@ -65,7 +67,12 @@ final class FrontOfficeController extends AbstractController
     }
 
     #[Route('/profile/{id}', name: 'app_profile', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function profile(int $id, Request $request, EntityManagerInterface $entityManager): Response
+    public function profile(
+        int $id,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        KeywordQuizProvisioner $keywordQuizProvisioner
+    ): Response
     {
         $sessionUser = $request->getSession()->get('user');
         if (!$sessionUser) {
@@ -124,29 +131,84 @@ final class FrontOfficeController extends AbstractController
                 // Account status values are managed by admins only.
                 $this->addFlash('info', 'Account status is managed by the administration team.');
             } elseif ($formType === 'certifications') {
-                // Update certifications
-                $certificationsStr = $request->request->get('certifications');
-                $certifications = [];
-                if ($certificationsStr) {
-                    $certifications = array_map('trim', explode(',', $certificationsStr));
-                    $certifications = array_filter($certifications); // Remove empty
-                }
-                
+                $certificationsStr = (string) $request->request->get('certifications', '');
+                $requestedKeywords = $keywordQuizProvisioner->parseKeywordsFromInput($certificationsStr);
+
                 if ($student) {
-                    $student->setCertifications($certifications);
+                    $createdCount = 0;
+                    $reusedCount = 0;
+                    $failedKeywords = [];
+
+                    foreach ($requestedKeywords as $keyword) {
+                        try {
+                            $result = $keywordQuizProvisioner->ensureQuizForKeyword($keyword);
+                            if ($result['created']) {
+                                $createdCount++;
+                            } else {
+                                $reusedCount++;
+                            }
+                        } catch (\Throwable) {
+                            $failedKeywords[] = $keyword;
+                        }
+                    }
+
+                    $passedKeywordsRows = $entityManager->createQueryBuilder()
+                        ->select('DISTINCT LOWER(q.keyword) AS keyword')
+                        ->from(QuizResult::class, 'qr')
+                        ->join('qr.quiz', 'q')
+                        ->where('qr.user = :user')
+                        ->andWhere('qr.passed = :passed')
+                        ->andWhere('q.keyword IS NOT NULL')
+                        ->setParameter('user', $user)
+                        ->setParameter('passed', true)
+                        ->getQuery()
+                        ->getArrayResult();
+
+                    $passedKeywords = array_map(
+                        static fn (array $row): string => (string) ($row['keyword'] ?? ''),
+                        $passedKeywordsRows
+                    );
+                    $passedKeywords = $keywordQuizProvisioner->normalizeKeywords($passedKeywords);
+                    $validatedKeywords = array_values(array_intersect($requestedKeywords, $passedKeywords));
+                    $pendingKeywords = array_values(array_diff($requestedKeywords, $validatedKeywords));
+
+                    $student->setCertifications($validatedKeywords);
+                    $student->setCertificationKeywords($pendingKeywords);
                     $entityManager->persist($student);
                     $entityManager->flush();
+
+                    if ($failedKeywords !== []) {
+                        $this->addFlash('error', 'Could not generate quizzes for: ' . implode(', ', $failedKeywords));
+                    }
+                    $this->addFlash(
+                        'success',
+                        sprintf(
+                            'Certifications updated. %d keyword(s) reused, %d new quiz(es) generated.',
+                            $reusedCount,
+                            $createdCount
+                        )
+                    );
+
+                    if ($pendingKeywords !== []) {
+                        return $this->redirectToRoute('app_quiz_list', ['skills' => 1]);
+                    }
                 }
-                
-                $this->addFlash('success', 'Certifications updated successfully');
             }
             
             return $this->redirectToRoute('app_profile', ['id' => $id]);
         }
         
+        $validatedKeywords = $keywordQuizProvisioner->normalizeKeywords((array) ($student?->getCertifications() ?? []));
+        $pendingKeywords = $keywordQuizProvisioner->normalizeKeywords((array) ($student?->getCertificationKeywords() ?? []));
+        $certificationKeywords = array_values(array_unique(array_merge($validatedKeywords, $pendingKeywords)));
+        $certificationInput = implode(', ', $certificationKeywords);
+
         return $this->render('front/profile/profile.html.twig', [
             'user' => $user,
             'student' => $student,
+            'validatedKeywords' => $validatedKeywords,
+            'pendingKeywords' => $pendingKeywords,
+            'certificationInput' => $certificationInput,
         ]);
     }
 }

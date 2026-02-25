@@ -1,4 +1,4 @@
-{% extends 'front/base_front.html.twig' %}
+﻿{% extends 'front/base_front.html.twig' %}
 
 {% block title %}Quizzes - FAHIMNI{% endblock %}
 
@@ -94,13 +94,6 @@
         gap: 6px;
     }
 
-    .quiz-description {
-        color: var(--text-secondary);
-        font-size: 14px;
-        line-height: 1.5;
-        flex-grow: 1;
-    }
-
     .quiz-button {
         padding: 10px 16px;
         background: var(--primary-color);
@@ -158,8 +151,14 @@
 
 <div class="quizzes-container">
     <div class="page-header">
-        <h1>Available Quizzes</h1>
-        <p>Test your knowledge with our comprehensive quiz collection</p>
+        <h1>{% if skillsMode|default(false) %}Your Skill Validation Quizzes{% else %}Available Quizzes{% endif %}</h1>
+        <p>
+            {% if skillsMode|default(false) %}
+                Complete these quizzes to validate your certification keywords.
+            {% else %}
+                Test your knowledge with our comprehensive quiz collection.
+            {% endif %}
+        </p>
     </div>
 
     {% if quizzes|length > 0 %}
@@ -189,8 +188,14 @@
     {% else %}
     <div class="empty-state">
         <div class="empty-state-icon">📚</div>
-        <h3>No Quizzes Available</h3>
-        <p>There are currently no quizzes available. Please check back later!</p>
+        <h3>{% if skillsMode|default(false) %}No Pending Skill Quizzes{% else %}No Quizzes Available{% endif %}</h3>
+        <p>
+            {% if skillsMode|default(false) %}
+                Your pending skills are empty. Add certifications from your profile to generate quizzes.
+            {% else %}
+                There are currently no quizzes available. Please check back later!
+            {% endif %}
+        </p>
     </div>
     {% endif %}
 </div>

@@ -18,6 +18,12 @@ class Quiz
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
 
+    #[ORM\Column(length: 190, unique: true, nullable: true)]
+    private ?string $keyword = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
     /**
      * @var Collection<int, Question>
      */
@@ -34,6 +40,7 @@ class Quiz
     {
         $this->questions = new ArrayCollection();
         $this->quizResults = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -49,6 +56,30 @@ class Quiz
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
+
+        return $this;
+    }
+
+    public function getKeyword(): ?string
+    {
+        return $this->keyword;
+    }
+
+    public function setKeyword(?string $keyword): static
+    {
+        $this->keyword = $keyword;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
 
         return $this;
     }

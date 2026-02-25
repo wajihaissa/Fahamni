@@ -20,12 +20,28 @@ final class Version20260211000434 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE TABLE conversation_report (id INT AUTO_INCREMENT NOT NULL, reason VARCHAR(500) DEFAULT NULL, created_at DATETIME NOT NULL, conversation_id INT NOT NULL, reported_by_id INT NOT NULL, INDEX IDX_F6E3CD449AC0396 (conversation_id), INDEX IDX_F6E3CD4471CE806 (reported_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('CREATE TABLE message_report (id INT AUTO_INCREMENT NOT NULL, reason VARCHAR(500) DEFAULT NULL, created_at DATETIME NOT NULL, message_id INT NOT NULL, reported_by_id INT NOT NULL, INDEX IDX_F308EA8B537A1329 (message_id), INDEX IDX_F308EA8B71CE806 (reported_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
-        $this->addSql('ALTER TABLE conversation_report ADD CONSTRAINT FK_F6E3CD449AC0396 FOREIGN KEY (conversation_id) REFERENCES conversation (id)');
-        $this->addSql('ALTER TABLE conversation_report ADD CONSTRAINT FK_F6E3CD4471CE806 FOREIGN KEY (reported_by_id) REFERENCES `user` (id)');
-        $this->addSql('ALTER TABLE message_report ADD CONSTRAINT FK_F308EA8B537A1329 FOREIGN KEY (message_id) REFERENCES message (id)');
-        $this->addSql('ALTER TABLE message_report ADD CONSTRAINT FK_F308EA8B71CE806 FOREIGN KEY (reported_by_id) REFERENCES `user` (id)');
+        if (!$schema->hasTable('conversation_report')) {
+            $this->addSql('CREATE TABLE conversation_report (id INT AUTO_INCREMENT NOT NULL, reason VARCHAR(500) DEFAULT NULL, created_at DATETIME NOT NULL, conversation_id INT NOT NULL, reported_by_id INT NOT NULL, INDEX IDX_F6E3CD449AC0396 (conversation_id), INDEX IDX_F6E3CD4471CE806 (reported_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
+        }
+        if (!$schema->hasTable('message_report')) {
+            $this->addSql('CREATE TABLE message_report (id INT AUTO_INCREMENT NOT NULL, reason VARCHAR(500) DEFAULT NULL, created_at DATETIME NOT NULL, message_id INT NOT NULL, reported_by_id INT NOT NULL, INDEX IDX_F308EA8B537A1329 (message_id), INDEX IDX_F308EA8B71CE806 (reported_by_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4');
+        }
+
+        $conversationReport = $schema->getTable('conversation_report');
+        if (!$conversationReport->hasForeignKey('FK_F6E3CD449AC0396')) {
+            $this->addSql('ALTER TABLE conversation_report ADD CONSTRAINT FK_F6E3CD449AC0396 FOREIGN KEY (conversation_id) REFERENCES conversation (id)');
+        }
+        if (!$conversationReport->hasForeignKey('FK_F6E3CD4471CE806')) {
+            $this->addSql('ALTER TABLE conversation_report ADD CONSTRAINT FK_F6E3CD4471CE806 FOREIGN KEY (reported_by_id) REFERENCES `user` (id)');
+        }
+
+        $messageReport = $schema->getTable('message_report');
+        if (!$messageReport->hasForeignKey('FK_F308EA8B537A1329')) {
+            $this->addSql('ALTER TABLE message_report ADD CONSTRAINT FK_F308EA8B537A1329 FOREIGN KEY (message_id) REFERENCES message (id)');
+        }
+        if (!$messageReport->hasForeignKey('FK_F308EA8B71CE806')) {
+            $this->addSql('ALTER TABLE message_report ADD CONSTRAINT FK_F308EA8B71CE806 FOREIGN KEY (reported_by_id) REFERENCES `user` (id)');
+        }
         $this->addSql('ALTER TABLE blog CHANGE images images JSON DEFAULT NULL, CHANGE published_at published_at DATETIME DEFAULT NULL');
         $this->addSql('ALTER TABLE conversation CHANGE title title VARCHAR(255) DEFAULT NULL, CHANGE updeted_at updeted_at DATETIME DEFAULT NULL, CHANGE last_message_at last_message_at DATETIME DEFAULT NULL');
         $this->addSql('ALTER TABLE matiere CHANGE structure structure JSON NOT NULL, CHANGE cover_image cover_image JSON NOT NULL');
@@ -40,12 +56,26 @@ final class Version20260211000434 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE conversation_report DROP FOREIGN KEY FK_F6E3CD449AC0396');
-        $this->addSql('ALTER TABLE conversation_report DROP FOREIGN KEY FK_F6E3CD4471CE806');
-        $this->addSql('ALTER TABLE message_report DROP FOREIGN KEY FK_F308EA8B537A1329');
-        $this->addSql('ALTER TABLE message_report DROP FOREIGN KEY FK_F308EA8B71CE806');
-        $this->addSql('DROP TABLE conversation_report');
-        $this->addSql('DROP TABLE message_report');
+        if ($schema->hasTable('conversation_report')) {
+            $conversationReport = $schema->getTable('conversation_report');
+            if ($conversationReport->hasForeignKey('FK_F6E3CD449AC0396')) {
+                $this->addSql('ALTER TABLE conversation_report DROP FOREIGN KEY FK_F6E3CD449AC0396');
+            }
+            if ($conversationReport->hasForeignKey('FK_F6E3CD4471CE806')) {
+                $this->addSql('ALTER TABLE conversation_report DROP FOREIGN KEY FK_F6E3CD4471CE806');
+            }
+            $this->addSql('DROP TABLE conversation_report');
+        }
+        if ($schema->hasTable('message_report')) {
+            $messageReport = $schema->getTable('message_report');
+            if ($messageReport->hasForeignKey('FK_F308EA8B537A1329')) {
+                $this->addSql('ALTER TABLE message_report DROP FOREIGN KEY FK_F308EA8B537A1329');
+            }
+            if ($messageReport->hasForeignKey('FK_F308EA8B71CE806')) {
+                $this->addSql('ALTER TABLE message_report DROP FOREIGN KEY FK_F308EA8B71CE806');
+            }
+            $this->addSql('DROP TABLE message_report');
+        }
         $this->addSql('ALTER TABLE blog CHANGE images images LONGTEXT DEFAULT NULL COLLATE `utf8mb4_bin`, CHANGE published_at published_at DATETIME DEFAULT \'NULL\'');
         $this->addSql('ALTER TABLE conversation CHANGE title title VARCHAR(255) DEFAULT \'NULL\', CHANGE updeted_at updeted_at DATETIME DEFAULT \'NULL\', CHANGE last_message_at last_message_at DATETIME DEFAULT \'NULL\'');
         $this->addSql('ALTER TABLE matiere CHANGE structure structure LONGTEXT NOT NULL COLLATE `utf8mb4_bin`, CHANGE cover_image cover_image LONGTEXT NOT NULL COLLATE `utf8mb4_bin`');

@@ -70,11 +70,12 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/users', name: 'users')]
+  #[Route('/users', name: 'users')]
     public function users(): Response
     {
-        return $this->redirectToRoute('admin_users_index');
+        return $this->redirect($this->generateUrl('admin_dashboard') . '#users');
     }
+
 
     #[Route('/articles', name: 'articles')]
     public function articles(EntityManagerInterface $entityManager): Response
