@@ -4,6 +4,14 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    env(OPENAI_API_KEY): ''
+    env(OPENAI_MODEL): 'gpt-4o-mini'
+    env(OPENAI_API_BASE_URL): 'https://api.openai.com/v1'
+    env(OPENAI_TIMEOUT_SECONDS): '20'
+    env(PLANNER_AI_API_KEY): ''
+    env(PLANNER_AI_MODEL): 'gpt-4o-mini'
+    env(PLANNER_AI_API_BASE_URL): 'https://api.openai.com/v1'
+    env(PLANNER_AI_TIMEOUT_SECONDS): '25'
 
 services:
     # default configuration for services in *this* file
@@ -57,6 +65,12 @@ services:
     App\Service\PaymentService:
         arguments:
             $paymentProvider: '%env(string:PAYMENT_PROVIDER)%'
+
+    App\Service\ChatbotService:
+        arguments:
+            $mistralApiKey: '%env(string:MISTRAL_API_KEY)%'
+            $mistralApiUrl: '%mistral_api_url%'
+            $mistralModel: '%mistral_model%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

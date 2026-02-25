@@ -50,6 +50,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $conversationNicknames = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $passkeyCredentialId = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $passkeyPublicKeyPem = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $passkeySignCount = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $avatarPath = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $twoFactorEnabled = false;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $twoFactorSecret = null;
+
+    /**
+     * @var list<string>|null
+     */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $twoFactorRecoveryCodes = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $twoFactorConfirmedAt = null;
+
     #[ORM\OneToOne(mappedBy: 'userId', cascade: ['persist', 'remove'])]
     private ?Student $profile = null;
 
@@ -258,6 +285,108 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function getPasskeyCredentialId(): ?string
+    {
+        return $this->passkeyCredentialId;
+    }
+
+    public function setPasskeyCredentialId(?string $passkeyCredentialId): static
+    {
+        $this->passkeyCredentialId = $passkeyCredentialId;
+
+        return $this;
+    }
+
+    public function getPasskeyPublicKeyPem(): ?string
+    {
+        return $this->passkeyPublicKeyPem;
+    }
+
+    public function setPasskeyPublicKeyPem(?string $passkeyPublicKeyPem): static
+    {
+        $this->passkeyPublicKeyPem = $passkeyPublicKeyPem;
+
+        return $this;
+    }
+
+    public function getPasskeySignCount(): ?int
+    {
+        return $this->passkeySignCount;
+    }
+
+    public function setPasskeySignCount(?int $passkeySignCount): static
+    {
+        $this->passkeySignCount = $passkeySignCount;
+
+        return $this;
+    }
+
+    public function getAvatarPath(): ?string
+    {
+        return $this->avatarPath;
+    }
+
+    public function setAvatarPath(?string $avatarPath): static
+    {
+        $this->avatarPath = $avatarPath;
+
+        return $this;
+    }
+
+    public function isTwoFactorEnabled(): bool
+    {
+        return $this->twoFactorEnabled;
+    }
+
+    public function setTwoFactorEnabled(bool $twoFactorEnabled): static
+    {
+        $this->twoFactorEnabled = $twoFactorEnabled;
+
+        return $this;
+    }
+
+    public function getTwoFactorSecret(): ?string
+    {
+        return $this->twoFactorSecret;
+    }
+
+    public function setTwoFactorSecret(?string $twoFactorSecret): static
+    {
+        $this->twoFactorSecret = $twoFactorSecret;
+
+        return $this;
+    }
+
+    /**
+     * @return list<string>|null
+     */
+    public function getTwoFactorRecoveryCodes(): ?array
+    {
+        return $this->twoFactorRecoveryCodes;
+    }
+
+    /**
+     * @param list<string>|null $twoFactorRecoveryCodes
+     */
+    public function setTwoFactorRecoveryCodes(?array $twoFactorRecoveryCodes): static
+    {
+        $this->twoFactorRecoveryCodes = $twoFactorRecoveryCodes;
+
+        return $this;
+    }
+
+    public function getTwoFactorConfirmedAt(): ?\DateTimeImmutable
+    {
+        return $this->twoFactorConfirmedAt;
+    }
+
+    public function setTwoFactorConfirmedAt(?\DateTimeImmutable $twoFactorConfirmedAt): static
+    {
+        $this->twoFactorConfirmedAt = $twoFactorConfirmedAt;
 
         return $this;
     }

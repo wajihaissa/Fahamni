@@ -238,8 +238,8 @@
     {% set is_statistique_route = current_route starts with 'admin_statistique_' %}
     {% set is_revision_route = is_seance_route or is_reservation_route or is_statistique_route %}
     <ul class="sidebar-nav">
-        <li class="{% if current_route == 'admin_dashboard' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i><span class="label">Dashboard</span></a></li>
-        <li class="{% if current_route starts with 'admin_users_' %}active{% endif %}"><a href="{{ path('admin_users_index') }}"><i class="fas fa-users"></i><span class="label">Users</span></a></li>
+        <li class="{% if current_route == 'admin_dashboard' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}#dashboard"><i class="fas fa-tachometer-alt"></i><span class="label">Dashboard</span></a></li>
+        <li class="{% if current_route starts with 'admin_users_' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}#users"><i class="fas fa-users"></i><span class="label">Users</span></a></li>
         <li class="{% if current_route starts with 'admin_messenger_' %}active{% endif %}"><a href="{{ path('admin_messenger_index') }}"><i class="fas fa-comments"></i><span class="label">Messagerie</span></a></li>
         <li class="sidebar-dropdown {% if is_revision_route %}active{% endif %}">
             <details {% if is_revision_route %}open{% endif %}>
