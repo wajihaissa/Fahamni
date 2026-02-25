@@ -18,6 +18,7 @@ security:
             provider: app_user_provider
             form_login:
                 login_path: app_login
+                # Use a separate check path so our controller can handle POST to /login
                 check_path: app_login_check
             logout:
                 path: app_logout
@@ -26,13 +27,12 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/payment/stripe/webhook, roles: PUBLIC_ACCESS }
+        - { path: ^/payment/konnect/webhook, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/passkey/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
-        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/messenger, roles: ROLE_USER }
+        # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:

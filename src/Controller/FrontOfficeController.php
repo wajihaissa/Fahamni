@@ -7,9 +7,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\User;
-use App\Entity\Student;
 
 final class FrontOfficeController extends AbstractController
 {
@@ -17,15 +14,6 @@ final class FrontOfficeController extends AbstractController
     public function index(): Response
     {
         return $this->render('front/index.html.twig', [
-            'controller_name' => 'QuizController',
-            'user' => $this->getUser(),
-        ]);
-    }
-
-    #[Route('/calendar', name: 'app_calendar')]
-    public function calendar(): Response
-    {
-        return $this->render('front/reservation/calendar.html.twig', [
             'controller_name' => 'QuizController',
             'user' => $this->getUser(),
         ]);
@@ -43,15 +31,12 @@ final class FrontOfficeController extends AbstractController
     #[Route('/tutor', name: 'app_tutor')]
     public function tutor(): Response
     {
-        return $this->render('front/reservation/tutor.html.twig', [
-            'controller_name' => 'QuizController',
-            'user' => $this->getUser(),
-        ]);
+        return $this->redirectToRoute('app_seance_revision');
     }
 
     /**
-     * Profil utilisateur (module user à intégrer).
-     * Pour l’instant : page placeholder. À remplacer par le vrai module profil.
+     * Profil utilisateur (module user a integrer).
+     * Pour l'instant : page placeholder. A remplacer par le vrai module profil.
      */
     #[Route('/profile', name: 'app_profile_current', methods: ['GET'])]
     public function currentProfile(Request $request): Response

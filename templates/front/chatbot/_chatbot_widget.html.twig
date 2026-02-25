@@ -1,0 +1,48 @@
+{# Widget chatbot assistant - affiché uniquement si user connecté #}
+<div class="chatbot-assistant-root" id="chatbotAssistantRoot" aria-hidden="true">
+    <div class="chatbot-assistant-panel" id="chatbotAssistantPanel">
+        <div class="chatbot-assistant-header">
+            <div class="chatbot-assistant-header-info">
+                <div class="chatbot-assistant-avatar" aria-hidden="true">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h3 class="chatbot-assistant-title">Assistant Fahamni</h3>
+                    <span class="chatbot-assistant-status" id="chatbotAssistantStatus">En ligne</span>
+                </div>
+            </div>
+            <div class="chatbot-assistant-header-actions">
+                <button type="button" class="chatbot-assistant-btn chatbot-assistant-minimize" id="chatbotAssistantMinimize" aria-label="Réduire">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="chatbot-assistant-btn chatbot-assistant-close" id="chatbotAssistantClose" aria-label="Fermer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chatbot-assistant-messages" id="chatbotAssistantMessages">
+            <div class="chatbot-assistant-welcome" id="chatbotAssistantWelcome">
+                <p class="chatbot-assistant-welcome-intro">Bonjour ! Je suis l'assistant Fahamni. Je peux vous aider à utiliser la plateforme et répondre à vos questions.</p>
+                <p class="chatbot-assistant-welcome-label">Commencer par :</p>
+                <div class="chatbot-assistant-suggestions">
+                    <button type="button" class="chatbot-assistant-suggestion-btn" data-question="Quelles sont mes prochaines réservations ?">Quelles sont mes prochaines réservations ?</button>
+                    <button type="button" class="chatbot-assistant-suggestion-btn" data-question="Comment réserver une séance ?">Comment réserver une séance ?</button>
+                    <button type="button" class="chatbot-assistant-suggestion-btn" data-question="Combien de conversations j'ai ?">Combien de conversations j'ai ?</button>
+                    <button type="button" class="chatbot-assistant-suggestion-btn" data-question="Comment trouver un tuteur ?">Comment trouver un tuteur ?</button>
+                    <button type="button" class="chatbot-assistant-suggestion-btn" data-question="Où sont mes séances en tant que tuteur ?">Où sont mes séances en tant que tuteur ?</button>
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-assistant-input-wrap">
+            <form class="chatbot-assistant-form" id="chatbotAssistantForm">
+                <textarea id="chatbotAssistantInput" class="chatbot-assistant-input" rows="1" placeholder="Écrivez votre question..." maxlength="2000"></textarea>
+                <button type="submit" class="chatbot-assistant-send" id="chatbotAssistantSend" aria-label="Envoyer">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+    <button type="button" class="chatbot-assistant-toggle" id="chatbotAssistantToggle" aria-label="Ouvrir l'assistant">
+        <i class="fas fa-comment-dots" aria-hidden="true"></i>
+    </button>
+</div>

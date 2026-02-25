@@ -6,7 +6,6 @@ use App\Entity\Student;
 use App\Entity\User;
 use App\Service\TwoFactorService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,12 +45,13 @@ final class AuthController extends AbstractController
         AuthenticationUtils $authenticationUtils,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-        TokenStorageInterface $tokenStorage
+        TokenStorageInterface $tokenStorage,
+        EventDispatcherInterface $eventDispatcher
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
         }
-       
+
         if ($request->isMethod('POST')) {
             $email = trim((string)$request->request->get('email'));
             $password = (string)$request->request->get('password');
@@ -449,18 +449,17 @@ final class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         TokenStorageInterface $tokenStorage,
         EventDispatcherInterface $eventDispatcher,
-        LoggerInterface $logger,
-        ValidatorInterface $validator
+        LoggerInterface $logger
     ): Response {
        
 
         // Handle POST request (form submission)
         if ($request->isMethod('POST')) {
-            $fullName = trim((string) $request->request->get('fullName', ''));
-            $email = trim((string) $request->request->get('email', ''));
+            $fullName = $request->request->get('fullName');
+            $email = $request->request->get('email');
             $password = $request->request->get('password');
             $confirmPassword = $request->request->get('confirmPassword');
-            $role = (string) $request->request->get('role', 'student');
+            $role = $request->request->get('role', 'student');
 
             $logger->info('Registration attempt', [
                 'email' => $email,
@@ -470,67 +469,37 @@ final class AuthController extends AbstractController
 
             // Validation
             $errors = [];
-            $inputData = [
-                'fullName' => $fullName,
-                'email' => $email,
-                'password' => (string) $password,
-                'confirmPassword' => (string) $confirmPassword,
-                'role' => $role,
-            ];
 
-            $inputViolations = $validator->validate($inputData, new Assert\Collection([
-                'fullName' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Full name is required'),
-                    new Assert\Length(min: 3, minMessage: 'Full name must be at least 3 characters'),
-                    new Assert\Regex(
-                        pattern: '/^[\p{L}\s\'\-]+$/u',
-                        message: 'Name can only contain letters, spaces, apostrophes and hyphens'
-                    ),
-                ]),
-                'email' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Email is required'),
-                    new Assert\Email(message: 'Please enter a valid email address'),
-                    new Assert\Length(max: 180, maxMessage: 'Email is too long'),
-                ]),
-                'password' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Password is required'),
-                    new Assert\Length(min: 6, minMessage: 'Password must be at least 6 characters'),
-                ]),
-                'confirmPassword' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Please confirm your password'),
-                ]),
-                'role' => new Assert\Sequentially([
-                    new Assert\Choice(choices: ['student', 'tutor'], message: 'Invalid role selected'),
-                ]),
-            ]));
-            $inputViolations->addAll($validator->validate($inputData, new Assert\Callback(
-                function (array $data, ExecutionContextInterface $context) use ($entityManager): void {
-                    if (($data['password'] ?? '') !== ($data['confirmPassword'] ?? '')) {
-                        $context->buildViolation('Passwords do not match')
-                            ->atPath('[confirmPassword]')
-                            ->addViolation();
-                    }
+            if (empty($fullName)) {
+                $errors['fullName'] = 'Full name is required';
+            } elseif (strlen($fullName) < 3) {
+                $errors['fullName'] = 'Full name must be at least 3 characters';
+            }
 
-                    $email = trim((string) ($data['email'] ?? ''));
-                    if ($email === '') {
-                        return;
-                    }
+            if (empty($email)) {
+                $errors['email'] = 'Email is required';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Please enter a valid email address';
+            }
 
-                    $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-                    if ($existingUser instanceof User) {
-                        $context->buildViolation('This email is already registered')
-                            ->atPath('[email]')
-                            ->addViolation();
-                    }
-                }
-            )));
+            // Check if email already exists
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($existingUser) {
+                $errors['email'] = 'This email is already registered';
+            }
 
-            foreach ($inputViolations as $violation) {
-                $path = (string) $violation->getPropertyPath();
-                $field = preg_match('/\[(.+)\]/', $path, $m) ? $m[1] : 'general';
-                if (!isset($errors[$field])) {
-                    $errors[$field] = $violation->getMessage();
-                }
+            if (empty($password)) {
+                $errors['password'] = 'Password is required';
+            } elseif (strlen($password) < 6) {
+                $errors['password'] = 'Password must be at least 6 characters';
+            }
+
+            if ($password !== $confirmPassword) {
+                $errors['confirmPassword'] = 'Passwords do not match';
+            }
+
+            if (!in_array($role, ['student', 'tutor'])) {
+                $errors['role'] = 'Invalid role selected';
             }
 
             // Return errors if validation fails
@@ -613,8 +582,8 @@ final class AuthController extends AbstractController
         $this->clearTwoFactorChallenge($request->getSession());
         $request->getSession()->remove(self::TWO_FACTOR_SETUP_SECRET);
         $tokenStorage->setToken(null);
-        
-        // Redirect to login page
+        $request->getSession()->invalidate();
+
         return $this->redirectToRoute('app_login');
     }
 

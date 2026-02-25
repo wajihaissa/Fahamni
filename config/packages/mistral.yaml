@@ -1,0 +1,4 @@
+# Configuration pour l'API Mistral (chatbot assistant front)
+parameters:
+    mistral_api_url: 'https://api.mistral.ai/v1/chat/completions'
+    mistral_model: 'mistral-small-latest'

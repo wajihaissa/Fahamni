@@ -12,13 +12,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/admin/users', name: 'admin_users_')]
-#[IsGranted('ROLE_ADMIN')]
 final class UsersCrudController extends AbstractController
 {
     #[Route('/', name: 'index')]
@@ -31,8 +26,7 @@ final class UsersCrudController extends AbstractController
     public function create(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        ValidatorInterface $validator
+        UserPasswordHasherInterface $passwordHasher
     ): Response {
         if (!$request->isMethod('POST')) {
             return $this->redirectToDashboardUsers();
@@ -45,77 +39,40 @@ final class UsersCrudController extends AbstractController
                 return $this->redirectToDashboardUsers();
             }
             
-            $fullName = trim((string) $request->request->get('fullName', ''));
-            $email = trim((string) $request->request->get('email', ''));
-            $password = (string) $request->request->get('password', '');
-            $confirmPassword = (string) $request->request->get('confirmPassword', '');
-            $rolesInput = $request->request->all('roles');
-            $roleInput = is_array($rolesInput) && !empty($rolesInput) ? (string) $rolesInput[0] : (string) $request->request->get('role');
-            $allowedRoles = ['ROLE_ETUDIANT', 'ROLE_TUTOR', 'ROLE_ADMIN'];
-            $roles = in_array($roleInput, $allowedRoles, true) ? [$roleInput] : ['ROLE_ETUDIANT'];
+            $fullName = $request->request->get('fullName');
+            $email = $request->request->get('email');
+            $password = $request->request->get('password');
+            $confirmPassword = $request->request->get('confirmPassword');
+            $rolesInput = $request->request->get('roles');
+            $roles = $rolesInput ? (is_array($rolesInput) ? $rolesInput : [$rolesInput]) : ['ROLE_ETUDIANT'];
 
             $errors = [];
-            $inputData = [
-                'fullName' => $fullName,
-                'email' => $email,
-                'password' => $password,
-                'confirmPassword' => $confirmPassword,
-                'role' => $roleInput,
-            ];
 
-            $inputViolations = $validator->validate($inputData, new Assert\Collection([
-                'fullName' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Full name is required'),
-                    new Assert\Length(min: 3, minMessage: 'Full name must be at least 3 characters'),
-                    new Assert\Regex(
-                        pattern: '/^[\p{L}\s\'\-]+$/u',
-                        message: 'Name can only contain letters, spaces, apostrophes and hyphens'
-                    ),
-                ]),
-                'email' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Valid email is required'),
-                    new Assert\Email(message: 'Valid email is required'),
-                    new Assert\Length(max: 180, maxMessage: 'Email is too long'),
-                ]),
-                'password' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Password is required'),
-                    new Assert\Length(min: 6, minMessage: 'Password must be at least 6 characters'),
-                ]),
-                'confirmPassword' => new Assert\Sequentially([
-                    new Assert\NotBlank(message: 'Please confirm the password'),
-                ]),
-                'role' => new Assert\Sequentially([
-                    new Assert\Choice(choices: $allowedRoles, message: 'Invalid role selected'),
-                ]),
-            ]));
-            $inputViolations->addAll($validator->validate($inputData, new Assert\Callback(
-                function (array $data, ExecutionContextInterface $context) use ($entityManager): void {
-                    if (($data['password'] ?? '') !== ($data['confirmPassword'] ?? '')) {
-                        $context->buildViolation('Passwords do not match')
-                            ->atPath('[confirmPassword]')
-                            ->addViolation();
-                    }
+            if (empty($fullName)) {
+                $errors[] = 'Full name is required';
+            }
 
-                    $email = trim((string) ($data['email'] ?? ''));
-                    if ($email === '') {
-                        return;
-                    }
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Valid email is required';
+            }
 
-                    $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-                    if ($existingUser instanceof User) {
-                        $context->buildViolation('This email is already registered')
-                            ->atPath('[email]')
-                            ->addViolation();
-                    }
+            if (empty($password) || strlen($password) < 6) {
+                $errors[] = 'Password must be at least 6 characters';
+            }
+
+            if ($password !== $confirmPassword) {
+                $errors[] = 'Passwords do not match';
+            }
+
+            if (!empty($email)) {
+                $existingUser = $entityManager->getRepository(User::class)
+                    ->findOneBy(['email' => $email]);
+                if ($existingUser) {
+                    $errors[] = 'This email is already registered';
                 }
-            )));
-
-            foreach ($inputViolations as $violation) {
-                $errors[] = $violation->getMessage();
             }
 
             if (!empty($errors)) {
-                $errors = array_values(array_unique($errors));
                 foreach ($errors as $error) {
                     $this->addFlash('error', $error);
                 }
@@ -188,8 +145,6 @@ final class UsersCrudController extends AbstractController
             $status = $request->request->get('status') === '1';
             $rolesInput = $request->request->get('roles');
             $roles = $rolesInput ? (is_array($rolesInput) ? $rolesInput : [$rolesInput]) : [];
-            $allowedRoles = ['ROLE_ETUDIANT', 'ROLE_TUTOR', 'ROLE_ADMIN'];
-            $roles = array_values(array_intersect($roles, $allowedRoles));
             $password = $request->request->get('password');
 
             // Validation
@@ -255,8 +210,8 @@ final class UsersCrudController extends AbstractController
                 $entityManager->remove($user->getProfile());
             }
 
-                $entityManager->remove($user);
-                $entityManager->flush();
+            $entityManager->remove($user);
+            $entityManager->flush();
 
             $this->addFlash('success', 'User deleted successfully!');
         }

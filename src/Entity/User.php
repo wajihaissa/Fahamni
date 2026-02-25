@@ -35,7 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
-    private ?bool $status = null;
+    private ?bool $Status = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -219,12 +219,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isStatus(): ?bool
     {
-        return $this->status;
+        return $this->Status;
     }
 
-    public function setStatus(?bool $status): static
+    public function setStatus(?bool $Status): static
     {
-        $this->status = $status;
+        $this->Status = $Status;
 
         return $this;
     }

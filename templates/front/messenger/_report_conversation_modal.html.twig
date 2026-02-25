@@ -1,0 +1,27 @@
+{# Modal Signaler la conversation. Var: current_conversation #}
+<div class="report-conv-modal-overlay" id="reportConvModalOverlay" aria-hidden="true">
+    <div class="report-conv-modal" id="reportConvModal" role="dialog" aria-labelledby="reportConvModalTitle">
+        <div class="report-conv-modal-header">
+            <div class="report-conv-modal-header-icon"><i class="fas fa-flag"></i></div>
+            <h2 class="report-conv-modal-title" id="reportConvModalTitle">Signaler la conversation</h2>
+            <p class="report-conv-modal-subtitle">Votre signalement nous aide à maintenir un environnement respectueux.</p>
+            <button type="button" class="report-conv-modal-close" id="reportConvModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        </div>
+        <form method="post" action="{{ path('app_messenger_report_conversation', { id: current_conversation.id }) }}" id="reportConvForm" class="report-conv-modal-body">
+            <input type="hidden" name="_token" value="{{ csrf_token('report_conv_' ~ current_conversation.id) }}">
+            <div class="report-conv-info-box">
+                <i class="fas fa-info-circle report-conv-info-icon"></i>
+                <p class="report-conv-info-text">Ce signalement sera envoyé à l’équipe d’administration. Elle l’examinera et pourra prendre les mesures nécessaires, notamment avertir l’autre utilisateur si besoin. Vous ne serez pas identifié(e) dans ce processus.</p>
+            </div>
+            <div class="report-conv-field">
+                <label for="reportConvReason" class="report-conv-label">Raison du signalement <span class="report-conv-optional">(optionnel)</span></label>
+                <textarea name="reason" id="reportConvReason" class="report-conv-textarea" placeholder="Décrivez brièvement la raison de votre signalement (contenu inapproprié, harcèlement, spam…)" rows="4" maxlength="500"></textarea>
+                <span class="report-conv-char-count"><span id="reportConvCharCount">0</span>/500</span>
+            </div>
+            <div class="report-conv-actions">
+                <button type="button" class="report-conv-btn report-conv-btn-cancel" id="reportConvCancel">Annuler</button>
+                <button type="submit" class="report-conv-btn report-conv-btn-submit" id="reportConvSubmit"><i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Envoyer le signalement</button>
+            </div>
+        </form>
+    </div>
+</div>

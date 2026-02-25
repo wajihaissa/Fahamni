@@ -20,5 +20,43 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\Service\EmailService:
+        arguments:
+            $mailerDsn: '%env(string:MAILER_DSN)%'
+            $fromAddress: '%env(string:MAILER_FROM_ADDRESS)%'
+            $fromName: '%env(string:MAILER_FROM_NAME)%'
+
+    App\Service\OpenAiMatchingService:
+        arguments:
+            $apiKey: '%env(string:OPENAI_API_KEY)%'
+            $model: '%env(string:OPENAI_MODEL)%'
+            $apiBaseUrl: '%env(string:OPENAI_API_BASE_URL)%'
+            $requestTimeoutSeconds: '%env(int:OPENAI_TIMEOUT_SECONDS)%'
+            $plannerApiKey: '%env(string:PLANNER_AI_API_KEY)%'
+            $plannerModel: '%env(string:PLANNER_AI_MODEL)%'
+            $plannerApiBaseUrl: '%env(string:PLANNER_AI_API_BASE_URL)%'
+            $plannerTimeoutSeconds: '%env(int:PLANNER_AI_TIMEOUT_SECONDS)%'
+
+    App\Service\KonnectCheckoutService:
+        arguments:
+            $apiKey: '%env(string:KONNECT_API_KEY)%'
+            $receiverWalletId: '%env(string:KONNECT_RECEIVER_WALLET_ID)%'
+            $apiBaseUrl: '%env(string:KONNECT_API_BASE_URL)%'
+            $currency: '%env(string:KONNECT_CURRENCY)%'
+            $pricePerHourInMinorUnit: '%env(int:KONNECT_PRICE_PER_HOUR_MINOR)%'
+            $lifespanMinutes: '%env(int:KONNECT_LIFESPAN_MINUTES)%'
+
+    App\Service\StripeCheckoutService:
+        arguments:
+            $stripeSecretKey: '%env(string:STRIPE_SECRET_KEY)%'
+            $stripeWebhookSecret: '%env(string:STRIPE_WEBHOOK_SECRET)%'
+            $stripePublishableKey: '%env(string:STRIPE_PUBLISHABLE_KEY)%'
+            $defaultCurrency: '%env(string:STRIPE_CURRENCY)%'
+            $defaultPricePerHourCents: '%env(int:STRIPE_PRICE_PER_HOUR_CENTS)%'
+
+    App\Service\PaymentService:
+        arguments:
+            $paymentProvider: '%env(string:PAYMENT_PROVIDER)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
