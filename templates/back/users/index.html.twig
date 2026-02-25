@@ -294,7 +294,6 @@
                         </thead>
                         <tbody>
                             {% for user in users %}
-<<<<<<< HEAD
                                 {% set userAi = aiUserSummaries[user.id]|default(null) %}
                                 {% set roleLabel = 'Student' %}
                                 {% set roleClass = 'badge-student' %}
@@ -305,8 +304,6 @@
                                     {% set roleLabel = 'Tutor' %}
                                     {% set roleClass = 'badge-tutor' %}
                                 {% endif %}
-=======
->>>>>>> 3a6fc20ba5c423afc7529922c3f86ce25718924b
                                 <tr>
                                     <td>
                                         <div class="user-cell">
@@ -335,7 +332,6 @@
                                     <td>{{ user.createdAt|date('M d, Y') }}</td>
                                     <td>
                                         <div class="actions">
-<<<<<<< HEAD
                                             <form method="POST" action="{{ path('admin_users_toggle_status', {id: user.id}) }}" style="display:inline-block; margin:0;">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
                                                 <button type="submit" class="btn-action {% if user.status %}btn-status-off{% else %}btn-status-on{% endif %}" title="{% if user.status %}Deactivate account{% else %}Activate account{% endif %}" {% if app.user and app.user.id == user.id and user.status %}disabled{% endif %}>
@@ -359,11 +355,8 @@
                                                data-user-role="{{ roleLabel|lower }}"
                                                data-user-status="{{ user.status ? 'Active' : 'Inactive' }}"
                                                data-ai-summary="{{ userAi ? userAi|json_encode : '' }}">
-=======
-                                            <button class="btn-action btn-view" title="View" onclick="event.preventDefault(); event.stopPropagation();">
->>>>>>> 3a6fc20ba5c423afc7529922c3f86ce25718924b
                                                 <i class="fas fa-eye"></i>
-                                            </button>
+                                            </a>
                                             <button class="btn-action btn-edit" title="Edit" onclick="event.preventDefault();" data-user-id="{{ user.id }}">
                                                 <i class="fas fa-edit"></i>
                                             </button>

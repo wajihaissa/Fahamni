@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Student;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,6 +34,13 @@ final class FrontOfficeController extends AbstractController
     #[Route('/tutor', name: 'app_tutor')]
     public function tutor(): Response
     {
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->render('front/reservation/tutor.html.twig', [
+                'controller_name' => 'QuizController',
+                'user' => $this->getUser(),
+            ]);
+        }
+
         return $this->redirectToRoute('app_seance_revision');
     }
 

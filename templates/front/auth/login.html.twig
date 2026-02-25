@@ -30,7 +30,7 @@
                             <span class="checkmark"></span>
                             Remember me
                         </label>
-                        <a href="#forgot" class="forgot-link">Forgot password?</a>
+                        <a href="{{ path('app_forgot_password') }}" class="forgot-link">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
@@ -377,40 +377,6 @@
                 });
             }
 
-            var forgotLink = document.querySelector('.forgot-link');
-            if (forgotLink) {
-                forgotLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var modal = document.createElement('div');
-                    modal.className = 'modal active';
-                    modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>Reset Password</h2><button class="modal-close">&times;</button></div><form class="reset-form"><div class="form-group"><label for="resetEmail">Enter your email</label><input type="email" id="resetEmail" placeholder="Email address" required><span class="error-message" id="resetError"></span></div><button type="submit" class="btn btn-primary">Send Reset Link</button></form></div>';
-                    document.body.appendChild(modal);
-                    var closeBtn = modal.querySelector('.modal-close');
-                    var resetForm = modal.querySelector('.reset-form');
-                    closeBtn.addEventListener('click', function() { modal.remove(); });
-                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-                    if (resetForm) {
-                        resetForm.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            var resetEmail = document.getElementById('resetEmail').value;
-                            var resetError = document.getElementById('resetError');
-                            if (!resetEmail || !isValidEmail(resetEmail)) {
-                                resetError.textContent = 'Please enter a valid email address';
-                                return;
-                            }
-                            var btn = this.querySelector('button[type="submit"]');
-                            btn.textContent = 'Sending...';
-                            btn.disabled = true;
-                            setTimeout(function() {
-                                btn.textContent = 'Send Reset Link';
-                                btn.disabled = false;
-                                alert('Reset link sent to ' + resetEmail);
-                                modal.remove();
-                            }, 1500);
-                        });
-                    }
-                });
-            }
         });
     </script>
 {% endblock %}

@@ -181,6 +181,115 @@
             gap: 1.5rem;
         }
 
+        .voice-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .voice-toggle {
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--border-color);
+            border-radius: 0.6rem;
+            background: #fff;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .voice-toggle:hover {
+            border-color: #667eea;
+            color: #4f46e5;
+            box-shadow: 0 8px 18px rgba(79, 70, 229, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .voice-toggle.is-listening {
+            color: #fff;
+            border-color: transparent;
+            background: linear-gradient(135deg, #7c6cff 0%, #4f46e5 100%);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.28);
+        }
+
+        .voice-status {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+            padding: 0.35rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            max-width: 240px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .voice-status.is-listening {
+            border-color: #c7d2fe;
+            background: #eef2ff;
+            color: #4338ca;
+        }
+
+        .voice-status.is-error {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+
+        .voice-help {
+            position: relative;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            border: 1px solid #dbe3ef;
+            color: #475569;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: help;
+            user-select: none;
+        }
+
+        .voice-help:hover {
+            border-color: #667eea;
+            color: #4f46e5;
+        }
+
+        .voice-help .voice-tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 260px;
+            padding: 0.65rem 0.75rem;
+            border-radius: 0.6rem;
+            border: 1px solid #dbe3ef;
+            background: #ffffff;
+            color: #334155;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+            font-size: 0.75rem;
+            line-height: 1.45;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: all 0.18s ease;
+            z-index: 1200;
+            pointer-events: none;
+        }
+
+        .voice-help:hover .voice-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
         .notification-icon {
             position: relative;
             cursor: pointer;
@@ -374,6 +483,24 @@
 
         .btn-secondary:hover {
             background-color: #f8fafc;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         /* Tables - styled as white cards inside content area */
@@ -588,6 +715,18 @@
             box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
         }
 
+        .btn-activate {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.12);
+        }
+
+        .btn-deactivate {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
+        }
+
         .btn-action:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
@@ -687,6 +826,78 @@
             transform: translateX(-50%);
             font-size: 0.75rem;
             color: var(--text-secondary);
+        }
+
+        .distribution-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            min-height: 200px;
+        }
+
+        .distribution-chart {
+            --students-deg: 0deg;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #4f46e5 0deg var(--students-deg),
+                #06b6d4 var(--students-deg) 360deg
+            );
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .distribution-chart::after {
+            content: '';
+            position: absolute;
+            inset: 24px;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .distribution-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            width: 100%;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .distribution-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .distribution-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .distribution-dot.students {
+            background: #4f46e5;
+        }
+
+        .distribution-dot.tutors {
+            background: #06b6d4;
+        }
+
+        .distribution-value {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
         /* Progress Stats */
@@ -1259,9 +1470,43 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        {% include 'back/_admin_navbar.html.twig' %}
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">Dashboard</h1>
+            </div>
+            
+            <div class="navbar-right">
+                <div class="voice-control">
+                    <button id="voice-toggle" class="voice-toggle" type="button" title="Voice commands">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <span id="voice-status" class="voice-status">Voice: off</span>
+                    <span class="voice-help" aria-label="Voice commands help" title="Voice commands help">
+                        ?
+                        <span class="voice-tooltip">
+                            Say commands like: open users, add user, next page, previous page, inactive user, delete user, close, home.
+                        </span>
+                    </span>
+                </div>
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+            </div>
+        </header>
+
         <!-- Dashboard Content -->
         <main class="dashboard-content">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-error">{{ message }}</div>
+            {% endfor %}
             <!-- Statistics Overview -->
             <section id="dashboard" class="content-section active">
                 <div class="stats-overview">
@@ -1285,6 +1530,16 @@
                         </div>
                     </div>
                     
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>{{ totalTutors }}</h3>
+                            <p>Total Tutors</p>
+                        </div>
+                    </div>
+
                     <div class="stat-card">
                         <div class="stat-icon">
                             <i class="fas fa-video"></i>
@@ -1334,26 +1589,26 @@
                     </div>
 
                     <div class="content-card">
-                        <h3>Platform Growth</h3>
-                        <div class="chart-container">
-                            <div class="bar-chart">
-                                <div class="bar" style="height: 70%">
-                                    <span class="bar-label">Jan</span>
+                        <h3>Students vs Tutors</h3>
+                        {% set totalLearners = totalStudents + totalTutors %}
+                        {% set studentsPercent = totalLearners > 0 ? (totalStudents / totalLearners * 100) : 0 %}
+                        {% set tutorsPercent = totalLearners > 0 ? (totalTutors / totalLearners * 100) : 0 %}
+                        <div class="distribution-card">
+                            <div class="distribution-chart" style="--students-deg: {{ (studentsPercent * 3.6)|round(2) }}deg;"></div>
+                            <div class="distribution-legend">
+                                <div class="distribution-item">
+                                    <span class="distribution-label">
+                                        <span class="distribution-dot students"></span>
+                                        Students
+                                    </span>
+                                    <span class="distribution-value">{{ totalStudents }} ({{ studentsPercent|round(1) }}%)</span>
                                 </div>
-                                <div class="bar" style="height: 85%">
-                                    <span class="bar-label">Feb</span>
-                                </div>
-                                <div class="bar" style="height: 60%">
-                                    <span class="bar-label">Mar</span>
-                                </div>
-                                <div class="bar" style="height: 90%">
-                                    <span class="bar-label">Apr</span>
-                                </div>
-                                <div class="bar" style="height: 75%">
-                                    <span class="bar-label">May</span>
-                                </div>
-                                <div class="bar" style="height: 95%">
-                                    <span class="bar-label">Jun</span>
+                                <div class="distribution-item">
+                                    <span class="distribution-label">
+                                        <span class="distribution-dot tutors"></span>
+                                        Tutors
+                                    </span>
+                                    <span class="distribution-value">{{ totalTutors }} ({{ tutorsPercent|round(1) }}%)</span>
                                 </div>
                             </div>
                         </div>
@@ -1364,10 +1619,13 @@
             <!-- Users Management -->
             <section id="users" class="content-section">
                 <div class="section-header">
-                    <h2>Users Management</h2>
-                    <button class="btn-primary new-user-btn">Add New User</button>
+                    <div class="section-title-wrap">
+                        <h2>Users Management</h2>
+                        <p class="section-subtitle">Manage registrations, user access and profile status from one place.</p>
+                    </div>
+                    <button id="toggle-add-user" class="btn-primary">Add New User</button>
                 </div>
-                
+
                 <div id="users-content">
                     {% if pendingUsers is defined and pendingUsers|length > 0 %}
                         <div class="content-card" style="margin-bottom:12px;">
@@ -1490,11 +1748,11 @@
                                     </div>
                                     <div style="display:flex;flex-direction:column;">
                                         <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Password</label>
-                                        <input type="password" name="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                        <input type="password" name="password" placeholder="••••••" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
                                     </div>
                                     <div style="display:flex;flex-direction:column;">
                                         <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Confirm Password</label>
-                                        <input type="password" name="confirmPassword" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
+                                        <input type="password" name="confirmPassword" placeholder="••••••" required style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;" />
                                     </div>
                                     <div style="display:flex;flex-direction:column;">
                                         <label style="font-size:0.875rem;font-weight:600;color:#0b1220;margin-bottom:6px;">Role</label>
@@ -1676,7 +1934,6 @@
                             </p>
                             <span class="status-badge published">Published</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1689,7 +1946,6 @@
                             </p>
                             <span class="status-badge pending">Pending</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1702,7 +1958,6 @@
                             </p>
                             <span class="status-badge published">Published</span>
                             <div class="article-actions">
-                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action delete"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
@@ -1740,7 +1995,6 @@
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn-action view"><i class="fas fa-eye"></i></button>
-                                            <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1753,7 +2007,6 @@
                                     <td>
                                         <div class="action-buttons">
                                             <button class="btn-action view"><i class="fas fa-eye"></i></button>
-                                            <button class="btn-action edit"><i class="fas fa-edit"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1888,11 +2141,39 @@
             const contentSections = document.querySelectorAll('.content-section');
             const pageTitle = document.querySelector('.page-title');
 
+            function activateSectionById(targetId) {
+                if (!targetId) return;
+                const targetSection = document.getElementById(targetId);
+                if (!targetSection) return;
+
+                contentSections.forEach(section => section.classList.remove('active'));
+                targetSection.classList.add('active');
+
+                navLinks.forEach(navLink => navLink.parentElement.classList.remove('active'));
+                navLinks.forEach(navLink => {
+                    const href = navLink.getAttribute('href') || '';
+                    const normalized = href.includes('#') ? href.split('#').pop() : href.replace('#', '');
+                    if (normalized === targetId) {
+                        navLink.parentElement.classList.add('active');
+                    }
+                });
+
+                if (pageTitle) {
+                    pageTitle.textContent = targetId === 'users' ? 'Users' : 'Dashboard';
+                }
+            }
+
             navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     const href = this.getAttribute('href') || '';
                     // If it's an external or proper route, allow navigation
-                    if (href && (href.startsWith('/') || href.startsWith('http'))) return;
+                    if (href && (href.startsWith('/') || href.startsWith('http'))) {
+                        // Keep normal navigation for routes, but allow hash-based dashboard tabs.
+                        if (href.includes('#users') || href.includes('#dashboard')) {
+                            return;
+                        }
+                        return;
+                    }
 
                     // Prevent default for hash navigation and AJAX-backed sections
                     e.preventDefault();
@@ -1958,6 +2239,18 @@
                     if (window.innerWidth <= 768) sidebar.classList.remove('open');
                 });
             });
+
+            function applySectionFromHash() {
+                const hash = (window.location.hash || '').replace('#', '');
+                if (hash === 'users' || hash === 'dashboard') {
+                    activateSectionById(hash);
+                } else {
+                    activateSectionById('dashboard');
+                }
+            }
+
+            applySectionFromHash();
+            window.addEventListener('hashchange', applySectionFromHash);
 
             // Modal functionality
             const addUserBtn = document.querySelector('.new-user-btn');
@@ -2418,10 +2711,11 @@
                     
                     // Show detail view
                     const usersContent = usersSection.querySelector('#users-content');
+                    const backupContent = document.getElementById('users-table-backup') ? document.getElementById('users-table-backup').innerHTML : '';
                     usersContent.innerHTML = `
                         <div class="content-card">
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                                <button class="btn-secondary" onclick="document.getElementById('users').querySelector('#users-content').innerHTML = document.getElementById('users-table-content').innerHTML" style="padding: 0.5rem 1rem;">
+                                <button class="btn-secondary" onclick="document.getElementById('users').querySelector('#users-content').innerHTML = document.getElementById('users-table-backup').innerHTML || ''" style="padding: 0.5rem 1rem;">
                                     <i class="fas fa-arrow-left"></i> Back to Users
                                 </button>
                                 <h3 style="margin: 0; font-size: 1.5rem;">User Details</h3>
@@ -2594,6 +2888,260 @@
                     sidebar.classList.remove('open');
                 }
             });
+
+            // Toggle Add User Form
+            (function(){
+                var btn = document.getElementById('toggle-add-user');
+                var form = document.getElementById('add-user-form');
+                var overlay = document.getElementById('add-user-overlay');
+                var closeBtn = document.getElementById('close-form');
+                var cancelBtn = document.getElementById('cancel-form');
+                
+                function closeModal() {
+                    if(form) form.style.display = 'none';
+                    if(overlay) overlay.style.display = 'none';
+                    // Reset form on close
+                    var f = form.querySelector('form');
+                    if(f) f.reset();
+                }
+                
+                function openModal() {
+                    if(form) form.style.display = 'block';
+                    if(overlay) overlay.style.display = 'block';
+                    var first = form.querySelector('input[name="fullName"]');
+                    if(first) first.focus();
+                }
+                
+                if(btn) {
+                    btn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        openModal();
+                    });
+                }
+                
+                if(closeBtn) {
+                    closeBtn.addEventListener('click', closeModal);
+                }
+                
+                if(cancelBtn) {
+                    cancelBtn.addEventListener('click', closeModal);
+                }
+                
+                if(overlay) {
+                    overlay.addEventListener('click', closeModal);
+                }
+
+                window.openAddUserModal = openModal;
+                window.closeAddUserModal = closeModal;
+            })();
+
+            // Voice commands (experimental v1)
+            (function () {
+                const voiceToggle = document.getElementById('voice-toggle');
+                const voiceStatus = document.getElementById('voice-status');
+                const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+                let recognition = null;
+                const homeUrl = "{{ path('app_home') }}";
+
+                function setVoiceStatus(text, state) {
+                    if (!voiceStatus) return;
+                    voiceStatus.textContent = text;
+                    voiceStatus.classList.remove('is-listening', 'is-error');
+                    if (state === 'listening') voiceStatus.classList.add('is-listening');
+                    if (state === 'error') voiceStatus.classList.add('is-error');
+                }
+
+                function activateSection(sectionId, title) {
+                    const targetSection = document.getElementById(sectionId);
+                    if (!targetSection) return false;
+
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    targetSection.classList.add('active');
+
+                    navLinks.forEach(link => {
+                        if (link.parentElement) link.parentElement.classList.remove('active');
+                    });
+
+                    const matchingNav = Array.from(navLinks).find(link => {
+                        const href = (link.getAttribute('href') || '').replace('#', '');
+                        return href === sectionId;
+                    });
+
+                    if (matchingNav && matchingNav.parentElement) {
+                        matchingNav.parentElement.classList.add('active');
+                    } else if (sectionId === 'dashboard') {
+                        const dashboardNav = Array.from(navLinks).find(link => {
+                            const href = link.getAttribute('href') || '';
+                            return href.indexOf('/admin') === 0 && href.indexOf('#') !== 0;
+                        });
+                        if (dashboardNav && dashboardNav.parentElement) {
+                            dashboardNav.parentElement.classList.add('active');
+                        }
+                    }
+
+                    if (pageTitle) {
+                        pageTitle.textContent = title || sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+                    }
+
+                    if (window.innerWidth <= 768 && sidebar) sidebar.classList.remove('open');
+                    return true;
+                }
+
+                function openUsersPageDelta(direction) {
+                    const usersSection = document.getElementById('users');
+                    if (!usersSection) return false;
+
+                    if (!usersSection.classList.contains('active')) {
+                        activateSection('users', 'Users');
+                    }
+
+                    const pager = usersSection.querySelector('.table-pagination');
+                    if (!pager) return false;
+
+                    const target = direction > 0
+                        ? pager.querySelector('.page-link:last-child:not(.disabled)')
+                        : pager.querySelector('.page-link:first-child:not(.disabled)');
+
+                    if (!target) return false;
+
+                    const href = target.getAttribute('href');
+                    if (!href || target.classList.contains('disabled')) return false;
+                    loadUsersPage(href);
+                    return true;
+                }
+
+                function triggerInactiveUserAction() {
+                    activateSection('users', 'Users');
+                    const inactiveBtn = document.querySelector('#users .btn-deactivate');
+                    if (!inactiveBtn) return false;
+                    const form = inactiveBtn.closest('form');
+                    if (!form) return false;
+                    submitUsersFormAjax(form);
+                    return true;
+                }
+
+                function triggerDeleteUserAction() {
+                    activateSection('users', 'Users');
+                    const deleteBtn = document.querySelector('#users .btn-delete');
+                    if (!deleteBtn) return false;
+                    const form = deleteBtn.closest('form');
+                    if (!form) return false;
+                    if (!window.confirm('Delete this user?')) return false;
+                    submitUsersFormAjax(form);
+                    return true;
+                }
+
+                function runVoiceCommand(rawText) {
+                    const text = (rawText || '').toLowerCase().trim();
+                    if (!text) return false;
+
+                    if (text.includes('open users') || text.includes('go to users') || text === 'users') {
+                        return activateSection('users', 'Users');
+                    }
+                    if (text.includes('open dashboard') || text.includes('go to dashboard') || text === 'dashboard') {
+                        return activateSection('dashboard', 'Dashboard');
+                    }
+                    if (text.includes('open articles') || text.includes('go to articles') || text === 'articles') {
+                        return activateSection('articles', 'Articles');
+                    }
+                    if (text.includes('open statistics') || text.includes('go to statistics') || text === 'statistics') {
+                        return activateSection('statistics', 'Statistics');
+                    }
+                    if (text.includes('open sessions') || text.includes('go to sessions') || text === 'sessions') {
+                        return activateSection('sessions', 'Sessions');
+                    }
+                    if (text.includes('next page')) {
+                        return openUsersPageDelta(1);
+                    }
+                    if (text.includes('previous page') || text.includes('prev page') || text.includes('back page')) {
+                        return openUsersPageDelta(-1);
+                    }
+                    if (text.includes('add user') || text.includes('new user')) {
+                        activateSection('users', 'Users');
+                        if (typeof window.openAddUserModal === 'function') {
+                            window.openAddUserModal();
+                            return true;
+                        }
+                        const addUserBtn = document.getElementById('toggle-add-user');
+                        if (addUserBtn) {
+                            addUserBtn.click();
+                            return true;
+                        }
+                    }
+                    if (text.includes('inactive user') || text.includes('deactivate user') || text.includes('unactive user')) {
+                        return triggerInactiveUserAction();
+                    }
+                    if (text.includes('delete user')) {
+                        return triggerDeleteUserAction();
+                    }
+                    if (text === 'close' || text.includes('close modal') || text.includes('close popup')) {
+                        const modal = document.getElementById('add-user-form');
+                        if (modal && modal.style.display === 'block' && typeof window.closeAddUserModal === 'function') {
+                            window.closeAddUserModal();
+                            return true;
+                        }
+                        if (recognition) recognition.stop();
+                        return true;
+                    }
+                    if (text === 'home' || text.includes('go home') || text.includes('open home')) {
+                        if (recognition) recognition.stop();
+                        window.location.href = homeUrl;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                if (!voiceToggle || !voiceStatus) return;
+
+                if (!SpeechRecognitionApi) {
+                    voiceToggle.disabled = true;
+                    voiceToggle.style.opacity = '0.55';
+                    voiceToggle.style.cursor = 'not-allowed';
+                    setVoiceStatus('Voice unsupported', 'error');
+                    return;
+                }
+
+                recognition = new SpeechRecognitionApi();
+                recognition.lang = 'en-US';
+                recognition.continuous = true;
+                recognition.interimResults = false;
+
+                let isListening = false;
+
+                recognition.onstart = function () {
+                    isListening = true;
+                    voiceToggle.classList.add('is-listening');
+                    setVoiceStatus('Listening...', 'listening');
+                };
+
+                recognition.onend = function () {
+                    isListening = false;
+                    voiceToggle.classList.remove('is-listening');
+                    setVoiceStatus('Voice: off');
+                };
+
+                recognition.onerror = function (event) {
+                    setVoiceStatus('Voice error: ' + (event.error || 'unknown'), 'error');
+                };
+
+                recognition.onresult = function (event) {
+                    const result = event.results[event.results.length - 1];
+                    if (!result || !result[0]) return;
+                    const command = result[0].transcript || '';
+                    const ok = runVoiceCommand(command);
+                    setVoiceStatus(ok ? ('Done: ' + command) : ('Unknown: ' + command), ok ? 'listening' : 'error');
+                };
+
+                voiceToggle.addEventListener('click', function () {
+                    if (!isListening) {
+                        recognition.start();
+                    } else {
+                        recognition.stop();
+                    }
+                });
+            })();
         });
     </script>
 {% endblock %}
+

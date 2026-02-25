@@ -51,8 +51,13 @@ final class SeanceRevisionController extends AbstractController
 
         $isStudent = $this->isStudentRole();
         $isTutor = $this->isTutorRole();
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
 
         if (!$isStudent && !$isTutor) {
+            if ($isAdmin) {
+                return $this->redirectToRoute('admin_dashboard');
+            }
+
             throw $this->createAccessDeniedException('Acces reserve aux etudiants et tuteurs.');
         }
 

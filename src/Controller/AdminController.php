@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Blog;
 use App\Entity\User;
 use App\Entity\Student;
 use App\Service\UserAiSummaryService;
@@ -25,6 +27,13 @@ final class AdminController extends AbstractController
         // Get statistics for dashboard
         $totalUsers = $entityManager->getRepository(User::class)->count([]);
         $totalStudents = $entityManager->getRepository(Student::class)->count([]);
+        $totalTutors = (int) $entityManager->getRepository(Student::class)
+            ->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->where('s.roles = :tutor')
+            ->setParameter('tutor', 'tutor')
+            ->getQuery()
+            ->getSingleScalarResult();
         $totalArticles = $entityManager->getRepository(Blog::class)->count([]);
         
         // Get recent users (limit 5)
@@ -39,7 +48,7 @@ final class AdminController extends AbstractController
         $pendingUsers = $entityManager->getRepository(User::class)
             ->createQueryBuilder('u')
             ->leftJoin('u.profile', 'p')->addSelect('p')
-            ->where('u.status = :inactive')
+            ->where('u.Status = :inactive')
             ->andWhere('p.validationStatus = :pending')
             ->setParameter('inactive', false)
             ->setParameter('pending', 'pending')
@@ -117,6 +126,7 @@ final class AdminController extends AbstractController
         return $this->render('back/index.html.twig', [
             'totalUsers' => $totalUsers,
             'totalStudents' => $totalStudents,
+            'totalTutors' => $totalTutors,
             'totalArticles' => $totalArticles,
             'recentUsers' => $recentUsers,
             'recentArticles' => $recentArticles,

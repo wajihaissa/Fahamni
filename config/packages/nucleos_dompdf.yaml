@@ -1,6 +1,0 @@
-# Configuration NucleosDompdfBundle - Export PDF
-# Voir https://github.com/dompdf/dompdf/wiki/Usage#options pour les options
-nucleos_dompdf:
-    defaults:
-        defaultFont: 'DejaVu Sans'
-        fontCache: '%kernel.cache_dir%/dompdf'

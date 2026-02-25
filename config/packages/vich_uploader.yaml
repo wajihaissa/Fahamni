@@ -1,11 +1,11 @@
-# Configuration VichUploader : stockage des pièces jointes du messager.
+# Configuration VichUploader : stockage des pieces jointes du messager.
 # Voir https://github.com/dustin10/VichUploaderBundle
 vich_uploader:
     db_driver: orm
     metadata:
         type: attribute
     mappings:
-        # Mapping pour les pièces jointes des messages (images + fichiers)
+        # Mapping pour les pieces jointes des messages (images + fichiers)
         messenger_attachment:
             uri_prefix: /uploads/messenger
             upload_destination: '%kernel.project_dir%/public/uploads/messenger'
