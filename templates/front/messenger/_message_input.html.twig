@@ -2,13 +2,11 @@
 {% if compose_with is defined and compose_with %}
     {# Mode premier message (brouillon) : envoi crée la conversation #}
     <div class="message-input-area">
-        <form method="post" action="{{ path('app_messenger_send_first_message') }}" id="sendMessageForm" class="send-message-form" enctype="multipart/form-data">
+        <form method="post" action="{{ path('app_messenger_send_first_message') }}" id="sendMessageForm" class="send-message-form">
             <input type="hidden" name="_token" value="{{ csrf_token('send_first_msg_' ~ compose_with.id) }}">
             <input type="hidden" name="with" value="{{ compose_with.id }}">
-            <input type="file" name="attachments[]" id="attachmentsFirst" class="d-none" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx">
             <div class="input-container">
-                <button type="button" class="input-action-btn" title="Pièce jointe" onclick="document.getElementById('attachmentsFirst').click()"><i class="fas fa-paperclip"></i></button>
-                <input type="text" name="content" class="message-input" id="messageInput" placeholder="Aa" maxlength="65535" autocomplete="off">
+                <input type="text" name="content" class="message-input" id="messageInput" placeholder="Aa" required maxlength="65535" autocomplete="off">
                 <div class="input-action-buttons">
                     <button type="button" class="input-action-btn" title="Emoji"><i class="far fa-smile"></i></button>
                 </div>
@@ -17,27 +15,30 @@
         </form>
     </div>
 {% elseif editing_message is defined and editing_message %}
-    {# Mode édition - style moderne (classes partagées avec le float) #}
-    <div class="message-input-area edit-message-form-area">
-        <div class="edit-message-form-wrap">
-            <p class="edit-message-form-label"><i class="fas fa-edit"></i> Modifier le message</p>
-            <form method="post" action="{{ path('app_messenger_edit_message', { convId: current_conversation.id, messageId: editing_message.id }) }}" class="edit-message-form">
-                <input type="hidden" name="_token" value="{{ csrf_token('edit_msg_' ~ editing_message.id) }}">
-                <textarea name="content" rows="3" class="edit-message-form-textarea" required>{{ editing_message.content }}</textarea>
-                <div class="edit-message-form-actions">
-                    <button type="submit" class="edit-message-form-btn edit-message-form-submit"><i class="fas fa-check"></i> Enregistrer</button>
-                    <a href="{{ path('app_messenger_show', { id: current_conversation.id }) }}" class="edit-message-form-btn edit-message-form-cancel"><i class="fas fa-times"></i> Annuler</a>
-                </div>
-            </form>
-        </div>
+    {# Mode édition #}
+    <div class="message-input-area" style="border-top: 1px solid var(--border-color); padding: 16px;">
+        <p style="margin-bottom: 8px; font-size: 14px; color: var(--text-light);">
+            <i class="fas fa-edit" style="margin-right: 6px;"></i>Modifier le message :
+        </p>
+        <form method="post" action="{{ path('app_messenger_edit_message', { convId: current_conversation.id, messageId: editing_message.id }) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_msg_' ~ editing_message.id) }}">
+            <textarea name="content" rows="3" style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; font-size: 15px; background: var(--bg-color); color: var(--text-color); outline: none; resize: vertical;">{{ editing_message.content }}</textarea>
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-check" style="margin-right: 6px;"></i>Enregistrer
+                </button>
+                <a href="{{ path('app_messenger_show', { id: current_conversation.id }) }}" class="btn btn-secondary" style="padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                    <i class="fas fa-times" style="margin-right: 6px;"></i>Annuler
+                </a>
+            </div>
+        </form>
     </div>
 {% else %}
     {# Mode envoi normal #}
     <div class="message-input-area">
-        <form method="post" action="{{ path('app_messenger_send_message', { id: current_conversation.id }) }}" id="sendMessageForm" class="send-message-form" enctype="multipart/form-data">
+        <form method="post" action="{{ path('app_messenger_send_message', { id: current_conversation.id }) }}" id="sendMessageForm" class="send-message-form">
             <input type="hidden" name="_token" value="{{ csrf_token('send_msg_' ~ current_conversation.id) }}">
             <input type="hidden" name="reply_to" id="replyToInput" value="">
-            <input type="file" name="attachments[]" id="attachmentsConv" class="d-none" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx">
             
             {# Barre de prévisualisation de réponse #}
             <div class="reply-preview-bar" id="replyPreviewBar">
@@ -49,7 +50,15 @@
             
             {# Container d'input avec boutons #}
             <div class="input-container">
-                <button type="button" class="input-action-btn" title="Pièce jointe" onclick="document.getElementById('attachmentsConv').click()"><i class="fas fa-paperclip"></i></button>
+                {# Boutons d'actions à gauche (optionnels - commentés pour garder simple) #}
+                {# <div class="input-action-buttons">
+                    <button type="button" class="input-action-btn" title="Ajouter un fichier">
+                        <i class="fas fa-plus-circle"></i>
+                    </button>
+                    <button type="button" class="input-action-btn" title="Ajouter une image">
+                        <i class="fas fa-image"></i>
+                    </button>
+                </div> #}
                 
                 {# Input de message #}
                 <input type="text" 
@@ -57,14 +66,21 @@
                        class="message-input" 
                        id="messageInput" 
                        placeholder="Aa" 
+                       required 
                        maxlength="65535"
                        autocomplete="off">
                 
-                {# Boutons d'actions à droite #}
+                {# Boutons d'actions à droite (optionnels) #}
                 <div class="input-action-buttons">
                     <button type="button" class="input-action-btn" title="Emoji">
                         <i class="far fa-smile"></i>
                     </button>
+                    {# <button type="button" class="input-action-btn" title="Sticker">
+                        <i class="fas fa-sticky-note"></i>
+                    </button>
+                    <button type="button" class="input-action-btn" title="GIF">
+                        <i class="fas fa-gif"></i>
+                    </button> #}
                 </div>
                 
                 {# Bouton d'envoi #}

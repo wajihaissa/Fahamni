@@ -21,7 +21,9 @@
         .sidebar-nav a i{width:26px;text-align:center;font-size:14px;}
         .sidebar-nav a .label{font-size:14px;}
         .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px);}
-        .sidebar-nav li.active a{background:rgba(255,255,255,0.04);color:#fff;font-weight:600;}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600;}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:var(--primary-gradient);}
+        .sidebar-nav li.active a .label{margin-left:6px;}
         .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
         .admin-container{max-width:900px;margin:0 auto;padding:2rem;}
         a.back{color:#667eea;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:600;margin-bottom:1rem;}

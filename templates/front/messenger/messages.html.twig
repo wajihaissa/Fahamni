@@ -53,35 +53,23 @@
                     {% include 'front/messenger/_chat_header.html.twig' with { current_conversation: current_conversation, other: other, other_display_name: other_display_name|default(other ? other.FullName : 'Conversation') } %}
 
                     <div class="chat-view">
-                        {# Préchargement des images pour affichage immédiat (évite apparition une par une) #}
-                        {% for msg in messages %}
-                            {% for att in msg.attachments %}
-                                {% if att.isImage %}
-                                    <link rel="preload" as="image" href="{{ path('app_messenger_attachment', { id: att.id }) }}">
-                                {% endif %}
-                            {% endfor %}
-                        {% endfor %}
                         <div class="chat-view-inner">
                             <div class="chat-main">
-                                <div class="chat-messages" id="chatMessages" style="height: 55vh; max-height: 55vh; overflow-y: scroll; overflow-x: visible; min-height: 200px;">
+                                <div class="chat-messages" id="chatMessages">
                                     {% for msg in messages %}
                                         {% set is_mine = msg.sender.id == actor.id %}
-                                        {% set message_already_reported = msg.id in (message_reported_ids|default([])) %}
-                                        {% include 'front/messenger/_message_item.html.twig' with { msg: msg, is_mine: is_mine, actor: actor, current_conversation: current_conversation, conversation_already_reported: conversation_already_reported|default(false), message_already_reported: message_already_reported, message_reported_ids: message_reported_ids|default([]), attachment_inline_srcs: attachment_inline_srcs|default({}) } %}
+                                        {% include 'front/messenger/_message_item.html.twig' with { msg: msg, is_mine: is_mine, actor: actor, current_conversation: current_conversation } %}
                                     {% else %}
                                         <div class="thread-preview" style="padding: 20px;">Aucun message. Envoyez le premier.</div>
                                     {% endfor %}
                                 </div>
                                 {% include 'front/messenger/_message_input.html.twig' with { current_conversation: current_conversation, editing_message: editing_message|default(null) } %}
                             </div>
-                            {% include 'front/messenger/_chat_info_panel.html.twig' with { current_conversation: current_conversation, other: other, actor: actor, other_display_name: other_display_name|default(other ? other.FullName : ''), current_nickname: current_nickname|default(null), conversation_already_reported: conversation_already_reported|default(false) } %}
+                            {% include 'front/messenger/_chat_info_panel.html.twig' with { current_conversation: current_conversation, other: other, actor: actor, other_display_name: other_display_name|default(other ? other.FullName : ''), current_nickname: current_nickname|default(null) } %}
                         </div>
                     </div>
 
                     {% include 'front/messenger/_transfer_modal.html.twig' with { conversations: conversations, current_conversation: current_conversation, actor: actor } %}
-                    {% include 'front/messenger/_report_conversation_modal.html.twig' with { current_conversation: current_conversation } %}
-                    {% include 'front/messenger/_report_message_modal.html.twig' with { current_conversation: current_conversation } %}
-                    {% include 'front/messenger/_summary_modal.html.twig' with { current_conversation: current_conversation } %}
                 {% elseif compose_with is defined and compose_with %}
                     {# Mode brouillon : premier message — la conversation sera créée à l'envoi #}
                     <div class="chat-header">

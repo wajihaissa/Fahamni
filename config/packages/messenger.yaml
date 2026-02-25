@@ -9,7 +9,6 @@ framework:
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
-            sync: 'sync://'
             failed: 'doctrine://default?queue_name=failed'
 
         default_bus: messenger.bus.default
@@ -18,7 +17,6 @@ framework:
             messenger.bus.default: []
 
         routing:
-            # Envoi immédiat des emails (sans worker) pour que les destinataires les reçoivent tout de suite
             Symfony\Component\Mailer\Messenger\SendEmailMessage: sync
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async

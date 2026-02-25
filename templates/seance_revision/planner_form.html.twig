@@ -1,0 +1,413 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planner de revision intelligent{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --pr-primary: #2f6fed;
+            --pr-primary-strong: #2155b6;
+            --pr-text: #1f2a3d;
+            --pr-muted: #5d708e;
+            --pr-line: #dbe6f5;
+            --pr-bg: #f4f7fc;
+            --pr-card: #ffffff;
+        }
+
+        .pr-shell {
+            width: min(920px, 94vw);
+            margin: 96px auto 36px;
+            color: var(--pr-text);
+        }
+
+        .pr-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+            color: #2a4e85;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .pr-card {
+            background: var(--pr-card);
+            border: 1px solid var(--pr-line);
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(25, 45, 78, 0.08);
+            padding: 18px;
+        }
+
+        .pr-title {
+            margin: 0;
+            font-size: clamp(24px, 2.4vw, 31px);
+            font-weight: 900;
+        }
+
+        .pr-subtitle {
+            margin: 6px 0 0;
+            color: var(--pr-muted);
+            font-size: 14px;
+        }
+
+        .pr-flashes {
+            display: grid;
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .pr-flash {
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid transparent;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pr-flash-success { background: #eefaf3; border-color: #b9e8cd; color: #176a4a; }
+        .pr-flash-error { background: #fff1f3; border-color: #f1c4cb; color: #8d2d39; }
+        .pr-flash-warning { background: #fff7e9; border-color: #f3ddb3; color: #8f6414; }
+
+        .pr-form {
+            margin-top: 16px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .pr-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .pr-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .pr-field-full {
+            grid-column: 1 / -1;
+        }
+
+        .pr-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #243c60;
+        }
+
+        .pr-input,
+        .pr-select {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #cfdcf0;
+            border-radius: 11px;
+            padding: 11px 12px;
+            font-size: 14px;
+            color: var(--pr-text);
+            background: #f8fbff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        .pr-input:focus,
+        .pr-select:focus {
+            outline: none;
+            border-color: #7fa6eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15);
+        }
+
+        .pr-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #32527d;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .pr-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2px;
+        }
+
+        .pr-btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            min-height: 40px;
+            padding: 9px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.16s ease;
+        }
+
+        .pr-btn-primary {
+            background: var(--pr-primary);
+            color: #ffffff;
+        }
+
+        .pr-btn-primary:hover {
+            background: var(--pr-primary-strong);
+            box-shadow: 0 10px 18px rgba(40, 76, 146, 0.26);
+            transform: translateY(-1px);
+        }
+
+        .pr-history {
+            margin-top: 16px;
+            border: 1px solid var(--pr-line);
+            border-radius: 14px;
+            background: #f8fbff;
+            padding: 12px;
+        }
+
+        .pr-history-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 900;
+            color: #213a5f;
+        }
+
+        .pr-history-subtitle {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #5f7596;
+            font-weight: 600;
+        }
+
+        .pr-history-list {
+            margin-top: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .pr-history-item {
+            border: 1px solid #d3e0f3;
+            border-radius: 10px;
+            background: #ffffff;
+            padding: 9px 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pr-history-main {
+            min-width: 0;
+        }
+
+        .pr-history-name {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 800;
+            color: #23406a;
+        }
+
+        .pr-history-meta {
+            margin: 3px 0 0;
+            font-size: 11px;
+            color: #657f9f;
+            font-weight: 600;
+        }
+
+        .pr-history-actions {
+            display: inline-flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .pr-btn-ghost {
+            background: #f2f7ff;
+            border-color: #d0def4;
+            color: #285489;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pr-btn-ghost:hover {
+            background: #eaf2ff;
+        }
+
+        @media (max-width: 760px) {
+            .pr-shell {
+                margin-top: 84px;
+                width: min(96vw, 920px);
+            }
+
+            .pr-card {
+                padding: 14px;
+            }
+
+            .pr-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pr-history-item {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (() => {
+            const initPlannerForm = () => {
+                const examDateInput = document.getElementById('planner_exam_date');
+                if (!examDateInput) {
+                    return;
+                }
+
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+                examDateInput.min = tomorrowIso;
+
+                if (!examDateInput.value) {
+                    examDateInput.value = tomorrowIso;
+                }
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPlannerForm, { once: true });
+            } else {
+                initPlannerForm();
+            }
+        })();
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="pr-shell">
+        <a class="pr-back" href="{{ path('app_seance_revision') }}">Retour a Find Tutors</a>
+
+        <section class="pr-card">
+            <h1 class="pr-title">Planner de revision intelligent</h1>
+            <p class="pr-subtitle">Renseigne ta date d'examen et la matiere ciblee pour generer un planning personnalise avec l'IA.</p>
+
+            {% set flashSuccess = app.flashes('success') %}
+            {% set flashError = app.flashes('error') %}
+            {% set flashWarning = app.flashes('warning') %}
+            {% if flashSuccess is not empty or flashError is not empty or flashWarning is not empty %}
+                <div class="pr-flashes">
+                    {% for message in flashSuccess %}
+                        <div class="pr-flash pr-flash-success">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in flashError %}
+                        <div class="pr-flash pr-flash-error">{{ message }}</div>
+                    {% endfor %}
+                    {% for message in flashWarning %}
+                        <div class="pr-flash pr-flash-warning">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form class="pr-form" method="post" action="{{ path('app_seance_revision_planner_result') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('planner_generate') }}">
+                {% if editingPlannerId %}
+                    <input type="hidden" name="plannerId" value="{{ editingPlannerId }}">
+                {% endif %}
+
+                <div class="pr-grid">
+                    <div class="pr-field">
+                        <label class="pr-label" for="planner_exam_date">Date d'examen *</label>
+                        <input id="planner_exam_date" class="pr-input" type="date" name="examDate" value="{{ defaultExamDate|default('') }}" required>
+                    </div>
+
+                    <div class="pr-field">
+                        <label class="pr-label" for="planner_focus_subject">Matiere a reviser</label>
+                        <input
+                            id="planner_focus_subject"
+                            class="pr-input"
+                            type="text"
+                            name="focusSubject"
+                            value="{{ defaultFocusSubject|default('') }}"
+                            placeholder="Ex: Analyse numerique, Physique..."
+                        >
+                    </div>
+
+                    <div class="pr-field">
+                        <label class="pr-label" for="planner_daily_sessions">Sessions par jour</label>
+                        <select id="planner_daily_sessions" class="pr-select" name="dailySessions">
+                            {% for sessions in 1..4 %}
+                                <option value="{{ sessions }}" {% if sessions == defaultDailySessions %}selected{% endif %}>
+                                    {{ sessions }} session{{ sessions > 1 ? 's' : '' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="pr-field">
+                        <label class="pr-label" for="planner_difficulty_level">Niveau souhaite</label>
+                        <select id="planner_difficulty_level" class="pr-select" name="difficultyLevel">
+                            <option value="easy" {% if defaultDifficultyLevel|default('medium') == 'easy' %}selected{% endif %}>Facile</option>
+                            <option value="medium" {% if defaultDifficultyLevel|default('medium') == 'medium' %}selected{% endif %}>Moyen</option>
+                            <option value="hard" {% if defaultDifficultyLevel|default('medium') == 'hard' %}selected{% endif %}>Difficile</option>
+                        </select>
+                    </div>
+
+                    <div class="pr-field">
+                        <label class="pr-label" for="planner_reminder_time">Heure de rappel</label>
+                        <input id="planner_reminder_time" class="pr-input" type="time" name="reminderTime" value="{{ defaultReminderTime }}">
+                    </div>
+
+                    <div class="pr-field pr-field-full">
+                        <label class="pr-check">
+                            <input type="checkbox" name="includeWeekend" value="1" {% if defaultIncludeWeekend|default(false) %}checked{% endif %}>
+                            Inclure les jours du weekend dans le planning
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pr-actions">
+                    <button class="pr-btn pr-btn-primary" type="submit">
+                        {{ editingPlannerId ? 'Mettre a jour le planning IA' : 'Generer mon planning IA' }}
+                    </button>
+                </div>
+            </form>
+
+            <section class="pr-history">
+                <h2 class="pr-history-title">Historique des plannings</h2>
+                <p class="pr-history-subtitle">Retrouve, ouvre ou modifie tes anciens plannings.</p>
+
+                {% if historyPlanners is empty %}
+                    <div class="pr-flash pr-flash-warning" style="margin-top:10px;">Aucun planning enregistre pour le moment.</div>
+                {% else %}
+                    <div class="pr-history-list">
+                        {% for planner in historyPlanners %}
+                            <article class="pr-history-item">
+                                <div class="pr-history-main">
+                                    <h3 class="pr-history-name">
+                                        Examen {{ planner.examDate|date('d/m/Y') }}
+                                        {% if planner.focusSubject %}
+                                            - {{ planner.focusSubject }}
+                                        {% endif %}
+                                    </h3>
+                                    <p class="pr-history-meta">
+                                        Progression: {{ planner.completionRate|default(0)|number_format(1, '.', ' ') }}% |
+                                        Niveau: {{
+                                            planner.difficultyLevel == 'easy' ? 'Facile' :
+                                            (planner.difficultyLevel == 'hard' ? 'Difficile' : 'Moyen')
+                                        }} |
+                                        Mis a jour: {{ planner.updatedAt ? planner.updatedAt|date('d/m/Y H:i') : planner.createdAt|date('d/m/Y H:i') }}
+                                    </p>
+                                </div>
+                                <div class="pr-history-actions">
+                                    <a class="pr-btn pr-btn-ghost" href="{{ path('app_seance_revision_planner_show', {id: planner.id}) }}">Ouvrir</a>
+                                    <a class="pr-btn pr-btn-ghost" href="{{ path('app_seance_revision_planner', {planner: planner.id}) }}">Modifier</a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        </section>
+    </div>
+{% endblock %}

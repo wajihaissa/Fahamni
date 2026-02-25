@@ -10,62 +10,33 @@
 .reported-page h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-color, #1f2937); }
 .reported-page .back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--primary-color, #6366f1); text-decoration: none; font-weight: 500; margin-bottom: 1.5rem; }
 .reported-page .reported-list { background: var(--card-bg, #fff); border-radius: 12px; border: 1px solid var(--border-color, #e5e7eb); overflow: hidden; }
-.reported-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); transition: background 0.2s; }
+.reported-item { display: block; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); text-decoration: none; color: inherit; transition: background 0.2s; }
 .reported-item:last-child { border-bottom: none; }
 .reported-item:hover { background: var(--bg-secondary, #f9fafb); }
-.reported-item-link { flex: 1; min-width: 0; text-decoration: none; color: inherit; }
-.reported-item-link:hover { color: inherit; }
 .reported-item-title { font-weight: 600; color: var(--text-color, #1f2937); margin-bottom: 0.25rem; }
 .reported-item-meta { font-size: 0.85rem; color: var(--text-light, #6b7280); }
 .reported-item-reason { font-size: 0.9rem; color: var(--text-color, #1f2937); margin-top: 0.35rem; }
-.reported-item-remove { flex-shrink: 0; width: 36px; height: 36px; border: none; border-radius: 8px; background: rgba(220, 53, 69, 0.1); color: #dc3545; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; transition: background 0.2s, color 0.2s; }
-.reported-item-remove:hover { background: rgba(220, 53, 69, 0.2); color: #c82333; }
-.reported-item-remove:focus { outline: none; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3); }
 .reported-empty { padding: 2rem; text-align: center; color: var(--text-light, #6b7280); }
-/* Modal confirmation retrait signal */
-.reported-remove-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1050; align-items: center; justify-content: center; padding: 1rem; }
-.reported-remove-modal-overlay.is-open { display: flex; }
-.reported-remove-modal { background: var(--card-bg, #fff); border-radius: 12px; padding: 1.5rem; max-width: 400px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color, #e5e7eb); }
-.reported-remove-modal h3 { margin: 0 0 0.5rem; font-size: 1.15rem; color: var(--text-color, #1f2937); }
-.reported-remove-modal p { margin: 0 0 1.25rem; font-size: 0.95rem; color: var(--text-light, #6b7280); }
-.reported-remove-modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
-.reported-remove-modal-btn { padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; font-size: 0.95rem; cursor: pointer; border: none; }
-.reported-remove-modal-cancel { background: var(--bg-secondary, #f3f4f6); color: var(--text-color, #1f2937); }
-.reported-remove-modal-cancel:hover { background: #e5e7eb; }
-.reported-remove-modal-submit { background: #dc3545; color: #fff; }
-.reported-remove-modal-submit:hover { background: #c82333; }
-.messenger-flash { margin-bottom: 1rem; padding: 12px 16px; border-radius: 8px; }
-.messenger-flash-success { background: rgba(67, 97, 238, 0.1); color: var(--text-color, #1f2937); }
-.messenger-flash-warning { background: rgba(255, 193, 7, 0.15); color: var(--text-color, #1f2937); }
-.messenger-flash-error { background: rgba(220, 53, 69, 0.1); color: var(--text-color, #1f2937); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="reported-page">
-    {% for flash in messenger_flashes|default([]) %}
-        <div class="messenger-flash messenger-flash-{{ flash.type|default('success') }}">{{ flash.message }}</div>
-    {% endfor %}
     <a href="{{ path('app_messenger_index') }}" class="back-link"><i class="fas fa-arrow-left"></i> Retour au Messenger</a>
     <h1><i class="fas fa-flag" style="margin-right: 0.5rem;"></i> Conversations signalées</h1>
     <p style="color: var(--text-light, #6b7280); font-size: 0.95rem; margin-bottom: 1.25rem;">Liste des conversations que vous avez signalées.</p>
 
     <div class="reported-list">
         {% for report in reports %}
-            <div class="reported-item">
-                <a href="{{ path('app_messenger_show', { id: report.conversation.id }) }}" class="reported-item-link">
-                    <div class="reported-item-title">
-                        {{ report.conversation.title ?? ('Conversation #' ~ report.conversation.id) }}{% if report.conversation.isGroup %} (groupe){% endif %}
-                    </div>
-                    <div class="reported-item-meta">Signalé le {{ report.createdAt|date('d/m/Y à H:i') }}</div>
-                    {% if report.reason %}
-                        <div class="reported-item-reason">{{ report.reason|slice(0, 120) }}{% if report.reason|length > 120 %}…{% endif %}</div>
-                    {% endif %}
-                </a>
-                <button type="button" class="reported-item-remove js-remove-report" title="Retirer le signalement" data-report-id="{{ report.id }}" aria-label="Retirer le signalement">
-                    <i class="fas fa-flag-slash"></i>
-                </button>
-            </div>
+            <a href="{{ path('app_messenger_show', { id: report.conversation.id }) }}" class="reported-item">
+                <div class="reported-item-title">
+                    {{ report.conversation.title ?? ('Conversation #' ~ report.conversation.id) }}{% if report.conversation.isGroup %} (groupe){% endif %}
+                </div>
+                <div class="reported-item-meta">Signalé le {{ report.createdAt|date('d/m/Y à H:i') }}</div>
+                {% if report.reason %}
+                    <div class="reported-item-reason">{{ report.reason|slice(0, 120) }}{% if report.reason|length > 120 %}…{% endif %}</div>
+                {% endif %}
+            </a>
         {% else %}
             <div class="reported-empty">
                 <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
@@ -73,46 +44,5 @@
             </div>
         {% endfor %}
     </div>
-
-    {# Modal confirmation retrait du signal #}
-    <div class="reported-remove-modal-overlay" id="reportedRemoveModal" aria-hidden="true">
-        <div class="reported-remove-modal" role="dialog" aria-labelledby="reportedRemoveModalTitle" aria-modal="true">
-            <h3 id="reportedRemoveModalTitle">Retirer le signalement</h3>
-            <p>Êtes-vous sûr de vouloir retirer votre signalement pour cette conversation ?</p>
-            <div class="reported-remove-modal-actions">
-                <button type="button" class="reported-remove-modal-btn reported-remove-modal-cancel js-remove-report-cancel">Annuler</button>
-                <form method="post" action="" id="reportedRemoveForm" style="display: inline;">
-                    <input type="hidden" name="_token" value="{{ csrf_token('remove_report') }}">
-                    <button type="submit" class="reported-remove-modal-btn reported-remove-modal-submit">Oui, retirer le signalement</button>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
-<script>
-(function() {
-    var modal = document.getElementById('reportedRemoveModal');
-    var form = document.getElementById('reportedRemoveForm');
-    var removeUrl = '{{ path('app_messenger_remove_report', { reportId: '__ID__' }) }}';
-    document.querySelectorAll('.js-remove-report').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var reportId = this.getAttribute('data-report-id');
-            if (!reportId) return;
-            form.action = removeUrl.replace('__ID__', reportId);
-            modal.classList.add('is-open');
-            modal.setAttribute('aria-hidden', 'false');
-        });
-    });
-    document.querySelector('.js-remove-report-cancel').addEventListener('click', function() {
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-    });
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.classList.remove('is-open');
-            modal.setAttribute('aria-hidden', 'true');
-        }
-    });
-})();
-</script>
 {% endblock %}

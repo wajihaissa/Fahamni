@@ -10,11 +10,6 @@
 
 {% block content %}
 <div class="container messenger-page new-group-page">
-    <div class="messenger-flash-wrap">
-        {% for flash in messenger_flashes|default([]) %}
-            <div class="messenger-flash messenger-flash-{{ flash.type|default('success') }}">{{ flash.message }}</div>
-        {% endfor %}
-    </div>
     <div class="new-group-container">
         {# En-tête avec bouton retour #}
         <div class="new-group-header-modern">

@@ -7,10 +7,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root{
-            --bg:#f4f7fb;
+            --bg:#f8fafc;
             --nav:#0b1220;
             --card:#ffffff;
-            --muted:#64748b;
+            --muted:#6b7280;
             --text:#0b1220;
             --text-primary:#0b1220;
             --border:#e5e7eb;
@@ -42,13 +42,15 @@
         .sidebar-nav a i{width:26px;text-align:center;font-size:14px;color:inherit;}
         .sidebar-nav a .label{font-size:14px;}
         .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px);}
-        .sidebar-nav li.active a{background:rgba(255,255,255,0.04);color:#fff;font-weight:600;}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600;}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:var(--primary-gradient);box-shadow:0 8px 20px rgba(108,92,231,0.12);}
+        .sidebar-nav li.active a .label{margin-left:6px;}
         .main-content{margin-left:var(--sidebar-width);min-height:100vh;}
 
         .admin-container {
-            max-width: 1500px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 1.5rem;
+            padding: 2rem;
         }
 
         .admin-header {
@@ -64,27 +66,27 @@
             color: var(--text-primary);
         }
 
-        .btn-primary{background:var(--primary-grad);color:#fff;border:none;padding:10px 15px;border-radius:12px;font-weight:700;display:inline-flex;align-items:center;gap:8px;text-decoration:none;box-shadow:0 10px 22px rgba(37,99,235,.3)}
+        .btn-primary{background:var(--primary-grad);color:#fff;border:none;padding:8px 14px;border-radius:12px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 12px 28px rgba(37,99,235,.35);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
-        .card{background:rgba(255,255,255,.94);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;overflow:hidden;border:1px solid var(--border);backdrop-filter:blur(6px)}
+        .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;overflow:hidden;border:1px solid var(--border)}
 
         .table-container {
             overflow-x: auto;
             background: transparent;
             padding: 0;
             border-radius: 14px;
-            margin-bottom: 12px;
+            margin-bottom: 18px;
         }
 
         .data-table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0 10px;
+            border-spacing: 0 12px;
             background: transparent;
         }
 
@@ -99,27 +101,27 @@
             background: transparent;
             font-weight: 700;
             color: var(--muted);
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: .05em;
+            font-size: 0.9rem;
+            text-transform: none;
             padding: 12px 16px 16px 16px;
             border-bottom: none;
         }
 
+        /* Each row is a card */
         .data-table tbody tr {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
-            box-shadow: 0 8px 18px rgba(15,23,42,.06);
+            box-shadow: 0 8px 22px rgba(14,22,50,0.04);
             transition: all 0.18s ease;
-            height: 74px;
+            height: 70px;
             display: table-row;
         }
 
         .data-table tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 28px rgba(15,23,42,.12);
-            border-color: #bfdbfe;
+            transform: translateY(-3px);
+            box-shadow: 0 18px 50px rgba(14,22,50,0.08);
+            border-color: #667eea;
         }
 
         .data-table tbody tr td {
@@ -143,8 +145,8 @@
         .user-avatar{
             width: 40px;
             height: 40px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -155,16 +157,16 @@
         }
 
         .user-cell span {
-            font-weight: 700;
+            font-weight: 500;
             color: var(--text-primary);
         }
 
         .badge {
             display: inline-block;
             padding: 0.35rem 0.85rem;
-            border-radius: 999px;
-            font-size: 0.73rem;
-            font-weight: 700;
+            border-radius: 0.65rem;
+            font-size: 0.8rem;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             white-space: nowrap;
@@ -173,36 +175,25 @@
         .badge-active {
             background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.12);
         }
 
         .badge-inactive {
             background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
             color: #991b1b;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
         }
 
         .badge-student {
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: #1e40af;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.12);
         }
 
         .badge-tutor {
             background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
             color: #065f46;
-            box-shadow: none;
-        }
-
-        .badge-admin {
-            background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
-            color: #5b21b6;
-            box-shadow: none;
-        }
-        .badge-neutral {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: #334155;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.12);
         }
 
         .actions {
@@ -213,22 +204,22 @@
         }
 
         .btn-action {
-            width: 34px;
-            height: 34px;
+            width: 38px;
+            height: 38px;
             border: none;
-            border-radius: 10px;
+            border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.18s ease;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.86rem;
+            font-size: 0.95rem;
         }
 
         .btn-view {
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: #1e40af;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.12);
         }
 
         .btn-edit {
@@ -240,146 +231,36 @@
         .btn-delete {
             background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
             color: #991b1b;
-            box-shadow: none;
-        }
-        .btn-status-on {
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-            color: #065f46;
-            box-shadow: none;
-        }
-        .btn-status-off {
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-            color: #991b1b;
-            box-shadow: none;
-        }
-        .btn-activity-on {
-            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-            color: #1e40af;
-            box-shadow: none;
-        }
-        .btn-activity-off {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: #334155;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(153, 27, 27, 0.12);
         }
 
         .btn-action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(15,23,42,.12);
-        }
-        .btn-action:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .alert{padding:12px;border-radius:12px;margin-bottom:12px;font-weight:600}
+        .alert{padding:12px;border-radius:10px;margin-bottom:12px}
 
         .alert-success {
-            background: #ecfdf3;
+            background: #d1fae5;
             color: #065f46;
-            border: 1px solid #86efac;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-error {
-            background: #fff1f2;
+            background: #fee2e2;
             color: #991b1b;
-            border: 1px solid #fda4af;
+            border: 1px solid #fecaca;
         }
 
         .empty{text-align:center;padding:28px;color:var(--muted)}
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            align-items: center;
-            margin-bottom: 1.2rem;
-            flex-wrap: wrap;
-            padding: 0.25rem 0;
-        }
-        .filters {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .filter-pill {
-            text-decoration: none;
-            padding: 0.45rem 0.9rem;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            color: var(--muted);
-            font-weight: 600;
-            font-size: 0.86rem;
-            background: #fff;
-            transition: all 0.18s ease;
-        }
-        .filter-pill:hover {
-            border-color: #bfdbfe;
-            transform: translateY(-1px);
-        }
-        .filter-pill.active {
-            background: var(--primary-grad);
-            color: #fff;
-            border-color: transparent;
-        }
-        .bulk-panel {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .bulk-panel select {
-            border: 1px solid var(--border);
-            border-radius: 11px;
-            padding: 0.5rem 0.65rem;
-            background: #fff;
-            color: var(--text-primary);
-        }
-        .bulk-btn {
-            border: 0;
-            border-radius: 11px;
-            padding: 0.55rem 0.95rem;
-            font-weight: 600;
-            color: #fff;
-            background: var(--primary-grad);
-            cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
-        }
-        .bulk-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(37,99,235,.28);
-        }
-        .select-col { width: 44px; text-align: center !important; }
-        .select-col input { width: 16px; height: 16px; cursor: pointer; }
-
-        @media (max-width: 1100px) {
-            .main-content { margin-left: 0; }
-            .admin-container { padding: 1rem; }
-            .admin-header { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
-            .toolbar { align-items: stretch; }
-        }
-
-        @media (max-width: 760px) {
-            .data-table th, .data-table td { font-size: 0.85rem; }
-            .data-table tbody tr td { padding: 0 10px; }
-            .user-avatar { width: 34px; height: 34px; font-size: 12px; }
-            .btn-action { width: 34px; height: 34px; font-size: 0.85rem; }
-        }
     </style>
 {% endblock %}
 
 {% block body %}
     {% include 'back/_sidebar.html.twig' %}
     <div class="main-content">
-        <header class="top-navbar">
-            <div class="navbar-left">
-                <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
-                <h1 class="page-title">Users Management</h1>
-            </div>
-            <div class="navbar-right"></div>
-        </header>
-
+        {% include 'back/_admin_navbar.html.twig' %}
         <div class="admin-container">
         {% for type, messages in app.flashes %}
             {% for message in messages %}
@@ -398,41 +279,22 @@
         </div>
 
         <div class="card">
-            <div class="toolbar">
-                <div class="filters">
-                    <a class="filter-pill {{ (currentFilter|default('all')) == 'all' ? 'active' : '' }}" href="{{ path('admin_users_index', { filter: 'all' }) }}">All</a>
-                    <a class="filter-pill {{ (currentFilter|default('all')) == 'active' ? 'active' : '' }}" href="{{ path('admin_users_index', { filter: 'active' }) }}">Active</a>
-                    <a class="filter-pill {{ (currentFilter|default('all')) == 'inactive' ? 'active' : '' }}" href="{{ path('admin_users_index', { filter: 'inactive' }) }}">Inactive</a>
-                    <a class="filter-pill {{ (currentFilter|default('all')) == 'suspended' ? 'active' : '' }}" href="{{ path('admin_users_index', { filter: 'suspended' }) }}">Suspended</a>
-                </div>
-                <form id="bulkActionForm" class="bulk-panel" method="POST" action="{{ path('admin_users_bulk_status') }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_users_status') }}">
-                    <select name="bulk_action" required>
-                        <option value="">Bulk action...</option>
-                        <option value="activate">Activate selected</option>
-                        <option value="deactivate">Deactivate selected</option>
-                    </select>
-                    <button type="submit" class="bulk-btn" onclick="return confirm('Apply this action to selected users?');">Apply</button>
-                </form>
-            </div>
-
             {% if users|length > 0 %}
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="select-col"><input type="checkbox" id="selectAllUsers"></th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
-                                <th>Account</th>
-                                <th>Activity</th>
+                                <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for user in users %}
+                                {% set userAi = aiUserSummaries[user.id]|default(null) %}
                                 {% set roleLabel = 'Student' %}
                                 {% set roleClass = 'badge-student' %}
                                 {% if 'ROLE_ADMIN' in user.roles %}
@@ -443,9 +305,6 @@
                                     {% set roleClass = 'badge-tutor' %}
                                 {% endif %}
                                 <tr>
-                                    <td class="select-col">
-                                        <input type="checkbox" class="user-checkbox" form="bulkActionForm" name="user_ids[]" value="{{ user.id }}">
-                                    </td>
                                     <td>
                                         <div class="user-cell">
                                             <div class="user-avatar">
@@ -461,24 +320,14 @@
                                     </td>
                                     <td>{{ user.email }}</td>
                                     <td>
-                                        <span class="badge {{ roleClass }}">
-                                            {{ roleLabel|lower }}
+                                        <span class="badge {% if 'ROLE_TUTOR' in user.roles %}badge-tutor{% else %}badge-student{% endif %}">
+                                            {{ user.roles[0]|replace({'ROLE_': ''})|lower }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="badge {% if user.status %}badge-active{% else %}badge-inactive{% endif %}">
                                             {{ user.status ? 'Active' : 'Inactive' }}
                                         </span>
-                                    </td>
-                                    <td>
-                                        {% set profile = user.profile %}
-                                        {% if profile %}
-                                            <span class="badge {% if profile.isActive %}badge-active{% else %}badge-neutral{% endif %}">
-                                                {{ profile.isActive ? 'Active' : 'Inactive' }}
-                                            </span>
-                                        {% else %}
-                                            <span class="badge badge-neutral">N/A</span>
-                                        {% endif %}
                                     </td>
                                     <td>{{ user.createdAt|date('M d, Y') }}</td>
                                     <td>
@@ -497,16 +346,23 @@
                                                 </button>
                                             </form>
                                             {% endif %}
-                                            <a href="{{ path('admin_users_show', {id: user.id}) }}" class="btn-action btn-view" title="View">
+                                            <a href="{{ path('admin_users_show', {id: user.id}) }}"
+                                               class="btn-action btn-view"
+                                               title="View"
+                                               data-user-id="{{ user.id }}"
+                                               data-user-name="{{ user.fullName }}"
+                                               data-user-email="{{ user.email }}"
+                                               data-user-role="{{ roleLabel|lower }}"
+                                               data-user-status="{{ user.status ? 'Active' : 'Inactive' }}"
+                                               data-ai-summary="{{ userAi ? userAi|json_encode : '' }}">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            {# Edit/modify removed per request #}
-                                            <form method="POST" action="{{ path('admin_users_delete', {id: user.id}) }}" style="display:inline-block; margin:0;">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
-                                                <button type="submit" class="btn-action btn-delete" title="Delete" onclick="return confirm('Delete this user?');">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button class="btn-action btn-edit" title="Edit" onclick="event.preventDefault();" data-user-id="{{ user.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn-action btn-delete" title="Delete" onclick="event.preventDefault();" data-user-id="{{ user.id }}" data-delete-url="{{ path('admin_users_delete', {id: user.id}) }}" data-csrf="{{ csrf_token('delete' ~ user.id) }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -520,38 +376,7 @@
                     <p>No users found</p>
                 </div>
             {% endif %}
-
         </div>
         </div>
     </div>
-
-    <script>
-        (function () {
-            var selectAll = document.getElementById('selectAllUsers');
-            var checkboxes = document.querySelectorAll('.user-checkbox');
-            if (selectAll) {
-                selectAll.addEventListener('change', function () {
-                    checkboxes.forEach(function (cb) { cb.checked = selectAll.checked; });
-                });
-            }
-
-            var bulkPanel = document.querySelector('.bulk-panel');
-            if (bulkPanel) {
-                bulkPanel.addEventListener('submit', function (e) {
-                    var action = bulkPanel.querySelector('select[name="bulk_action"]').value;
-                    if (!action) {
-                        e.preventDefault();
-                        alert('Please choose a bulk action.');
-                        return;
-                    }
-                    var selected = document.querySelectorAll('.user-checkbox:checked');
-                    if (selected.length === 0) {
-                        e.preventDefault();
-                        alert('Please select at least one user.');
-                        return;
-                    }
-                });
-            }
-        })();
-    </script>
 {% endblock %}
