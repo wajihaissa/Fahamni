@@ -128,7 +128,7 @@ final class AdminNotificationController extends AbstractController
                 'createdAt' => $conversation->getCreatedAt()?->format(\DateTimeInterface::ATOM),
                 'lastMessageAt' => $conversation->getLastMessageAt()?->format(\DateTimeInterface::ATOM),
                 'participants' => $participants,
-                'summary' => $conversation->getSummary(),
+                'summary' => null,
             ],
             'messages' => $messagesData,
         ]);

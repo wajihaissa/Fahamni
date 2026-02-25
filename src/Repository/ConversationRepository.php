@@ -91,4 +91,53 @@ class ConversationRepository extends ServiceEntityRepository
         }
         return $qb->getQuery()->getOneOrNullResult();
     }
+
+    /**
+     * @return array<string, int> Map YYYY-MM-DD => count
+     */
+    public function countByDay(int $days = 30): array
+    {
+        $since = (new \DateTimeImmutable())->modify('-' . max(1, $days) . ' days')->format('Y-m-d 00:00:00');
+        $sql = 'SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+                FROM conversation
+                WHERE created_at >= :since
+                  AND (is_deleted = 0 OR is_deleted IS NULL)
+                GROUP BY DATE(created_at)
+                ORDER BY day ASC';
+
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql, ['since' => $since]);
+        $byDay = [];
+        foreach ($rows as $row) {
+            $byDay[(string) $row['day']] = (int) $row['cnt'];
+        }
+
+        return $byDay;
+    }
+
+    /**
+     * @return array{private:int,group:int}
+     */
+    public function countGroupVsPrivate(): array
+    {
+        $sql = 'SELECT
+                    SUM(CASE WHEN is_group = 1 THEN 1 ELSE 0 END) AS group_count,
+                    SUM(CASE WHEN is_group = 0 THEN 1 ELSE 0 END) AS private_count
+                FROM conversation
+                WHERE (is_deleted = 0 OR is_deleted IS NULL)';
+        $row = $this->getEntityManager()->getConnection()->fetchAssociative($sql) ?: [];
+
+        return [
+            'private' => (int) ($row['private_count'] ?? 0),
+            'group' => (int) ($row['group_count'] ?? 0),
+        ];
+    }
+
+    public function getQueryOrderedByLastMessage()
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.isDeleted = false OR c.isDeleted IS NULL')
+            ->orderBy('c.lastMessageAt', 'DESC')
+            ->addOrderBy('c.createdAt', 'DESC')
+            ->getQuery();
+    }
 }

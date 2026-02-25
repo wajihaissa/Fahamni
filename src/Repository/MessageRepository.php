@@ -62,4 +62,26 @@ class MessageRepository extends ServiceEntityRepository
             ->setMaxResults($limit);
         return $qb->getQuery()->getResult();
     }
+
+    /**
+     * @return array<string, int> Map YYYY-MM-DD => count
+     */
+    public function countByDay(int $days = 30): array
+    {
+        $since = (new \DateTimeImmutable())->modify('-' . max(1, $days) . ' days')->format('Y-m-d 00:00:00');
+        $sql = 'SELECT DATE(created_at) AS day, COUNT(*) AS cnt
+                FROM message
+                WHERE created_at >= :since
+                  AND (deleted_at IS NULL)
+                GROUP BY DATE(created_at)
+                ORDER BY day ASC';
+
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative($sql, ['since' => $since]);
+        $byDay = [];
+        foreach ($rows as $row) {
+            $byDay[(string) $row['day']] = (int) $row['cnt'];
+        }
+
+        return $byDay;
+    }
 }

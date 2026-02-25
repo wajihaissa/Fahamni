@@ -44,7 +44,7 @@ final class AdminController extends AbstractController
 
         // Get pending users (inactive status)
         $pendingUsers = $entityManager->getRepository(User::class)
-            ->findBy(['status' => false], ['createdAt' => 'DESC']);
+            ->findBy(['Status' => false], ['createdAt' => 'DESC']);
 
         // Paginated users for users management block
         $usersPerPage = 8;

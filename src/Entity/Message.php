@@ -60,11 +60,18 @@ class Message
     #[ORM\OneToMany(targetEntity: MessageReaction::class, mappedBy: 'message', orphanRemoval: true)]
     private Collection $reactions;
 
+    /**
+     * @var Collection<int, MessageAttachment>
+     */
+    #[ORM\OneToMany(targetEntity: MessageAttachment::class, mappedBy: 'message', orphanRemoval: true)]
+    private Collection $attachments;
+
     public function __construct()
     {
         $this->readBy = new ArrayCollection();
         $this->replies = new ArrayCollection();
         $this->reactions = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -246,6 +253,35 @@ class Message
             // set the owning side to null (unless already changed)
             if ($reaction->getMessage() === $this) {
                 $reaction->setMessage(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MessageAttachment>
+     */
+    public function getAttachments(): Collection
+    {
+        return $this->attachments;
+    }
+
+    public function addAttachment(MessageAttachment $attachment): static
+    {
+        if (!$this->attachments->contains($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setMessage($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttachment(MessageAttachment $attachment): static
+    {
+        if ($this->attachments->removeElement($attachment)) {
+            if ($attachment->getMessage() === $this) {
+                $attachment->setMessage(null);
             }
         }
 

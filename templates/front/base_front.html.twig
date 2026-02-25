@@ -9,7 +9,8 @@
     {{ importmap('app') }}
     {% block stylesheets %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+{# Désactive Turbo Drive sur tout le front : évite que les scripts (messenger, etc.) ne soient plus ré-exécutés après une navigation sans rechargement #}
+<body class="{% block body_class %}{% endblock %}" data-turbo="false">
     {# Appliquer le thème sauvegardé immédiatement pour éviter un flash (FOUC) #}
     <script>(function(){var t=localStorage.getItem('theme');if(t==='dark')document.body.classList.add('dark-theme');})();</script>
 
@@ -89,5 +90,12 @@
     {% block javascripts %}
         {# Lien actif etc. dans app.js si chargé #}
     {% endblock %}
+
+    {# Chatbot assistant (Mistral) - uniquement pour les utilisateurs connectés #}
+    {% if app.user %}
+        {% include 'front/chatbot/_chatbot_styles.html.twig' %}
+        {% include 'front/chatbot/_chatbot_widget.html.twig' %}
+        {% include 'front/chatbot/_chatbot_scripts.html.twig' %}
+    {% endif %}
 </body>
 </html>

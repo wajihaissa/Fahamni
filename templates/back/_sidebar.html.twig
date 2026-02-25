@@ -1,213 +1,4 @@
 <aside class="sidebar">
-    <style>
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: var(--sidebar-width, 280px);
-            height: 100vh;
-            background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%);
-            color: #fff;
-            box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25);
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width, 280px);
-            min-height: 100vh;
-        }
-
-        .sidebar-header {
-            padding: 1rem 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            margin-bottom: 6px;
-        }
-
-        .sidebar .logo h2 {
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0 0 4px 8px;
-            letter-spacing: 0.3px;
-        }
-
-        .sidebar .logo .brand-sub {
-            color: rgba(255,255,255,0.75);
-            font-size: 12px;
-            margin-left: 8px;
-        }
-
-        .admin-profile {
-            padding: 12px 8px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-
-        .admin-info h4 {
-            color: #fff;
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .admin-info p {
-            color: rgba(255,255,255,0.65);
-            margin: 2px 0 0 0;
-            font-size: 12px;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-            padding: 6px;
-            margin: 6px 0;
-        }
-
-        .sidebar-nav li {
-            margin: 6px 0;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            color: rgba(255,255,255,0.86);
-            text-decoration: none;
-            border-radius: 10px;
-            position: relative;
-            transition: background 0.18s ease, transform 0.12s ease;
-        }
-
-        .sidebar-nav a i {
-            width: 26px;
-            text-align: center;
-            font-size: 14px;
-            color: inherit;
-        }
-
-        .sidebar-nav a .label {
-            font-size: 14px;
-        }
-
-        .sidebar-nav a:hover {
-            background: rgba(255,255,255,0.04);
-            color: #fff;
-            transform: translateX(3px);
-        }
-
-        .sidebar-nav li.active > a {
-            background: transparent;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .sidebar-nav li.active > a::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            bottom: 8px;
-            width: 6px;
-            border-radius: 6px;
-            background: var(--primary-gradient);
-            box-shadow: 0 8px 20px rgba(108,92,231,0.12);
-        }
-
-        .sidebar-nav li.active > a .label {
-            margin-left: 6px;
-        }
-
-        .sidebar-nav .sidebar-dropdown details > summary {
-            list-style: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 12px;
-            color: rgba(255,255,255,0.86);
-            border-radius: 10px;
-            cursor: pointer;
-            position: relative;
-            transition: background 0.18s ease, transform 0.12s ease;
-        }
-
-        .sidebar-nav .sidebar-dropdown details > summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .sidebar-nav .sidebar-dropdown details > summary:hover {
-            background: rgba(255,255,255,0.04);
-            color: #fff;
-            transform: translateX(3px);
-        }
-
-        .sidebar-nav .sidebar-dropdown.active details > summary {
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .sidebar-nav .sidebar-dropdown.active details > summary::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            bottom: 8px;
-            width: 6px;
-            border-radius: 6px;
-            background: var(--primary-gradient);
-            box-shadow: 0 8px 20px rgba(108,92,231,0.12);
-        }
-
-        .sidebar-nav .sidebar-dropdown.active details > summary .label {
-            margin-left: 6px;
-        }
-
-        .sidebar-nav .sidebar-dropdown .sidebar-dropdown-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-nav .sidebar-dropdown .sidebar-chevron {
-            font-size: 12px;
-            transition: transform 0.2s ease;
-        }
-
-        .sidebar-nav .sidebar-dropdown details[open] .sidebar-chevron {
-            transform: rotate(180deg);
-        }
-
-        .sidebar-nav .sidebar-submenu {
-            list-style: none;
-            margin: 4px 0 0 0;
-            padding: 0 0 0 18px;
-        }
-
-        .sidebar-nav .sidebar-submenu li {
-            margin: 4px 0;
-        }
-
-        .sidebar-nav .sidebar-submenu a {
-            padding: 8px 10px;
-            gap: 10px;
-        }
-
-        .sidebar-nav .sidebar-submenu a i {
-            width: 20px;
-            font-size: 12px;
-        }
-
-        .sidebar-nav .sidebar-submenu li.active a {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .sidebar-nav .sidebar-submenu li.active a::before {
-            content: none;
-        }
-    </style>
-
     <div class="sidebar-header">
         <div class="logo">
             <h2>FAHIMNI</h2>
@@ -232,43 +23,40 @@
     </div>
 
     {% set current_route = app.request.get('_route') ?? '' %}
-    {% set revision_filter = app.request.query.get('revision') ?? '' %}
-    {% set is_seance_route = current_route starts with 'admin_seance_' or (current_route starts with 'app_seance_revision' and revision_filter != 'reservation') %}
-    {% set is_reservation_route = current_route starts with 'admin_revision_' or (current_route starts with 'app_seance_revision' and revision_filter == 'reservation') %}
-    {% set is_statistique_route = current_route starts with 'admin_statistique_' %}
-    {% set is_revision_route = is_seance_route or is_reservation_route or is_statistique_route %}
     <ul class="sidebar-nav">
-        <li class="{% if current_route == 'admin_dashboard' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}#dashboard"><i class="fas fa-tachometer-alt"></i><span class="label">Dashboard</span></a></li>
-        <li class="{% if current_route starts with 'admin_users_' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}#users"><i class="fas fa-users"></i><span class="label">Users</span></a></li>
-        <li class="{% if current_route starts with 'admin_messenger_' %}active{% endif %}"><a href="{{ path('admin_messenger_index') }}"><i class="fas fa-comments"></i><span class="label">Messagerie</span></a></li>
-        <li class="sidebar-dropdown {% if is_revision_route %}active{% endif %}">
-            <details {% if is_revision_route %}open{% endif %}>
-                <summary>
-                    <span class="sidebar-dropdown-label">
-                        <i class="fas fa-book-open"></i>
-                        <span class="label">R&eacute;vision</span>
-                    </span>
-                    <i class="fas fa-chevron-down sidebar-chevron"></i>
-                </summary>
-                <ul class="sidebar-submenu">
-                    <li class="{% if is_seance_route %}active{% endif %}">
-                        <a href="{{ path('admin_seance_index') }}">
-                            <i class="fas fa-calendar-check"></i>
-                            <span class="label">S&eacute;ances</span>
-                        </a>
-                    </li>
-                    <li class="{% if is_statistique_route %}active{% endif %}">
-                        <a href="{{ path('admin_statistique_index') }}">
-                            <i class="fas fa-chart-pie"></i>
-                            <span class="label">Statistique</span>
-                        </a>
-                    </li>
-                </ul>
-            </details>
+        <li class="{% if current_route == 'admin_dashboard' %}active{% endif %}"><a href="{{ path('admin_dashboard') }}"><i class="fas fa-tachometer-alt"></i><span class="label">Dashboard</span></a></li>
+        <li class="{% if current_route starts with 'admin_users_' %}active{% endif %}"><a href="{{ path('admin_users_index') }}"><i class="fas fa-users"></i><span class="label">Users</span></a></li>
+        <li class="sidebar-dropdown {% if current_route starts with 'admin_messenger_' %}open{% endif %}">
+            <a href="javascript:void(0)" class="sidebar-dropdown-toggle"><i class="fas fa-comments"></i><span class="label">Messagerie</span><i class="fas fa-chevron-down sidebar-dropdown-arrow"></i></a>
+            <ul class="sidebar-subnav">
+                <li class="{% if current_route == 'admin_messenger_index' %}active{% endif %}"><a href="{{ path('admin_messenger_index') }}"><i class="fas fa-chart-pie"></i><span class="label">Statistics</span></a></li>
+                <li class="{% if current_route == 'admin_messenger_conversations' %}active{% endif %}"><a href="{{ path('admin_messenger_conversations') }}"><i class="fas fa-comments"></i><span class="label">Conversations</span></a></li>
+                <li class="{% if current_route == 'admin_messenger_alerts' %}active{% endif %}"><a href="{{ path('admin_messenger_alerts') }}"><i class="fas fa-bell"></i><span class="label">Alertes</span></a></li>
+            </ul>
         </li>
         <li class="{% if current_route == 'admin_articles' %}active{% endif %}"><a href="{{ path('admin_articles') }}"><i class="fas fa-newspaper"></i><span class="label">Articles</span></a></li>
         <li class="{% if current_route starts with 'admin_quiz_' %}active{% endif %}"><a href="{{ path('admin_quiz_list') }}"><i class="fas fa-question-circle"></i><span class="label">Quiz</span></a></li>
         <li class="{% if current_route == 'admin_statistics' %}active{% endif %}"><a href="{{ path('admin_statistics') }}"><i class="fas fa-chart-bar"></i><span class="label">Statistics</span></a></li>
+        <li><a href="{{ path('app_home') }}"><i class="fas fa-home"></i><span class="label">User Space</span></a></li>
         <li><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i><span class="label">Logout</span></a></li>
     </ul>
+    <style>
+        .sidebar-dropdown { position: relative; }
+        .sidebar-dropdown .sidebar-dropdown-toggle { justify-content: space-between; }
+        .sidebar-dropdown .sidebar-dropdown-arrow { font-size: 12px; transition: transform 0.2s ease; margin-left: auto; }
+        .sidebar-dropdown.open .sidebar-dropdown-arrow { transform: rotate(180deg); }
+        .sidebar-dropdown.open .sidebar-subnav { display: block; }
+        .sidebar-dropdown.open .sidebar-dropdown-arrow { transform: rotate(180deg); }
+        .sidebar-subnav { list-style: none; padding: 4px 0 4px 0; margin: 0; display: none; }
+        .sidebar-subnav li { margin: 0; }
+        .sidebar-subnav a { padding-left: 50px; font-size: 13px; color: rgba(255,255,255,0.75); }
+        .sidebar-subnav a:hover { color: #fff; }
+        .sidebar-subnav li.active a { background: rgba(255,255,255,0.04); color: #fff; font-weight: 600; }
+    </style>
+    <script>
+        document.querySelectorAll('.sidebar-dropdown-toggle').forEach(function(btn) {
+            btn.addEventListener('click', function(e) { e.preventDefault(); this.closest('.sidebar-dropdown').classList.toggle('open'); });
+        });
+        document.querySelectorAll('.sidebar-dropdown.open').forEach(function(li) { li.classList.add('open'); });
+    </script>
 </aside>

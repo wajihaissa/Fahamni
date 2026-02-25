@@ -25,7 +25,7 @@
                         <label class="transfer-contact" data-name="{{ (conv.title ?? (other ? other.FullName : ''))|lower }}" data-email="{{ (other ? other.email : '')|lower }}">
                             <span class="transfer-contact-avatar">{{ other ? (other.FullName|slice(0,2)|upper) : '?' }}</span>
                             <span class="transfer-contact-info">
-                                <span class="transfer-contact-name">{{ conv.title ?? (other ? other.FullName : 'Conversation') }}</span>
+                                <span class="transfer-contact-name">{{ conv.title ?? (other ? other.FullName : 'Conversation') }}{% if conv.isArchived %}<span class="transfer-archived-badge"> (archivée)</span>{% endif %}</span>
                                 <span class="transfer-contact-username">{{ other ? other.email : '' }}</span>
                             </span>
                             <input type="radio" name="transfer_target" value="{{ conv.id }}" class="transfer-contact-radio">

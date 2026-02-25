@@ -3,20 +3,28 @@
 namespace App\Controller;
 
 use App\Entity\Conversation;
+use App\Entity\ConversationReport;
 use App\Entity\Message;
+use App\Entity\MessageReport;
+use App\Entity\MessageAttachment;
 use App\Entity\MessageReaction;
 use App\Entity\User;
 use App\Repository\ConversationReportRepository;
 use App\Repository\ConversationRepository;
+use App\Repository\MessageAttachmentRepository;
+use App\Repository\MessageReportRepository;
 use App\Repository\MessageReactionRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\ConversationSummaryService;
 use App\Service\MessengerActorResolver;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/messenger')]
@@ -28,9 +36,12 @@ class MessengerController extends AbstractController
         private readonly MessengerActorResolver $actorResolver,
         private readonly ConversationRepository $conversationRepository,
         private readonly ConversationReportRepository $conversationReportRepository,
+        private readonly MessageReportRepository $messageReportRepository,
         private readonly MessageRepository $messageRepository,
         private readonly MessageReactionRepository $reactionRepository,
+        private readonly MessageAttachmentRepository $messageAttachmentRepository,
         private readonly UserRepository $userRepository,
+        private readonly ConversationSummaryService $conversationSummaryService,
     ) {
     }
 
@@ -57,6 +68,36 @@ class MessengerController extends AbstractController
     }
 
     /**
+     * Contenu HTML de la liste des conversations (colonne gauche page Messenger) pour mise à jour AJAX.
+     * GET ?archived=1 pour les archivées, ?current=ID pour marquer la conversation active.
+     */
+    #[Route('/threads-list-content', name: 'app_messenger_threads_list_content', methods: ['GET'])]
+    public function threadsListContent(Request $request): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return new Response('', 401);
+        }
+        $showArchived = $request->query->getBoolean('archived');
+        $currentId = $request->query->getInt('current', 0);
+        $conversations = $this->conversationRepository->findByParticipant($actor, false, false, null, $showArchived);
+        $currentConversation = null;
+        if ($currentId > 0) {
+            foreach ($conversations as $c) {
+                if ($c->getId() === $currentId) {
+                    $currentConversation = $c;
+                    break;
+                }
+            }
+        }
+        return $this->render('front/messenger/_threads_list_content.html.twig', [
+            'conversations' => $conversations,
+            'actor' => $actor,
+            'current_conversation' => $currentConversation,
+        ]);
+    }
+
+    /**
      * Liste des conversations signalées par l'utilisateur connecté (tous les utilisateurs).
      */
     #[Route('/reported', name: 'app_messenger_reported_conversations', methods: ['GET'])]
@@ -71,6 +112,152 @@ class MessengerController extends AbstractController
             'actor' => $actor,
             'reports' => $reports,
         ]);
+    }
+
+    /**
+     * Signaler une conversation. POST attend un champ "reason" (optionnel). Retourne JSON en AJAX.
+     */
+    /**
+     * Résumé de la conversation.
+     * GET : retourne le résumé en cache s'il existe (ok, summary, cached: true/false).
+     * POST : génère un nouveau résumé via Gemini, le sauvegarde et le retourne.
+     */
+    #[Route('/{id}/summary', name: 'app_messenger_summary', requirements: ['id' => '\d+'], methods: ['POST', 'GET'])]
+    public function conversationSummary(Request $request, int $id): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return $this->json(['ok' => false, 'error' => 'Non autorisé'], 401);
+        }
+        $conversation = $this->conversationRepository->findOneByParticipant($id, $actor);
+        if (!$conversation) {
+            return $this->json(['ok' => false, 'error' => 'Conversation introuvable.'], 404);
+        }
+
+        if ($request->isMethod('GET')) {
+            return $this->json([
+                'ok' => true,
+                'summary' => null,
+                'cached' => false,
+            ]);
+        }
+
+        try {
+            $summary = $this->conversationSummaryService->generateSummary($conversation);
+            return $this->json(['ok' => true, 'summary' => $summary, 'cached' => false]);
+        } catch (\Throwable $e) {
+            $code = $e->getCode();
+            $isQuota = ($code === 429 || str_contains($e->getMessage(), 'quota') || str_contains($e->getMessage(), '429'));
+            $errorMessage = $isQuota
+                ? 'Quota d\'utilisation de l\'API Gemini atteint. Réessayez dans 1 à 2 minutes, ou consultez votre plan et facturation sur Google AI Studio.'
+                : 'Impossible de générer le résumé. Réessayez plus tard.';
+            return $this->json([
+                'ok' => false,
+                'error' => $errorMessage,
+                'debug' => $e->getMessage(),
+            ], $code >= 400 && $code < 600 ? (int) $code : 500);
+        }
+    }
+
+    #[Route('/{id}/report', name: 'app_messenger_report_conversation', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function reportConversation(Request $request, int $id): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Non autorisé'], 401);
+            }
+            return $this->redirectToRoute('app_login');
+        }
+        $conversation = $this->conversationRepository->findOneByParticipant($id, $actor);
+        if (!$conversation) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Conversation introuvable'], 404);
+            }
+            $this->addFlash('error', 'Conversation introuvable.');
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $existing = $this->conversationReportRepository->findOneByConversationAndReportedBy($conversation, $actor);
+        if ($existing) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Vous avez déjà signalé cette conversation.']);
+            }
+            $this->addFlash('warning', 'Vous avez déjà signalé cette conversation.');
+            return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+        }
+        $reason = trim((string) ($request->request->get('reason') ?? ''));
+        $report = new ConversationReport();
+        $report->setConversation($conversation);
+        $report->setReportedBy($actor);
+        $report->setReason($reason !== '' ? $reason : null);
+        $report->setCreatedAt(new \DateTimeImmutable());
+        $this->em->persist($report);
+        $this->em->flush();
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['ok' => true, 'message' => 'Conversation signalée. Merci pour votre retour.']);
+        }
+        $this->addFlash('success', 'Conversation signalée. Merci pour votre retour.');
+        return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+    }
+
+    /**
+     * Signaler un message. POST attend un champ "reason" (optionnel). Retourne JSON en AJAX.
+     */
+    #[Route('/{convId}/message/{messageId}/report', name: 'app_messenger_report_message', requirements: ['convId' => '\d+', 'messageId' => '\d+'], methods: ['POST'])]
+    public function reportMessage(Request $request, int $convId, int $messageId): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Non autorisé'], 401);
+            }
+            return $this->redirectToRoute('app_login');
+        }
+        $conversation = $this->conversationRepository->findOneByParticipant($convId, $actor);
+        if (!$conversation) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Conversation introuvable'], 404);
+            }
+            $this->addFlash('error', 'Conversation introuvable.');
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $message = $this->messageRepository->findOneByConversationAndId($conversation, $messageId);
+        if (!$message) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Message introuvable'], 404);
+            }
+            $this->addFlash('error', 'Message introuvable.');
+            return $this->redirectToRoute('app_messenger_show', ['id' => $convId]);
+        }
+        $existing = $this->messageReportRepository->findOneByMessageAndReportedBy($message, $actor);
+        if ($existing) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Vous avez déjà signalé ce message.']);
+            }
+            $this->addFlash('warning', 'Vous avez déjà signalé ce message.');
+            return $this->redirectToRoute('app_messenger_show', ['id' => $convId]);
+        }
+        $token = (string) ($request->request->get('_token') ?? '');
+        if (!$this->isCsrfTokenValid('report_msg_conv_' . $convId, $token)) {
+            if ($request->isXmlHttpRequest()) {
+                return $this->json(['ok' => false, 'error' => 'Jeton de sécurité invalide.'], 400);
+            }
+            $this->addFlash('error', 'Jeton de sécurité invalide.');
+            return $this->redirectToRoute('app_messenger_show', ['id' => $convId]);
+        }
+        $reason = trim((string) ($request->request->get('reason') ?? ''));
+        $report = new MessageReport();
+        $report->setMessage($message);
+        $report->setReportedBy($actor);
+        $report->setReason($reason !== '' ? $reason : null);
+        $report->setCreatedAt(new \DateTimeImmutable());
+        $this->em->persist($report);
+        $this->em->flush();
+        if ($request->isXmlHttpRequest()) {
+            return $this->json(['ok' => true, 'message' => 'Message signalé. Merci pour votre retour.']);
+        }
+        $this->addFlash('success', 'Message signalé. Merci pour votre retour.');
+        return $this->redirectToRoute('app_messenger_show', ['id' => $convId]);
     }
 
     #[Route('', name: 'app_messenger_index', methods: ['GET'])]
@@ -183,20 +370,18 @@ class MessengerController extends AbstractController
         return $this->json(['results' => $results]);
     }
 
-    #[Route('/{id}', name: 'app_messenger_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id): Response
+    #[Route('/{id}/float-content', name: 'app_messenger_float_content', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function floatContent(int $id): Response
     {
         $actor = $this->getActor();
         if ($actor === null) {
-            return $this->redirectToRoute('app_messenger_index');
+            return $this->json(['error' => 'Non autorisé'], 401);
         }
         $conversation = $this->conversationRepository->findOneByParticipant($id, $actor);
         if (!$conversation) {
-            $this->addFlash('error', 'Conversation introuvable.');
-            return $this->redirectToRoute('app_messenger_index');
+            return $this->json(['error' => 'Conversation introuvable'], 404);
         }
         $messages = $this->messageRepository->findByConversation($conversation);
-        $conversations = $this->conversationRepository->findByParticipant($actor, true, false);
         $other = null;
         foreach ($conversation->getParticipants() as $p) {
             if ($p->getId() !== $actor->getId()) {
@@ -212,6 +397,49 @@ class MessengerController extends AbstractController
                 $otherDisplayName = $currentNickname;
             }
         }
+        return $this->render('front/messenger/_float_conversation.html.twig', [
+            'actor' => $actor,
+            'current_conversation' => $conversation,
+            'messages' => $messages,
+            'other' => $other,
+            'other_display_name' => $otherDisplayName,
+            'current_nickname' => $currentNickname,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_messenger_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(int $id): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $conversation = $this->conversationRepository->findOneByParticipant($id, $actor);
+        if (!$conversation) {
+            $this->addFlash('error', 'Conversation introuvable.');
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $messages = $this->messageRepository->findByConversation($conversation);
+        $showArchived = $conversation->isArchived();
+        $conversations = $this->conversationRepository->findByParticipant($actor, false, false, null, $showArchived);
+        $other = null;
+        foreach ($conversation->getParticipants() as $p) {
+            if ($p->getId() !== $actor->getId()) {
+                $other = $p;
+                break;
+            }
+        }
+        $otherDisplayName = $other ? $other->getFullName() : 'Conversation';
+        $currentNickname = null;
+        if ($other) {
+            $currentNickname = $actor->getConversationNickname($conversation->getId(), $other->getId());
+            if ($currentNickname !== null) {
+                $otherDisplayName = $currentNickname;
+            }
+        }
+        $conversationAlreadyReported = $this->conversationReportRepository->findOneByConversationAndReportedBy($conversation, $actor) !== null;
+        $messageReportedIds = $this->messageReportRepository->findReportedMessageIdsByUserInConversation($actor, $conversation);
+        $attachmentInlineSrcs = $this->buildInlineImageDataUrls($messages, $this->getParameter('kernel.project_dir'));
         return $this->render('front/messenger/messages.html.twig', [
             'actor' => $actor,
             'conversations' => $conversations,
@@ -220,7 +448,10 @@ class MessengerController extends AbstractController
             'other' => $other,
             'other_display_name' => $otherDisplayName,
             'current_nickname' => $currentNickname,
-            'show_archived' => false,
+            'show_archived' => $showArchived,
+            'conversation_already_reported' => $conversationAlreadyReported,
+            'message_reported_ids' => $messageReportedIds,
+            'attachment_inline_srcs' => $attachmentInlineSrcs,
         ]);
     }
 
@@ -299,6 +530,10 @@ class MessengerController extends AbstractController
             $this->addFlash('error', 'Utilisateur invalide.');
             return $this->redirectToRoute('app_messenger_index');
         }
+        $existingConversation = $this->conversationRepository->findPrivateConversationBetween($actor, $other);
+        if ($existingConversation !== null) {
+            return $this->redirectToRoute('app_messenger_show', ['id' => $existingConversation->getId()]);
+        }
         $showArchived = $request->query->getBoolean('archived');
         $conversations = $this->conversationRepository->findByParticipant($actor, false, false, null, $showArchived);
         return $this->render('front/messenger/messages.html.twig', [
@@ -328,9 +563,13 @@ class MessengerController extends AbstractController
             return $this->redirectToRoute('app_messenger_index');
         }
         $content = trim((string) ($request->request->get('content') ?? ''));
-        if ($content === '') {
+        $uploadedFiles = $this->getUploadedAttachments($request);
+        if ($content === '' && $uploadedFiles === []) {
             $this->addFlash('warning', 'Le message ne peut pas être vide.');
             return $this->redirectToRoute('app_messenger_compose', ['with' => $other->getId()]);
+        }
+        if ($content === '') {
+            $content = ' '; // pièces jointes seules
         }
         $conversation = $this->conversationRepository->findPrivateConversationBetween($actor, $other);
         if (!$conversation) {
@@ -353,6 +592,11 @@ class MessengerController extends AbstractController
         $conversation->setLastMessageAt(new \DateTimeImmutable());
         $conversation->setUpdetedAt(new \DateTimeImmutable());
         $this->em->persist($message);
+        $uploadError = $this->processAttachments($message, $uploadedFiles);
+        if ($uploadError !== null) {
+            $this->addFlash('warning', $uploadError);
+            return $this->redirectToRoute('app_messenger_compose', ['with' => $other->getId()]);
+        }
         $this->em->flush();
         $this->addFlash('success', 'Message envoyé.');
         return $this->redirectToRoute('app_messenger_show', ['id' => $conversation->getId()]);
@@ -379,6 +623,13 @@ class MessengerController extends AbstractController
             ]);
         }
         // Ne plus créer la conversation ici : rediriger vers compose (création à l’envoi du premier message)
+        $other = $this->userRepository->find((int) $withId);
+        if ($other instanceof User && $other->getId() !== $actor->getId()) {
+            $existingConversation = $this->conversationRepository->findPrivateConversationBetween($actor, $other);
+            if ($existingConversation !== null) {
+                return $this->redirectToRoute('app_messenger_show', ['id' => $existingConversation->getId()]);
+            }
+        }
         return $this->redirectToRoute('app_messenger_compose', ['with' => (int) $withId]);
     }
 
@@ -493,9 +744,13 @@ class MessengerController extends AbstractController
             return $this->redirectToRoute('app_messenger_index');
         }
         $content = trim((string) ($request->request->get('content') ?? ''));
-        if ($content === '') {
+        $uploadedFiles = $this->getUploadedAttachments($request);
+        if ($content === '' && $uploadedFiles === []) {
             $this->addFlash('warning', 'Le message ne peut pas être vide.');
             return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+        }
+        if ($content === '') {
+            $content = ' '; // pièces jointes seules
         }
         $message = new Message();
         $message->setContent($content);
@@ -514,9 +769,79 @@ class MessengerController extends AbstractController
         $conversation->setLastMessageAt(new \DateTimeImmutable());
         $conversation->setUpdetedAt(new \DateTimeImmutable());
         $this->em->persist($message);
+        $uploadError = $this->processAttachments($message, $uploadedFiles);
+        if ($uploadError !== null) {
+            $this->addFlash('warning', $uploadError);
+            return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+        }
         $this->em->flush();
         $this->addFlash('success', 'Message envoyé.');
         return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+    }
+
+    /**
+     * Téléchargement d'une pièce jointe : réservé aux participants de la conversation.
+     */
+    #[Route('/attachment/{id}', name: 'app_messenger_attachment', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function downloadAttachment(int $id): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return $this->redirectToRoute('app_login');
+        }
+        $attachment = $this->messageAttachmentRepository->find($id);
+        if (!$attachment instanceof MessageAttachment) {
+            $this->addFlash('error', 'Pièce jointe introuvable.');
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $message = $attachment->getMessage();
+        $conversation = $message?->getConversation();
+        if (!$conversation || !$this->conversationRepository->findOneByParticipant($conversation->getId(), $actor)) {
+            $this->addFlash('error', 'Accès refusé.');
+            return $this->redirectToRoute('app_messenger_index');
+        }
+        $path = $this->getParameter('kernel.project_dir') . '/public/uploads/messenger/' . $attachment->getFileName();
+        if (!is_file($path)) {
+            $this->addFlash('error', 'Fichier introuvable.');
+            return $this->redirectToRoute('app_messenger_show', ['id' => $conversation->getId()]);
+        }
+        $response = new StreamedResponse(static function () use ($path) {
+            $handle = fopen($path, 'rb');
+            if ($handle) {
+                while (!feof($handle)) {
+                    echo fread($handle, 8192);
+                    flush();
+                }
+                fclose($handle);
+            }
+        });
+        $response->headers->set('Content-Type', $attachment->getMimeType() ?? 'application/octet-stream');
+        $response->headers->set('Content-Disposition', 'inline; filename="' . addslashes($attachment->getOriginalName() ?? 'attachment') . '"');
+        return $response;
+    }
+
+    /**
+     * Fragment HTML du formulaire d'édition (pour le widget flottant).
+     */
+    #[Route('/{convId}/message/{messageId}/edit-form', name: 'app_messenger_edit_message_form', requirements: ['convId' => '\d+', 'messageId' => '\d+'], methods: ['GET'])]
+    public function editMessageForm(int $convId, int $messageId): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return new Response('', 401);
+        }
+        $conversation = $this->conversationRepository->findOneByParticipant($convId, $actor);
+        if (!$conversation) {
+            return new Response('', 404);
+        }
+        $message = $this->messageRepository->findOneByConversationAndId($conversation, $messageId);
+        if (!$message || $message->getSender()?->getId() !== $actor->getId()) {
+            return new Response('', 404);
+        }
+        return $this->render('front/messenger/_edit_message_form.html.twig', [
+            'current_conversation' => $conversation,
+            'editing_message' => $message,
+        ]);
     }
 
     #[Route('/{convId}/message/{messageId}/edit', name: 'app_messenger_edit_message', requirements: ['convId' => '\d+', 'messageId' => '\d+'], methods: ['GET', 'POST'])]
@@ -563,6 +888,7 @@ class MessengerController extends AbstractController
                 $otherDisplayName = $currentNickname;
             }
         }
+        $attachmentInlineSrcs = $this->buildInlineImageDataUrls($messages, $this->getParameter('kernel.project_dir'));
         return $this->render('front/messenger/messages.html.twig', [
             'actor' => $actor,
             'conversations' => $conversations,
@@ -573,6 +899,7 @@ class MessengerController extends AbstractController
             'current_nickname' => $currentNickname,
             'editing_message' => $message,
             'show_archived' => false,
+            'attachment_inline_srcs' => $attachmentInlineSrcs,
         ]);
     }
 
@@ -624,6 +951,35 @@ class MessengerController extends AbstractController
             return $this->redirect($referer);
         }
         return $this->redirectToRoute('app_messenger_show', ['id' => $id]);
+    }
+
+    /**
+     * Contenu HTML du modal de transfert (pour le mode réduit / widget flottant).
+     * GET ?exclude=ID pour exclure la conversation ID de la liste.
+     */
+    #[Route('/transfer-modal-content', name: 'app_messenger_transfer_modal_content', methods: ['GET'])]
+    public function transferModalContent(Request $request): Response
+    {
+        $actor = $this->getActor();
+        if ($actor === null) {
+            return new Response('', 401);
+        }
+        $excludeId = $request->query->getInt('exclude', 0);
+        $conversations = $this->conversationRepository->findByParticipant($actor, true, false, null, false);
+        $currentConversation = null;
+        if ($excludeId > 0) {
+            foreach ($conversations as $c) {
+                if ($c->getId() === $excludeId) {
+                    $currentConversation = $c;
+                    break;
+                }
+            }
+        }
+        return $this->render('front/messenger/_transfer_modal.html.twig', [
+            'conversations' => $conversations,
+            'current_conversation' => $currentConversation,
+            'actor' => $actor,
+        ]);
     }
 
     #[Route('/forward', name: 'app_messenger_forward_message', methods: ['POST'])]
@@ -810,5 +1166,104 @@ class MessengerController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', 'Réaction supprimée.');
         return $this->redirectToRoute('app_messenger_show', ['id' => $convId]);
+    }
+
+    private const MAX_ATTACHMENTS = 5;
+    private const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+    private const ALLOWED_MIME_TYPES = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    /** @return list<UploadedFile> */
+    private function getUploadedAttachments(Request $request): array
+    {
+        $files = $request->files->all('attachments');
+        if (!\is_array($files)) {
+            $one = $request->files->get('attachments');
+            return $one instanceof UploadedFile ? [$one] : [];
+        }
+        $list = [];
+        foreach ($files as $f) {
+            if ($f instanceof UploadedFile) {
+                $list[] = $f;
+            }
+        }
+        return $list;
+    }
+
+    /**
+     * Crée les MessageAttachment et les attache au message. Retourne un message d'erreur ou null.
+     */
+    private function processAttachments(Message $message, array $uploadedFiles): ?string
+    {
+        if ($uploadedFiles === []) {
+            return null;
+        }
+        if (\count($uploadedFiles) > self::MAX_ATTACHMENTS) {
+            return sprintf('Maximum %d pièce(s) jointe(s) autorisée(s).', self::MAX_ATTACHMENTS);
+        }
+        foreach ($uploadedFiles as $file) {
+            if (!$file instanceof UploadedFile || !$file->isValid()) {
+                return 'Un fichier est invalide ou trop volumineux.';
+            }
+            if ($file->getSize() > self::MAX_FILE_SIZE) {
+                return 'Un fichier dépasse la taille maximale (10 Mo).';
+            }
+            $mime = $file->getMimeType();
+            if ($mime === null || !\in_array($mime, self::ALLOWED_MIME_TYPES, true)) {
+                return 'Type de fichier non autorisé (images, PDF, Word uniquement).';
+            }
+            $attachment = new MessageAttachment();
+            $attachment->setMessage($message);
+            $attachment->setOriginalName($file->getClientOriginalName());
+            $attachment->setMimeType($mime);
+            $attachment->setSize($file->getSize());
+            $attachment->setAttachmentFile($file);
+            $message->addAttachment($attachment);
+            $this->em->persist($attachment);
+        }
+        return null;
+    }
+
+    /**
+     * Construit une map [ attachmentId => dataUrl ] pour les images de la conversation.
+     * Inline dans le HTML = affichage immédiat sans requête. Limité en taille (200 Ko) et nombre (30).
+     *
+     * @param Message[] $messages
+     * @return array<int, string>
+     */
+    private function buildInlineImageDataUrls(array $messages, string $projectDir, int $maxSize = 200000, int $maxCount = 30): array
+    {
+        $basePath = $projectDir . '/public/uploads/messenger/';
+        $result = [];
+        $count = 0;
+        foreach ($messages as $message) {
+            foreach ($message->getAttachments() as $att) {
+                if ($count >= $maxCount) {
+                    return $result;
+                }
+                if (!$att->isImage() || $att->getFileName() === null) {
+                    continue;
+                }
+                $size = $att->getSize() ?? 0;
+                if ($size > $maxSize) {
+                    continue;
+                }
+                $path = $basePath . $att->getFileName();
+                if (!is_file($path) || !is_readable($path)) {
+                    continue;
+                }
+                $data = @file_get_contents($path);
+                if ($data === false) {
+                    continue;
+                }
+                $mime = $att->getMimeType() ?? 'image/jpeg';
+                $result[$att->getId()] = 'data:' . $mime . ';base64,' . base64_encode($data);
+                $count++;
+            }
+        }
+        return $result;
     }
 }
