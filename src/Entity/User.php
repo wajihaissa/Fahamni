@@ -59,6 +59,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?int $passkeySignCount = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $faceIdEnabled = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $faceIdToken = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $faceIdEnrolledAt = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $avatarPath = null;
 
@@ -333,6 +342,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAvatarPath(?string $avatarPath): static
     {
         $this->avatarPath = $avatarPath;
+
+        return $this;
+    }
+
+    public function isFaceIdEnabled(): bool
+    {
+        return $this->faceIdEnabled;
+    }
+
+    public function setFaceIdEnabled(bool $faceIdEnabled): static
+    {
+        $this->faceIdEnabled = $faceIdEnabled;
+
+        return $this;
+    }
+
+    public function getFaceIdToken(): ?string
+    {
+        return $this->faceIdToken;
+    }
+
+    public function setFaceIdToken(?string $faceIdToken): static
+    {
+        $this->faceIdToken = $faceIdToken;
+
+        return $this;
+    }
+
+    public function getFaceIdEnrolledAt(): ?\DateTimeImmutable
+    {
+        return $this->faceIdEnrolledAt;
+    }
+
+    public function setFaceIdEnrolledAt(?\DateTimeImmutable $faceIdEnrolledAt): static
+    {
+        $this->faceIdEnrolledAt = $faceIdEnrolledAt;
 
         return $this;
     }

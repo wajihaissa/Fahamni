@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Student;
 use App\Entity\User;
+use App\Service\FacePlusPlusService;
 use App\Service\TwoFactorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -443,6 +444,153 @@ final class AuthController extends AbstractController
         ]);
     }
 
+    #[Route('/face/enroll', name: 'app_face_enroll', methods: ['POST'])]
+    public function faceEnroll(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher,
+        FacePlusPlusService $faceService
+    ): JsonResponse {
+        if (!$faceService->isConfigured()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Face ID provider is not configured on server.',
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        $email = trim((string) $request->request->get('email', ''));
+        $password = (string) $request->request->get('password', '');
+
+        if ($email === '' || $password === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Email and password are required to enroll Face ID.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        if (!$user instanceof User || !$passwordHasher->isPasswordValid($user, $password)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid email or password.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if (!$user->isStatus()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Your account is not active.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $imageBase64 = $this->extractImageBase64FromRequest($request);
+        if ($imageBase64 === null) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'A selfie image is required (camera capture).',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $detect = $faceService->detectFaceToken($imageBase64);
+        if (($detect['success'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => (string) ($detect['message'] ?? 'Unable to detect face.'),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setFaceIdToken((string) $detect['faceToken']);
+        $user->setFaceIdEnabled(true);
+        $user->setFaceIdEnrolledAt(new \DateTimeImmutable());
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Face ID enrolled successfully.',
+        ]);
+    }
+
+    #[Route('/face/login', name: 'app_face_login', methods: ['POST'])]
+    public function faceLogin(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TokenStorageInterface $tokenStorage,
+        FacePlusPlusService $faceService
+    ): JsonResponse {
+        if (!$faceService->isConfigured()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Face ID provider is not configured on server.',
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        $email = trim((string) $request->request->get('email', ''));
+        if ($email === '') {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Email is required for Face ID login.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        if (
+            !$user instanceof User ||
+            !$user->isStatus() ||
+            !$user->isFaceIdEnabled() ||
+            !$user->getFaceIdToken()
+        ) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Face ID is not configured for this account.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $imageBase64 = $this->extractImageBase64FromRequest($request);
+        if ($imageBase64 === null) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'A selfie image is required (camera capture).',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $detect = $faceService->detectFaceToken($imageBase64);
+        if (($detect['success'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => (string) ($detect['message'] ?? 'Unable to detect face.'),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $compare = $faceService->compareFaces((string) $user->getFaceIdToken(), (string) $detect['faceToken']);
+        if (($compare['success'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => (string) ($compare['message'] ?? 'Face verification failed.'),
+            ], Response::HTTP_BAD_GATEWAY);
+        }
+
+        if (($compare['match'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Face does not match enrolled profile.',
+                'score' => (float) ($compare['score'] ?? 0.0),
+                'threshold' => (float) ($compare['threshold'] ?? 0.0),
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($user->isTwoFactorEnabled() && $user->getTwoFactorSecret()) {
+            return $this->startTwoFactorChallenge($request, $user);
+        }
+
+        $this->createLoginSession($request, $user, $tokenStorage);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Face login successful.',
+            'redirect' => $this->generateUrl('app_home'),
+        ]);
+    }
+
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
     public function register(
         Request $request,
@@ -742,8 +890,8 @@ final class AuthController extends AbstractController
         HttpClientInterface $httpClient
     ): Response {
         $session = $request->getSession();
-        $recaptchaSiteKey = (string) ($_ENV['RECAPTCHA_SITE_KEY'] ?? '');
-        $recaptchaSecretKey = (string) ($_ENV['RECAPTCHA_SECRET_KEY'] ?? '');
+        $recaptchaSiteKey = $this->getEnvValue('RECAPTCHA_SITE_KEY');
+        $recaptchaSecretKey = $this->getEnvValue('RECAPTCHA_SECRET_KEY');
 
         if ($request->isMethod('POST')) {
             $email = trim((string) $request->request->get('email', ''));
@@ -834,8 +982,8 @@ final class AuthController extends AbstractController
             $session->set(self::RESET_SESSION_PREFIX . 'email_mask', $this->maskEmail($email));
 
             if ($user instanceof User) {
-                $mailerDsn = (string) ($_ENV['MAILER_DSN'] ?? '');
-                $mailerFrom = (string) ($_ENV['MAILER_FROM'] ?? 'no-reply@fahamni.local');
+                $mailerDsn = $this->getEnvValue('MAILER_DSN');
+                $mailerFrom = $this->getEnvValue('MAILER_FROM', 'no-reply@fahamni.local');
                 $usesPlaceholderConfig = str_contains($mailerDsn, 'YOUR_EMAIL')
                     || str_contains($mailerDsn, 'YOUR_16_CHAR_APP_PASSWORD')
                     || str_contains($mailerFrom, 'YOUR_EMAIL');
@@ -1039,7 +1187,7 @@ final class AuthController extends AbstractController
     }
 
     /**
-     * @return array{id:int|null,email:?string,fullName:?string,roles:array,avatarPath:?string,twoFactorEnabled:bool}
+     * @return array{id:int|null,email:?string,fullName:?string,roles:array,avatarPath:?string,twoFactorEnabled:bool,faceIdEnabled:bool}
      */
     private function createLoginSession(Request $request, User $user, TokenStorageInterface $tokenStorage): array
     {
@@ -1051,6 +1199,7 @@ final class AuthController extends AbstractController
             'roles' => $user->getRoles(),
             'avatarPath' => method_exists($user, 'getAvatarPath') ? $user->getAvatarPath() : null,
             'twoFactorEnabled' => $user->isTwoFactorEnabled(),
+            'faceIdEnabled' => method_exists($user, 'isFaceIdEnabled') ? $user->isFaceIdEnabled() : false,
         ];
 
         $session->set('user', $userData);
@@ -1125,7 +1274,8 @@ final class AuthController extends AbstractController
 
     private function resolvePasskeyRpId(Request $request): ?string
     {
-        $configured = trim((string) ($_ENV['PASSKEY_RP_ID'] ?? ''));
+        $configured = $this->getEnvValue('PASSKEY_RP_ID');
+        $configured = trim($configured);
         $rpId = strtolower($configured !== '' ? $configured : (string) $request->getHost());
         $rpId = trim($rpId, " \t\n\r\0\x0B.");
 
@@ -1149,6 +1299,55 @@ final class AuthController extends AbstractController
         $masked = $visible . str_repeat('*', max(1, strlen($local) - strlen($visible)));
 
         return $masked . '@' . $domain;
+    }
+
+    private function getEnvValue(string $name, string $default = ''): string
+    {
+        $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
+        if ($value === false || $value === null) {
+            return $default;
+        }
+
+        $value = trim((string) $value);
+
+        return $value !== '' ? $value : $default;
+    }
+
+    private function extractImageBase64FromRequest(Request $request): ?string
+    {
+        $uploaded = $request->files->get('selfie');
+        if ($uploaded !== null && method_exists($uploaded, 'isValid') && $uploaded->isValid()) {
+            $size = (int) $uploaded->getSize();
+            if ($size <= 0 || $size > (4 * 1024 * 1024)) {
+                return null;
+            }
+
+            $binary = @file_get_contents((string) $uploaded->getPathname());
+            if ($binary === false || $binary === '') {
+                return null;
+            }
+
+            return base64_encode($binary);
+        }
+
+        $raw = trim((string) $request->request->get('imageBase64', ''));
+        if ($raw === '') {
+            return null;
+        }
+
+        if (str_starts_with($raw, 'data:image/')) {
+            $parts = explode(',', $raw, 2);
+            if (count($parts) === 2) {
+                $raw = $parts[1];
+            }
+        }
+
+        $decoded = base64_decode($raw, true);
+        if ($decoded === false || $decoded === '' || strlen($decoded) > (4 * 1024 * 1024)) {
+            return null;
+        }
+
+        return base64_encode($decoded);
     }
 }
 

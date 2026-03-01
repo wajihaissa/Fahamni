@@ -12,6 +12,9 @@ parameters:
     env(PLANNER_AI_MODEL): 'gpt-4o-mini'
     env(PLANNER_AI_API_BASE_URL): 'https://api.openai.com/v1'
     env(PLANNER_AI_TIMEOUT_SECONDS): '25'
+    env(FACEPP_API_KEY): ''
+    env(FACEPP_API_SECRET): ''
+    env(FACEPP_API_BASE_URL): 'https://api-us.faceplusplus.com'
 
 services:
     # default configuration for services in *this* file
@@ -71,6 +74,12 @@ services:
             $mistralApiKey: '%env(string:MISTRAL_API_KEY)%'
             $mistralApiUrl: '%mistral_api_url%'
             $mistralModel: '%mistral_model%'
+
+    App\Service\FacePlusPlusService:
+        arguments:
+            $apiKey: '%env(string:FACEPP_API_KEY)%'
+            $apiSecret: '%env(string:FACEPP_API_SECRET)%'
+            $apiBaseUrl: '%env(string:FACEPP_API_BASE_URL)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -40,6 +40,16 @@
                     </button>
                     <span class="error-message" id="passkeyError"></span>
 
+                    <button type="button" class="btn btn-secondary btn-full" id="faceScanLoginBtn" style="margin-top: 10px;">
+                        Sign In with Face Scan (AI)
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-full" id="faceScanEnrollBtn" style="margin-top: 10px;">
+                        Enroll Face Scan (requires password)
+                    </button>
+                    <span class="error-message" id="faceScanError"></span>
+                    <input type="file" id="faceScanLoginInput" accept="image/*" capture="user" style="display:none;">
+                    <input type="file" id="faceScanEnrollInput" accept="image/*" capture="user" style="display:none;">
+
                     <div class="form-group" id="twoFactorGroup" style="display:none; margin-top: 12px;">
                         <label for="twoFactorCode">2FA Code</label>
                         <input type="text" id="twoFactorCode" name="twoFactorCode" placeholder="Enter 6-digit code" autocomplete="one-time-code" inputmode="numeric">
@@ -89,6 +99,11 @@
             var passwordError = document.getElementById('passwordError');
             var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
             var passkeyError = document.getElementById('passkeyError');
+            var faceScanLoginBtn = document.getElementById('faceScanLoginBtn');
+            var faceScanEnrollBtn = document.getElementById('faceScanEnrollBtn');
+            var faceScanError = document.getElementById('faceScanError');
+            var faceScanLoginInput = document.getElementById('faceScanLoginInput');
+            var faceScanEnrollInput = document.getElementById('faceScanEnrollInput');
             var twoFactorGroup = document.getElementById('twoFactorGroup');
             var twoFactorCode = document.getElementById('twoFactorCode');
             var twoFactorError = document.getElementById('twoFactorError');
@@ -102,6 +117,8 @@
                 emailInput.disabled = true;
                 passwordInput.disabled = true;
                 if (passkeyLoginBtn) passkeyLoginBtn.disabled = true;
+                if (faceScanLoginBtn) faceScanLoginBtn.disabled = true;
+                if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = true;
                 var submitBtn = loginForm.querySelector('button[type="submit"]');
                 submitBtn.disabled = true;
                 twoFactorCode.focus();
@@ -353,6 +370,104 @@
                     } finally {
                         passkeyLoginBtn.textContent = originalText;
                         passkeyLoginBtn.disabled = false;
+                    }
+                });
+            }
+
+            async function uploadFaceImage(endpoint, selfieFile, includePassword) {
+                var email = emailInput.value.trim();
+                var password = passwordInput.value;
+
+                if (!email) {
+                    throw new Error('Enter your email first.');
+                }
+                if (includePassword && !password) {
+                    throw new Error('Enter your password to enroll Face Scan.');
+                }
+                if (!selfieFile) {
+                    throw new Error('Please capture a selfie image.');
+                }
+
+                var formData = new FormData();
+                formData.append('email', email);
+                if (includePassword) {
+                    formData.append('password', password);
+                }
+                formData.append('selfie', selfieFile);
+
+                var response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                var data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Face Scan request failed.');
+                }
+                return data;
+            }
+
+            if (faceScanLoginBtn && faceScanLoginInput) {
+                faceScanLoginBtn.addEventListener('click', function() {
+                    faceScanError.textContent = '';
+                    faceScanLoginInput.value = '';
+                    faceScanLoginInput.click();
+                });
+
+                faceScanLoginInput.addEventListener('change', async function() {
+                    var selfieFile = faceScanLoginInput.files && faceScanLoginInput.files[0] ? faceScanLoginInput.files[0] : null;
+                    if (!selfieFile) return;
+
+                    var originalLoginText = faceScanLoginBtn.textContent;
+                    faceScanLoginBtn.textContent = 'Verifying face...';
+                    faceScanLoginBtn.disabled = true;
+                    if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = true;
+
+                    try {
+                        var data = await uploadFaceImage('{{ path('app_face_login') }}', selfieFile, false);
+                        if (data.requires2fa) {
+                            enterTwoFactorMode(data.message || '2FA required');
+                            return;
+                        }
+                        window.location.href = data.redirect || '/home';
+                    } catch (err) {
+                        faceScanError.textContent = err.message || 'Face Scan login failed.';
+                    } finally {
+                        faceScanLoginBtn.textContent = originalLoginText;
+                        faceScanLoginBtn.disabled = false;
+                        if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = false;
+                    }
+                });
+            }
+
+            if (faceScanEnrollBtn && faceScanEnrollInput) {
+                faceScanEnrollBtn.addEventListener('click', function() {
+                    faceScanError.textContent = '';
+                    faceScanEnrollInput.value = '';
+                    faceScanEnrollInput.click();
+                });
+
+                faceScanEnrollInput.addEventListener('change', async function() {
+                    var selfieFile = faceScanEnrollInput.files && faceScanEnrollInput.files[0] ? faceScanEnrollInput.files[0] : null;
+                    if (!selfieFile) return;
+
+                    var originalEnrollText = faceScanEnrollBtn.textContent;
+                    faceScanEnrollBtn.textContent = 'Enrolling face...';
+                    faceScanEnrollBtn.disabled = true;
+                    if (faceScanLoginBtn) faceScanLoginBtn.disabled = true;
+
+                    try {
+                        var data = await uploadFaceImage('{{ path('app_face_enroll') }}', selfieFile, true);
+                        faceScanError.style.color = '#16a34a';
+                        faceScanError.textContent = data.message || 'Face Scan enrolled successfully.';
+                    } catch (err) {
+                        faceScanError.style.color = '';
+                        faceScanError.textContent = err.message || 'Face Scan enroll failed.';
+                    } finally {
+                        faceScanEnrollBtn.textContent = originalEnrollText;
+                        faceScanEnrollBtn.disabled = false;
+                        if (faceScanLoginBtn) faceScanLoginBtn.disabled = false;
                     }
                 });
             }
