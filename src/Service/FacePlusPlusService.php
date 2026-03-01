@@ -30,21 +30,21 @@ final class FacePlusPlusService
         }
 
         try {
-            $response = $this->httpClient->request('POST', rtrim($this->apiBaseUrl, '/') . '/facepp/v3/detect', [
-                'body' => [
-                    'api_key' => $this->apiKey,
-                    'api_secret' => $this->apiSecret,
-                    'image_base64' => $imageBase64,
-                ],
+            $data = $this->requestWithConcurrencyRetry('/facepp/v3/detect', [
+                'api_key' => $this->apiKey,
+                'api_secret' => $this->apiSecret,
+                'image_base64' => $imageBase64,
             ]);
-
-            $data = $response->toArray(false);
         } catch (ExceptionInterface|\Throwable) {
             return ['success' => false, 'message' => 'Face ID provider is unavailable (SSL/network).'];
         }
 
         if (!empty($data['error_message'])) {
-            return ['success' => false, 'message' => 'Face detection failed: ' . (string) $data['error_message']];
+            $providerError = (string) $data['error_message'];
+            if ($providerError === 'CONCURRENCY_LIMIT_EXCEEDED') {
+                return ['success' => false, 'message' => 'Face service is busy right now. Please wait 3-5 seconds and retry.'];
+            }
+            return ['success' => false, 'message' => 'Face detection failed: ' . $providerError];
         }
 
         $faces = $data['faces'] ?? null;
@@ -74,22 +74,22 @@ final class FacePlusPlusService
         }
 
         try {
-            $response = $this->httpClient->request('POST', rtrim($this->apiBaseUrl, '/') . '/facepp/v3/compare', [
-                'body' => [
-                    'api_key' => $this->apiKey,
-                    'api_secret' => $this->apiSecret,
-                    'face_token1' => $faceToken1,
-                    'face_token2' => $faceToken2,
-                ],
+            $data = $this->requestWithConcurrencyRetry('/facepp/v3/compare', [
+                'api_key' => $this->apiKey,
+                'api_secret' => $this->apiSecret,
+                'face_token1' => $faceToken1,
+                'face_token2' => $faceToken2,
             ]);
-
-            $data = $response->toArray(false);
         } catch (ExceptionInterface|\Throwable) {
             return ['success' => false, 'message' => 'Face ID provider is unavailable (SSL/network).'];
         }
 
         if (!empty($data['error_message'])) {
-            return ['success' => false, 'message' => 'Face compare failed: ' . (string) $data['error_message']];
+            $providerError = (string) $data['error_message'];
+            if ($providerError === 'CONCURRENCY_LIMIT_EXCEEDED') {
+                return ['success' => false, 'message' => 'Face service is busy right now. Please wait 3-5 seconds and retry.'];
+            }
+            return ['success' => false, 'message' => 'Face compare failed: ' . $providerError];
         }
 
         $confidence = (float) ($data['confidence'] ?? 0.0);
@@ -103,5 +103,32 @@ final class FacePlusPlusService
             'threshold' => $threshold,
         ];
     }
-}
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestWithConcurrencyRetry(string $path, array $body): array
+    {
+        $url = rtrim($this->apiBaseUrl, '/') . $path;
+        $attempts = 3;
+        $delaysMicros = [200000, 600000];
+        $lastData = [];
+
+        for ($i = 0; $i < $attempts; $i++) {
+            $response = $this->httpClient->request('POST', $url, ['body' => $body]);
+            $data = $response->toArray(false);
+            $lastData = is_array($data) ? $data : [];
+
+            $error = (string) ($lastData['error_message'] ?? '');
+            if ($error !== 'CONCURRENCY_LIMIT_EXCEEDED') {
+                return $lastData;
+            }
+
+            if ($i < $attempts - 1) {
+                usleep($delaysMicros[$i] ?? 600000);
+            }
+        }
+
+        return $lastData;
+    }
+}

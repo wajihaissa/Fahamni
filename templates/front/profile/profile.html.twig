@@ -596,7 +596,25 @@
                         <h2 class="section-title">Security Settings</h2>
                         <p class="section-description">Manage your password and security preferences</p>
                     </div>
-                    
+
+                    <div class="form-group" style="margin-top: 1.25rem;">
+                        <label>Camera Face ID</label>
+                        <div class="form-hint" id="faceProviderEngineStatus" style="margin-bottom: 6px;"></div>
+                        <div class="form-hint" id="faceProfileStatusText" style="margin-bottom: 10px;">
+                            Status:
+                            {% if user.faceIdEnabled %}
+                                Enabled{% if user.faceIdEnrolledAt %} (saved on {{ user.faceIdEnrolledAt|date('Y-m-d H:i') }}){% endif %}
+                            {% else %}
+                                Not enrolled
+                            {% endif %}
+                        </div>
+                        <button type="button" class="btn btn-primary" id="faceProfileEnrollBtn">📷 Save My Face</button>
+                        <button type="button" class="btn btn-primary" id="faceProfileDisableBtn" style="margin-left:8px;background:#ef4444;">
+                            Remove Face ID
+                        </button>
+                        <div class="form-hint" id="faceProfileStatusMsg" style="margin-top:8px;"></div>
+                    </div>
+
                     <div class="form-group">
                         <label>Password</label>
                         <a href="{{ path('app_forgot_password', {'email': user.email}) }}" class="btn btn-primary">
@@ -638,6 +656,22 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="faceProfileModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.78);z-index:1200;align-items:center;justify-content:center;padding:18px;">
+    <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;padding:16px;box-shadow:0 25px 70px rgba(2,8,23,.35);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <h3 style="margin:0;font-size:18px;">📷 Save Face ID</h3>
+            <button type="button" id="faceProfileCloseBtn" style="border:none;background:#e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">Close</button>
+        </div>
+        <video id="faceProfileVideo" autoplay playsinline style="width:100%;height:300px;object-fit:cover;border-radius:12px;background:#0f172a;"></video>
+        <canvas id="faceProfileCanvas" style="display:none;"></canvas>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+            <button type="button" id="faceProfileCaptureBtn" class="btn btn-primary" style="flex:1;">Capture & Save</button>
+            <button type="button" id="faceProfileCancelBtn" class="btn btn-secondary" style="flex:1;">Cancel</button>
+        </div>
+        <div id="faceProfileModalMsg" style="font-size:13px;color:#475569;margin-top:10px;"></div>
     </div>
 </div>
 
@@ -698,6 +732,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const twoFactorSetupBlock = document.getElementById('twoFactorSetupBlock');
     const twoFactorDisableBlock = document.getElementById('twoFactorDisableBlock');
     const twoFactorRecoveryBox = document.getElementById('twoFactorRecoveryBox');
+    const faceProfileEnrollBtn = document.getElementById('faceProfileEnrollBtn');
+    const faceProfileDisableBtn = document.getElementById('faceProfileDisableBtn');
+    const faceProfileStatusMsg = document.getElementById('faceProfileStatusMsg');
+    const faceProfileStatusText = document.getElementById('faceProfileStatusText');
+    const faceProfileModal = document.getElementById('faceProfileModal');
+    const faceProfileVideo = document.getElementById('faceProfileVideo');
+    const faceProfileCanvas = document.getElementById('faceProfileCanvas');
+    const faceProfileCaptureBtn = document.getElementById('faceProfileCaptureBtn');
+    const faceProfileCloseBtn = document.getElementById('faceProfileCloseBtn');
+    const faceProfileCancelBtn = document.getElementById('faceProfileCancelBtn');
+    const faceProfileModalMsg = document.getElementById('faceProfileModalMsg');
+    const faceProviderEngineStatus = document.getElementById('faceProviderEngineStatus');
+    let faceProfileStream = null;
 
     function setPasskeyStatus(message, ok) {
         if (!passkeyStatus) return;
@@ -900,6 +947,180 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    function setFaceProfileMessage(message, ok) {
+        if (!faceProfileStatusMsg) return;
+        faceProfileStatusMsg.textContent = message;
+        faceProfileStatusMsg.style.color = ok ? '#166534' : '#991b1b';
+    }
+
+    function setFaceProfileStatus(enrolled, enrolledAtText) {
+        if (!faceProfileStatusText) return;
+        if (enrolled) {
+            faceProfileStatusText.textContent = 'Status: Enabled' + (enrolledAtText ? ' (saved on ' + enrolledAtText + ')' : '');
+        } else {
+            faceProfileStatusText.textContent = 'Status: Not enrolled';
+        }
+    }
+
+    async function stopFaceProfileCamera() {
+        if (faceProfileStream) {
+            faceProfileStream.getTracks().forEach(track => track.stop());
+            faceProfileStream = null;
+        }
+    }
+
+    async function openFaceProfileModal() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Camera is not supported on this browser.');
+        }
+        await stopFaceProfileCamera();
+        faceProfileStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        faceProfileVideo.srcObject = faceProfileStream;
+        faceProfileModal.style.display = 'flex';
+        if (faceProfileModalMsg) {
+            faceProfileModalMsg.textContent = '';
+            faceProfileModalMsg.style.color = '#475569';
+        }
+    }
+
+    async function closeFaceProfileModal() {
+        await stopFaceProfileCamera();
+        faceProfileModal.style.display = 'none';
+    }
+
+    function captureFaceProfileBlob() {
+        if (!faceProfileVideo || faceProfileVideo.videoWidth <= 0 || faceProfileVideo.videoHeight <= 0) {
+            return null;
+        }
+        faceProfileCanvas.width = faceProfileVideo.videoWidth;
+        faceProfileCanvas.height = faceProfileVideo.videoHeight;
+        const ctx = faceProfileCanvas.getContext('2d');
+        ctx.drawImage(faceProfileVideo, 0, 0, faceProfileCanvas.width, faceProfileCanvas.height);
+        const dataUrl = faceProfileCanvas.toDataURL('image/jpeg', 0.92);
+        const base64 = dataUrl.split(',')[1] || '';
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new Blob([bytes], { type: 'image/jpeg' });
+    }
+
+    if (faceProfileEnrollBtn) {
+        faceProfileEnrollBtn.addEventListener('click', async function () {
+            setFaceProfileMessage('', true);
+            try {
+                await openFaceProfileModal();
+            } catch (error) {
+                setFaceProfileMessage(error.message || 'Unable to open camera.', false);
+            }
+        });
+    }
+
+    if (faceProfileCaptureBtn) {
+        faceProfileCaptureBtn.addEventListener('click', async function () {
+            const selfieBlob = captureFaceProfileBlob();
+            if (!selfieBlob) {
+                if (faceProfileModalMsg) {
+                    faceProfileModalMsg.textContent = 'Camera is not ready yet. Wait 1 second and retry.';
+                    faceProfileModalMsg.style.color = '#991b1b';
+                }
+                return;
+            }
+
+            faceProfileCaptureBtn.disabled = true;
+            const oldText = faceProfileCaptureBtn.textContent;
+            faceProfileCaptureBtn.textContent = 'Saving...';
+
+            try {
+                const formData = new FormData();
+                formData.append('selfie', selfieBlob, 'face-profile.jpg');
+                const response = await fetch('{{ path('app_face_enroll_profile') }}', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Face enrollment failed.');
+                }
+
+                await closeFaceProfileModal();
+                const enrolledAt = data.enrolledAt ? new Date(data.enrolledAt).toLocaleString() : '';
+                setFaceProfileStatus(true, enrolledAt);
+                setFaceProfileMessage(data.message || 'Face saved successfully.', true);
+            } catch (error) {
+                if (faceProfileModalMsg) {
+                    faceProfileModalMsg.textContent = error.message || 'Face enrollment failed.';
+                    faceProfileModalMsg.style.color = '#991b1b';
+                }
+            } finally {
+                faceProfileCaptureBtn.disabled = false;
+                faceProfileCaptureBtn.textContent = oldText;
+            }
+        });
+    }
+
+    if (faceProfileDisableBtn) {
+        faceProfileDisableBtn.addEventListener('click', async function () {
+            if (!confirm('Remove Face ID from this account?')) {
+                return;
+            }
+
+            faceProfileDisableBtn.disabled = true;
+            const oldText = faceProfileDisableBtn.textContent;
+            faceProfileDisableBtn.textContent = 'Removing...';
+            try {
+                const response = await fetch('{{ path('app_face_disable') }}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to remove Face ID.');
+                }
+                setFaceProfileStatus(false, '');
+                setFaceProfileMessage(data.message || 'Face ID removed.', true);
+            } catch (error) {
+                setFaceProfileMessage(error.message || 'Failed to remove Face ID.', false);
+            } finally {
+                faceProfileDisableBtn.disabled = false;
+                faceProfileDisableBtn.textContent = oldText;
+            }
+        });
+    }
+
+    if (faceProfileCloseBtn) {
+        faceProfileCloseBtn.addEventListener('click', closeFaceProfileModal);
+    }
+    if (faceProfileCancelBtn) {
+        faceProfileCancelBtn.addEventListener('click', closeFaceProfileModal);
+    }
+
+    async function refreshFaceProviderStatus() {
+        if (!faceProviderEngineStatus) return;
+        try {
+            const response = await fetch('{{ path('app_face_provider_status') }}', {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await response.json();
+            if (response.ok && data.success && data.configured) {
+                faceProviderEngineStatus.textContent = 'Face engine: Connected';
+                faceProviderEngineStatus.style.color = '#166534';
+            } else {
+                faceProviderEngineStatus.textContent = 'Face engine: Not configured (set FACEPP_API_KEY / FACEPP_API_SECRET in .env.local)';
+                faceProviderEngineStatus.style.color = '#991b1b';
+            }
+        } catch (error) {
+            faceProviderEngineStatus.textContent = 'Face engine: Unreachable';
+            faceProviderEngineStatus.style.color = '#991b1b';
+        }
+    }
+
+    refreshFaceProviderStatus();
 });
 </script>
 

@@ -454,7 +454,7 @@ final class AuthController extends AbstractController
         if (!$faceService->isConfigured()) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Face ID provider is not configured on server.',
+                'message' => 'Face ID provider is not configured on server. Set FACEPP_API_KEY and FACEPP_API_SECRET in .env.local.',
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
@@ -510,6 +510,96 @@ final class AuthController extends AbstractController
         ]);
     }
 
+    #[Route('/face/enroll/profile', name: 'app_face_enroll_profile', methods: ['POST'])]
+    public function faceEnrollFromProfile(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        FacePlusPlusService $faceService
+    ): JsonResponse {
+        if (!$faceService->isConfigured()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Face ID provider is not configured on server. Set FACEPP_API_KEY and FACEPP_API_SECRET in .env.local.',
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        $user = $this->resolveSessionUser($request, $entityManager);
+        if (!$user instanceof User) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Authentication required.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if (!$user->isStatus()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Your account is not active.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $imageBase64 = $this->extractImageBase64FromRequest($request);
+        if ($imageBase64 === null) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'A selfie image is required (camera capture).',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $detect = $faceService->detectFaceToken($imageBase64);
+        if (($detect['success'] ?? false) !== true) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => (string) ($detect['message'] ?? 'Unable to detect face.'),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $user->setFaceIdToken((string) $detect['faceToken']);
+        $user->setFaceIdEnabled(true);
+        $user->setFaceIdEnrolledAt(new \DateTimeImmutable());
+        $entityManager->flush();
+
+        $session = $request->getSession();
+        $sessionData = (array) $session->get('user', []);
+        $sessionData['faceIdEnabled'] = true;
+        $session->set('user', $sessionData);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Face ID enrolled and saved to your profile.',
+            'enrolledAt' => $user->getFaceIdEnrolledAt()?->format(\DateTimeInterface::ATOM),
+        ]);
+    }
+
+    #[Route('/face/disable', name: 'app_face_disable', methods: ['POST'])]
+    public function faceDisable(
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        $user = $this->resolveSessionUser($request, $entityManager);
+        if (!$user instanceof User) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Authentication required.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user->setFaceIdEnabled(false);
+        $user->setFaceIdToken(null);
+        $user->setFaceIdEnrolledAt(null);
+        $entityManager->flush();
+
+        $session = $request->getSession();
+        $sessionData = (array) $session->get('user', []);
+        $sessionData['faceIdEnabled'] = false;
+        $session->set('user', $sessionData);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Face ID has been disabled for your account.',
+        ]);
+    }
+
     #[Route('/face/login', name: 'app_face_login', methods: ['POST'])]
     public function faceLogin(
         Request $request,
@@ -520,7 +610,7 @@ final class AuthController extends AbstractController
         if (!$faceService->isConfigured()) {
             return new JsonResponse([
                 'success' => false,
-                'message' => 'Face ID provider is not configured on server.',
+                'message' => 'Face ID provider is not configured on server. Set FACEPP_API_KEY and FACEPP_API_SECRET in .env.local.',
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
@@ -588,6 +678,18 @@ final class AuthController extends AbstractController
             'success' => true,
             'message' => 'Face login successful.',
             'redirect' => $this->generateUrl('app_home'),
+        ]);
+    }
+
+    #[Route('/face/provider-status', name: 'app_face_provider_status', methods: ['GET'])]
+    public function faceProviderStatus(FacePlusPlusService $faceService): JsonResponse
+    {
+        return new JsonResponse([
+            'success' => true,
+            'configured' => $faceService->isConfigured(),
+            'message' => $faceService->isConfigured()
+                ? 'Face provider is configured.'
+                : 'Face provider is not configured. Add FACEPP_API_KEY and FACEPP_API_SECRET to .env.local.',
         ]);
     }
 

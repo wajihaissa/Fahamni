@@ -40,15 +40,11 @@
                     </button>
                     <span class="error-message" id="passkeyError"></span>
 
-                    <button type="button" class="btn btn-secondary btn-full" id="faceScanLoginBtn" style="margin-top: 10px;">
-                        Sign In with Face Scan (AI)
+                    <button type="button" class="btn btn-secondary btn-full" id="faceCameraLoginBtn" style="margin-top: 10px;">
+                        📷 Face ID
                     </button>
-                    <button type="button" class="btn btn-secondary btn-full" id="faceScanEnrollBtn" style="margin-top: 10px;">
-                        Enroll Face Scan (requires password)
-                    </button>
+                    <div class="form-hint" id="faceEngineStatus" style="margin-top:6px;"></div>
                     <span class="error-message" id="faceScanError"></span>
-                    <input type="file" id="faceScanLoginInput" accept="image/*" capture="user" style="display:none;">
-                    <input type="file" id="faceScanEnrollInput" accept="image/*" capture="user" style="display:none;">
 
                     <div class="form-group" id="twoFactorGroup" style="display:none; margin-top: 12px;">
                         <label for="twoFactorCode">2FA Code</label>
@@ -87,6 +83,22 @@
             </div>
         </div>
     </main>
+
+    <div id="faceCameraModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.78);z-index:1200;align-items:center;justify-content:center;padding:18px;">
+        <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:16px;box-shadow:0 25px 70px rgba(2,8,23,.35);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3 style="margin:0;font-size:18px;">📷 Face ID Camera</h3>
+                <button type="button" id="faceCameraCloseBtn" style="border:none;background:#e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">Close</button>
+            </div>
+            <video id="faceCameraVideo" autoplay playsinline style="width:100%;height:280px;object-fit:cover;border-radius:12px;background:#0f172a;"></video>
+            <canvas id="faceCameraCanvas" style="display:none;"></canvas>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button type="button" id="faceCameraCaptureBtn" class="btn btn-primary" style="flex:1;">Capture & Login</button>
+                <button type="button" id="faceCameraCancelBtn" class="btn btn-secondary" style="flex:1;">Cancel</button>
+            </div>
+            <div id="faceCameraModalMsg" style="font-size:13px;color:#475569;margin-top:10px;"></div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascripts %}
@@ -99,16 +111,44 @@
             var passwordError = document.getElementById('passwordError');
             var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
             var passkeyError = document.getElementById('passkeyError');
-            var faceScanLoginBtn = document.getElementById('faceScanLoginBtn');
-            var faceScanEnrollBtn = document.getElementById('faceScanEnrollBtn');
+            var faceCameraLoginBtn = document.getElementById('faceCameraLoginBtn');
             var faceScanError = document.getElementById('faceScanError');
-            var faceScanLoginInput = document.getElementById('faceScanLoginInput');
-            var faceScanEnrollInput = document.getElementById('faceScanEnrollInput');
+            var faceCameraModal = document.getElementById('faceCameraModal');
+            var faceCameraVideo = document.getElementById('faceCameraVideo');
+            var faceCameraCanvas = document.getElementById('faceCameraCanvas');
+            var faceCameraCaptureBtn = document.getElementById('faceCameraCaptureBtn');
+            var faceCameraCloseBtn = document.getElementById('faceCameraCloseBtn');
+            var faceCameraCancelBtn = document.getElementById('faceCameraCancelBtn');
+            var faceCameraModalMsg = document.getElementById('faceCameraModalMsg');
+            var faceEngineStatus = document.getElementById('faceEngineStatus');
             var twoFactorGroup = document.getElementById('twoFactorGroup');
             var twoFactorCode = document.getElementById('twoFactorCode');
             var twoFactorError = document.getElementById('twoFactorError');
             var twoFactorVerifyBtn = document.getElementById('twoFactorVerifyBtn');
             var twoFactorPending = false;
+            var faceCameraStream = null;
+
+            async function refreshFaceEngineStatus() {
+                if (!faceEngineStatus) return;
+                try {
+                    var res = await fetch('{{ path('app_face_provider_status') }}', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    var data = await res.json();
+                    if (res.ok && data.success && data.configured) {
+                        faceEngineStatus.textContent = 'Face engine: Connected';
+                        faceEngineStatus.style.color = '#166534';
+                    } else {
+                        faceEngineStatus.textContent = 'Face engine: Not configured (add FACEPP keys in .env.local)';
+                        faceEngineStatus.style.color = '#991b1b';
+                    }
+                } catch (e) {
+                    faceEngineStatus.textContent = 'Face engine: Unreachable';
+                    faceEngineStatus.style.color = '#991b1b';
+                }
+            }
 
             function enterTwoFactorMode(message) {
                 twoFactorPending = true;
@@ -117,8 +157,7 @@
                 emailInput.disabled = true;
                 passwordInput.disabled = true;
                 if (passkeyLoginBtn) passkeyLoginBtn.disabled = true;
-                if (faceScanLoginBtn) faceScanLoginBtn.disabled = true;
-                if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = true;
+                if (faceCameraLoginBtn) faceCameraLoginBtn.disabled = true;
                 var submitBtn = loginForm.querySelector('button[type="submit"]');
                 submitBtn.disabled = true;
                 twoFactorCode.focus();
@@ -374,28 +413,67 @@
                 });
             }
 
-            async function uploadFaceImage(endpoint, selfieFile, includePassword) {
-                var email = emailInput.value.trim();
-                var password = passwordInput.value;
+            function resetFaceModalState() {
+                if (faceCameraModalMsg) {
+                    faceCameraModalMsg.textContent = '';
+                    faceCameraModalMsg.style.color = '#475569';
+                }
+            }
 
+            async function stopFaceCamera() {
+                if (faceCameraStream) {
+                    faceCameraStream.getTracks().forEach(function(track) { track.stop(); });
+                    faceCameraStream = null;
+                }
+            }
+
+            async function openFaceCamera() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera is not supported on this browser.');
+                }
+                await stopFaceCamera();
+                faceCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                faceCameraVideo.srcObject = faceCameraStream;
+                faceCameraModal.style.display = 'flex';
+            }
+
+            async function closeFaceCamera() {
+                await stopFaceCamera();
+                faceCameraModal.style.display = 'none';
+                resetFaceModalState();
+            }
+
+            function captureFaceBlob() {
+                if (!faceCameraVideo || faceCameraVideo.videoWidth <= 0 || faceCameraVideo.videoHeight <= 0) {
+                    return null;
+                }
+                faceCameraCanvas.width = faceCameraVideo.videoWidth;
+                faceCameraCanvas.height = faceCameraVideo.videoHeight;
+                var ctx = faceCameraCanvas.getContext('2d');
+                ctx.drawImage(faceCameraVideo, 0, 0, faceCameraCanvas.width, faceCameraCanvas.height);
+                var dataUrl = faceCameraCanvas.toDataURL('image/jpeg', 0.92);
+                var base64 = dataUrl.split(',')[1] || '';
+                var binary = atob(base64);
+                var len = binary.length;
+                var bytes = new Uint8Array(len);
+                for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+                return new Blob([bytes], { type: 'image/jpeg' });
+            }
+
+            async function uploadFaceLoginImage(selfieBlob) {
+                var email = emailInput.value.trim();
                 if (!email) {
                     throw new Error('Enter your email first.');
                 }
-                if (includePassword && !password) {
-                    throw new Error('Enter your password to enroll Face Scan.');
-                }
-                if (!selfieFile) {
+                if (!selfieBlob) {
                     throw new Error('Please capture a selfie image.');
                 }
 
                 var formData = new FormData();
                 formData.append('email', email);
-                if (includePassword) {
-                    formData.append('password', password);
-                }
-                formData.append('selfie', selfieFile);
+                formData.append('selfie', selfieBlob, 'face-login.jpg');
 
-                var response = await fetch(endpoint, {
+                var response = await fetch('{{ path('app_face_login') }}', {
                     method: 'POST',
                     body: formData,
                     headers: { 'Accept': 'application/json' },
@@ -408,69 +486,58 @@
                 return data;
             }
 
-            if (faceScanLoginBtn && faceScanLoginInput) {
-                faceScanLoginBtn.addEventListener('click', function() {
+            if (faceCameraLoginBtn && faceCameraModal) {
+                faceCameraLoginBtn.addEventListener('click', async function() {
                     faceScanError.textContent = '';
-                    faceScanLoginInput.value = '';
-                    faceScanLoginInput.click();
-                });
-
-                faceScanLoginInput.addEventListener('change', async function() {
-                    var selfieFile = faceScanLoginInput.files && faceScanLoginInput.files[0] ? faceScanLoginInput.files[0] : null;
-                    if (!selfieFile) return;
-
-                    var originalLoginText = faceScanLoginBtn.textContent;
-                    faceScanLoginBtn.textContent = 'Verifying face...';
-                    faceScanLoginBtn.disabled = true;
-                    if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = true;
-
                     try {
-                        var data = await uploadFaceImage('{{ path('app_face_login') }}', selfieFile, false);
+                        await openFaceCamera();
+                    } catch (err) {
+                        faceScanError.textContent = err.message || 'Cannot open camera.';
+                    }
+                });
+            }
+
+            if (faceCameraCaptureBtn) {
+                faceCameraCaptureBtn.addEventListener('click', async function() {
+                    var selfieBlob = captureFaceBlob();
+                    if (!selfieBlob) {
+                        if (faceCameraModalMsg) {
+                            faceCameraModalMsg.textContent = 'Camera is not ready yet. Wait 1 second and retry.';
+                            faceCameraModalMsg.style.color = '#991b1b';
+                        }
+                        return;
+                    }
+                    faceCameraCaptureBtn.disabled = true;
+                    faceCameraCaptureBtn.textContent = 'Verifying...';
+                    try {
+                        var data = await uploadFaceLoginImage(selfieBlob);
+                        await closeFaceCamera();
                         if (data.requires2fa) {
                             enterTwoFactorMode(data.message || '2FA required');
                             return;
                         }
                         window.location.href = data.redirect || '/home';
                     } catch (err) {
-                        faceScanError.textContent = err.message || 'Face Scan login failed.';
+                        if (faceCameraModalMsg) {
+                            faceCameraModalMsg.textContent = err.message || 'Face ID login failed.';
+                            faceCameraModalMsg.style.color = '#991b1b';
+                        }
                     } finally {
-                        faceScanLoginBtn.textContent = originalLoginText;
-                        faceScanLoginBtn.disabled = false;
-                        if (faceScanEnrollBtn) faceScanEnrollBtn.disabled = false;
+                        faceCameraCaptureBtn.disabled = false;
+                        faceCameraCaptureBtn.textContent = 'Capture & Login';
                     }
                 });
             }
 
-            if (faceScanEnrollBtn && faceScanEnrollInput) {
-                faceScanEnrollBtn.addEventListener('click', function() {
-                    faceScanError.textContent = '';
-                    faceScanEnrollInput.value = '';
-                    faceScanEnrollInput.click();
-                });
-
-                faceScanEnrollInput.addEventListener('change', async function() {
-                    var selfieFile = faceScanEnrollInput.files && faceScanEnrollInput.files[0] ? faceScanEnrollInput.files[0] : null;
-                    if (!selfieFile) return;
-
-                    var originalEnrollText = faceScanEnrollBtn.textContent;
-                    faceScanEnrollBtn.textContent = 'Enrolling face...';
-                    faceScanEnrollBtn.disabled = true;
-                    if (faceScanLoginBtn) faceScanLoginBtn.disabled = true;
-
-                    try {
-                        var data = await uploadFaceImage('{{ path('app_face_enroll') }}', selfieFile, true);
-                        faceScanError.style.color = '#16a34a';
-                        faceScanError.textContent = data.message || 'Face Scan enrolled successfully.';
-                    } catch (err) {
-                        faceScanError.style.color = '';
-                        faceScanError.textContent = err.message || 'Face Scan enroll failed.';
-                    } finally {
-                        faceScanEnrollBtn.textContent = originalEnrollText;
-                        faceScanEnrollBtn.disabled = false;
-                        if (faceScanLoginBtn) faceScanLoginBtn.disabled = false;
-                    }
-                });
+            if (faceCameraCloseBtn) {
+                faceCameraCloseBtn.addEventListener('click', closeFaceCamera);
             }
+
+            if (faceCameraCancelBtn) {
+                faceCameraCancelBtn.addEventListener('click', closeFaceCamera);
+            }
+
+            refreshFaceEngineStatus();
 
             var rememberMe = document.getElementById('rememberMe');
             if (rememberMe) {
