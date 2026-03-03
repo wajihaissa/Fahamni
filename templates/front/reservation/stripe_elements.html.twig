@@ -1,0 +1,369 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement reservation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --sp-primary: #2f6fed;
+            --sp-primary-strong: #2156b9;
+            --sp-text: #1f2a3d;
+            --sp-muted: #647a9b;
+            --sp-line: #dbe6f5;
+            --sp-bg: #f4f7fd;
+            --sp-card: #ffffff;
+            --sp-danger-bg: #fff1f3;
+            --sp-danger-line: #f1c4cb;
+            --sp-danger-text: #8f2f3a;
+            --sp-ok-bg: #edf8f1;
+            --sp-ok-line: #bde4cb;
+            --sp-ok-text: #176c49;
+        }
+
+        body {
+            background: var(--sp-bg);
+        }
+
+        .sp-shell {
+            width: min(780px, 94vw);
+            margin: 96px auto 40px;
+            color: var(--sp-text);
+        }
+
+        .sp-back {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #2b4f86;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .sp-card {
+            background: var(--sp-card);
+            border: 1px solid var(--sp-line);
+            border-radius: 16px;
+            box-shadow: 0 14px 30px rgba(27, 45, 77, 0.09);
+            padding: 18px;
+        }
+
+        .sp-title {
+            margin: 0;
+            font-size: clamp(24px, 2.4vw, 32px);
+            font-weight: 900;
+        }
+
+        .sp-subtitle {
+            margin: 6px 0 0;
+            color: var(--sp-muted);
+            font-size: 14px;
+        }
+
+        .sp-meta {
+            margin-top: 14px;
+            display: grid;
+            gap: 8px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .sp-meta-item {
+            border: 1px solid #e2eaf7;
+            background: #f9fbff;
+            border-radius: 11px;
+            padding: 10px 11px;
+        }
+
+        .sp-meta-label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6880a3;
+            font-weight: 800;
+            margin-bottom: 3px;
+        }
+
+        .sp-meta-value {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #1f3659;
+            word-break: break-word;
+        }
+
+        .sp-amount {
+            margin-top: 12px;
+            border: 1px solid #d5e2f8;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f4f8ff 0%, #edf4ff 100%);
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+            color: #2e4f85;
+            font-weight: 700;
+        }
+
+        .sp-amount strong {
+            font-size: 24px;
+            color: var(--sp-primary);
+            margin-left: 7px;
+        }
+
+        .sp-alert {
+            margin-top: 12px;
+            border-radius: 11px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .sp-alert-error {
+            background: var(--sp-danger-bg);
+            border-color: var(--sp-danger-line);
+            color: var(--sp-danger-text);
+        }
+
+        .sp-alert-ok {
+            background: var(--sp-ok-bg);
+            border-color: var(--sp-ok-line);
+            color: var(--sp-ok-text);
+        }
+
+        .sp-form {
+            margin-top: 14px;
+            display: grid;
+            gap: 12px;
+        }
+
+        #payment-element {
+            border: 1px solid #dce7f6;
+            border-radius: 12px;
+            padding: 10px;
+            background: #ffffff;
+            min-height: 64px;
+        }
+
+        .sp-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sp-btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            min-height: 40px;
+            padding: 9px 14px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.16s ease;
+        }
+
+        .sp-btn-secondary {
+            background: #f4f7fd;
+            border-color: #d9e3f4;
+            color: #2e4f84;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sp-btn-secondary:hover {
+            background: #edf3fc;
+        }
+
+        .sp-btn-primary {
+            background: var(--sp-primary);
+            color: #ffffff;
+        }
+
+        .sp-btn-primary:hover {
+            background: var(--sp-primary-strong);
+            box-shadow: 0 10px 18px rgba(41, 78, 146, 0.26);
+            transform: translateY(-1px);
+        }
+
+        .sp-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @media (max-width: 760px) {
+            .sp-shell {
+                margin-top: 84px;
+            }
+
+            .sp-card {
+                padding: 14px;
+            }
+
+            .sp-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://js.stripe.com/v3"></script>
+    <script>
+        (() => {
+            const publishableKey = '{{ stripePublishableKey|e('js') }}';
+            const clientSecret = '{{ stripeClientSecret|e('js') }}';
+            const returnUrl = '{{ returnUrl|e('js') }}';
+            const cancelUrl = '{{ cancelUrl|e('js') }}';
+
+            const init = () => {
+                const form = document.getElementById('stripe-payment-form');
+                const elementContainer = document.getElementById('payment-element');
+                const submitBtn = document.getElementById('sp-submit-btn');
+                const cancelBtn = document.getElementById('sp-cancel-btn');
+                const messageBox = document.getElementById('sp-message');
+
+                if (!form || !elementContainer || !submitBtn || !messageBox) {
+                    return;
+                }
+
+                const setMessage = (message, isError = true) => {
+                    messageBox.textContent = message || '';
+                    messageBox.className = 'sp-alert ' + (isError ? 'sp-alert-error' : 'sp-alert-ok');
+                    messageBox.hidden = !message;
+                };
+
+                if (!publishableKey || !clientSecret) {
+                    setMessage('Configuration Stripe incomplete. Verifie STRIPE_PUBLISHABLE_KEY et la preparation du PaymentIntent.');
+                    submitBtn.disabled = true;
+                    return;
+                }
+
+                if (typeof Stripe !== 'function') {
+                    setMessage('Stripe.js introuvable. Recharge la page.');
+                    submitBtn.disabled = true;
+                    return;
+                }
+
+                const stripe = Stripe(publishableKey);
+                const elements = stripe.elements({
+                    clientSecret: clientSecret,
+                    appearance: {
+                        theme: 'stripe',
+                        variables: {
+                            colorPrimary: '#2f6fed',
+                            colorText: '#1f2a3d',
+                            borderRadius: '10px'
+                        }
+                    }
+                });
+
+                const paymentElement = elements.create('payment', {
+                    layout: 'tabs'
+                });
+                paymentElement.mount(elementContainer);
+
+                const toggleLoading = (isLoading) => {
+                    submitBtn.disabled = isLoading;
+                    submitBtn.textContent = isLoading ? 'Traitement...' : 'Payer maintenant';
+                };
+
+                form.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    setMessage('');
+                    toggleLoading(true);
+
+                    try {
+                        const result = await stripe.confirmPayment({
+                            elements: elements,
+                            confirmParams: {
+                                return_url: returnUrl
+                            },
+                            redirect: 'if_required'
+                        });
+
+                        if (result.error) {
+                            setMessage(result.error.message || 'Paiement refuse. Verifie les informations de carte.');
+                            toggleLoading(false);
+                            return;
+                        }
+
+                        const intent = result.paymentIntent || null;
+                        if (intent && intent.id) {
+                            const successUrl = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'payment_intent=' + encodeURIComponent(intent.id);
+                            window.location.href = successUrl;
+                            return;
+                        }
+
+                        window.location.href = returnUrl;
+                    } catch (error) {
+                        setMessage('Erreur technique pendant le paiement. Reessaie dans quelques instants.');
+                        toggleLoading(false);
+                    }
+                });
+
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        window.location.href = cancelUrl;
+                    });
+                }
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init, { once: true });
+            } else {
+                init();
+            }
+        })();
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="sp-shell">
+        <a class="sp-back" href="{{ path('app_seance_revision') }}">Retour a Find Tutors</a>
+
+        <section class="sp-card">
+            <h1 class="sp-title">Paiement de la reservation</h1>
+            <p class="sp-subtitle">Paiement securise sans quitter Fahamni.</p>
+
+            <div class="sp-meta">
+                <div class="sp-meta-item">
+                    <span class="sp-meta-label">Seance</span>
+                    <p class="sp-meta-value">{{ seance and seance.matiere ? seance.matiere : 'N/A' }}</p>
+                </div>
+                <div class="sp-meta-item">
+                    <span class="sp-meta-label">Date</span>
+                    <p class="sp-meta-value">{{ seance and seance.startAt ? seance.startAt|date('d/m/Y H:i') : 'N/A' }}</p>
+                </div>
+                <div class="sp-meta-item">
+                    <span class="sp-meta-label">Tuteur</span>
+                    <p class="sp-meta-value">{{ seance and seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</p>
+                </div>
+                <div class="sp-meta-item">
+                    <span class="sp-meta-label">Reservation</span>
+                    <p class="sp-meta-value">#{{ reservation.id }}</p>
+                </div>
+            </div>
+
+            <div class="sp-amount">
+                Montant a payer
+                <strong>{{ (amountCents / 100)|number_format(2, '.', ' ') }} {{ currency }}</strong>
+            </div>
+
+            <form id="stripe-payment-form" class="sp-form" method="post">
+                <div id="payment-element"></div>
+                <div id="sp-message" class="sp-alert sp-alert-error" hidden></div>
+                <div class="sp-actions">
+                    <button id="sp-cancel-btn" class="sp-btn sp-btn-secondary" type="button">Annuler</button>
+                    <button id="sp-submit-btn" class="sp-btn sp-btn-primary" type="submit">Payer maintenant</button>
+                </div>
+            </form>
+        </section>
+    </div>
+{% endblock %}

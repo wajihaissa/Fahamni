@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des conversations - FAHIMNI</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #333; margin: 20px; }
+        h1 { color: #3b2f63; font-size: 18px; margin-bottom: 4px; }
+        .subtitle { color: #6b7280; font-size: 10px; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+        th { background: #f3f4f6; font-weight: bold; color: #374151; font-size: 9px; }
+        tr:nth-child(even) { background: #f9fafb; }
+        .type-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; }
+        .type-group { background: #e0e7ff; color: #4338ca; }
+        .type-private { background: #dbeafe; color: #1d4ed8; }
+        .footer { margin-top: 20px; font-size: 9px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <h1>Liste des conversations - FAHIMNI</h1>
+    <p class="subtitle">Généré le {{ generatedAt|date('d/m/Y à H:i') }} — {{ conversations|length }} conversation(s)</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%;">ID</th>
+                <th style="width: 28%;">Titre / Type</th>
+                <th style="width: 18%;">Créée le</th>
+                <th style="width: 18%;">Dernier message</th>
+                <th style="width: 28%;">Participants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for conv in conversations %}
+            <tr>
+                <td>{{ conv.id }}</td>
+                <td>
+                    {{ conv.title ?? '—' }}
+                    <span class="type-badge {{ conv.isGroup ? 'type-group' : 'type-private' }}">
+                        {{ conv.isGroup ? 'Groupe' : 'Privé' }}
+                    </span>
+                </td>
+                <td>{{ conv.createdAt ? conv.createdAt|date('d/m/Y H:i') : '—' }}</td>
+                <td>{{ conv.lastMessageAt ? conv.lastMessageAt|date('d/m/Y H:i') : '—' }}</td>
+                <td>
+                    {% for p in conv.participants %}
+                        {{ p.fullName }}{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        —
+                    {% endfor %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" style="text-align: center;">Aucune conversation.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if conversations|length >= 500 %}
+    <p class="footer">Liste limitée aux 500 premières conversations (tri par dernier message).</p>
+    {% endif %}
+    <p class="footer">Document généré par l'administration FAHIMNI — Export PDF liste des conversations.</p>
+</body>
+</html>

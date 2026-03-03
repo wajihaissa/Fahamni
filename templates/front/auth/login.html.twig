@@ -30,10 +30,24 @@
                             <span class="checkmark"></span>
                             Remember me
                         </label>
-                        <a href="#forgot" class="forgot-link">Forgot password?</a>
+                        <a href="{{ path('app_forgot_password') }}" class="forgot-link">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+
+                    <button type="button" class="btn btn-secondary btn-full" id="passkeyLoginBtn" style="margin-top: 10px;">
+                        Sign In with Face ID
+                    </button>
+                    <span class="error-message" id="passkeyError"></span>
+
+                    <div class="form-group" id="twoFactorGroup" style="display:none; margin-top: 12px;">
+                        <label for="twoFactorCode">2FA Code</label>
+                        <input type="text" id="twoFactorCode" name="twoFactorCode" placeholder="Enter 6-digit code" autocomplete="one-time-code" inputmode="numeric">
+                        <span class="error-message" id="twoFactorError"></span>
+                        <button type="button" class="btn btn-primary btn-full" id="twoFactorVerifyBtn" style="margin-top: 10px;">
+                            Verify 2FA
+                        </button>
+                    </div>
                 </form>
 
                 <div class="auth-footer">
@@ -73,6 +87,65 @@
             var passwordInput = document.getElementById('password');
             var emailError = document.getElementById('emailError');
             var passwordError = document.getElementById('passwordError');
+            var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
+            var passkeyError = document.getElementById('passkeyError');
+            var twoFactorGroup = document.getElementById('twoFactorGroup');
+            var twoFactorCode = document.getElementById('twoFactorCode');
+            var twoFactorError = document.getElementById('twoFactorError');
+            var twoFactorVerifyBtn = document.getElementById('twoFactorVerifyBtn');
+            var twoFactorPending = false;
+
+            function enterTwoFactorMode(message) {
+                twoFactorPending = true;
+                twoFactorGroup.style.display = 'block';
+                if (message) twoFactorError.textContent = message;
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+                if (passkeyLoginBtn) passkeyLoginBtn.disabled = true;
+                var submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                twoFactorCode.focus();
+            }
+
+            function verifyTwoFactor() {
+                if (!twoFactorPending) return;
+
+                twoFactorError.textContent = '';
+                var code = (twoFactorCode.value || '').trim();
+                if (!code) {
+                    twoFactorError.textContent = '2FA code is required';
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('code', code);
+
+                twoFactorVerifyBtn.disabled = true;
+                var originalText = twoFactorVerifyBtn.textContent;
+                twoFactorVerifyBtn.textContent = 'Verifying...';
+
+                fetch('{{ path('app_login_2fa') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data: data })))
+                .then(result => {
+                    if (result.status === 200 && result.data.success) {
+                        window.location.href = result.data.redirect || '/';
+                        return;
+                    }
+                    twoFactorError.textContent = result.data.message || '2FA verification failed';
+                })
+                .catch(error => {
+                    twoFactorError.textContent = 'Network error: ' + error.message;
+                })
+                .finally(() => {
+                    twoFactorVerifyBtn.disabled = false;
+                    twoFactorVerifyBtn.textContent = originalText;
+                });
+            }
 
             function isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -81,6 +154,10 @@
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
+                    if (twoFactorPending) {
+                        verifyTwoFactor();
+                        return;
+                    }
                     var isValid = true;
                     emailError.textContent = '';
                     passwordError.textContent = '';
@@ -136,6 +213,12 @@
                             console.log('User data from JSON:', result.data.user);
                             var data = result.data;
                             if (result.status === 200 && data.success) {
+                                if (data.requires2fa) {
+                                    submitBtn.textContent = originalText;
+                                    submitBtn.disabled = false;
+                                    enterTwoFactorMode(data.message || '2FA required');
+                                    return;
+                                }
                                 // Show user data before redirect
                                 
                                 // Redirect to home on succes
@@ -153,6 +236,123 @@
                             submitBtn.disabled = false;
                             console.error('Login error:', error);
                         });
+                    }
+                });
+            }
+
+            if (twoFactorVerifyBtn) {
+                twoFactorVerifyBtn.addEventListener('click', verifyTwoFactor);
+            }
+
+            if (twoFactorCode) {
+                twoFactorCode.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyTwoFactor();
+                    }
+                });
+            }
+
+            function base64UrlToArrayBuffer(base64url) {
+                var base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+                var pad = '='.repeat((4 - (base64.length % 4)) % 4);
+                var raw = atob(base64 + pad);
+                var out = new Uint8Array(raw.length);
+                for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+                return out.buffer;
+            }
+
+            function arrayBufferToBase64Url(buffer) {
+                var bytes = new Uint8Array(buffer);
+                var raw = '';
+                for (var i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
+                return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+            }
+
+            if (passkeyLoginBtn) {
+                passkeyLoginBtn.addEventListener('click', async function() {
+                    if (!window.PublicKeyCredential || !navigator.credentials) {
+                        passkeyError.textContent = 'Passkeys are not supported on this browser/device.';
+                        return;
+                    }
+
+                    var email = emailInput.value.trim();
+                    if (!email) {
+                        passkeyError.textContent = 'Enter your email first, then use Face ID login.';
+                        emailInput.focus();
+                        return;
+                    }
+
+                    passkeyError.textContent = '';
+                    var originalText = passkeyLoginBtn.textContent;
+                    passkeyLoginBtn.textContent = 'Preparing Face ID...';
+                    passkeyLoginBtn.disabled = true;
+
+                    try {
+                        var optionsRes = await fetch('{{ path('app_passkey_login_options') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ email: email })
+                        });
+
+                        var optionsData = await optionsRes.json();
+                        if (!optionsRes.ok || !optionsData.success) {
+                            throw new Error(optionsData.message || 'Unable to start passkey login');
+                        }
+
+                        var publicKey = optionsData.publicKey;
+                        publicKey.challenge = base64UrlToArrayBuffer(publicKey.challenge);
+                        if (publicKey.allowCredentials && publicKey.allowCredentials.length) {
+                            publicKey.allowCredentials = publicKey.allowCredentials.map(function(item) {
+                                return {
+                                    type: item.type,
+                                    id: base64UrlToArrayBuffer(item.id)
+                                };
+                            });
+                        }
+
+                        passkeyLoginBtn.textContent = 'Waiting for Face ID...';
+                        var assertion = await navigator.credentials.get({ publicKey: publicKey });
+                        if (!assertion) {
+                            throw new Error('No passkey assertion returned');
+                        }
+
+                        var verifyPayload = {
+                            id: assertion.id,
+                            clientDataJSON: arrayBufferToBase64Url(assertion.response.clientDataJSON),
+                            authenticatorData: arrayBufferToBase64Url(assertion.response.authenticatorData),
+                            signature: arrayBufferToBase64Url(assertion.response.signature)
+                        };
+
+                        var verifyRes = await fetch('{{ path('app_passkey_login_verify') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(verifyPayload)
+                        });
+
+                        var verifyData = await verifyRes.json();
+                        if (!verifyRes.ok || !verifyData.success) {
+                            throw new Error(verifyData.message || 'Passkey login failed');
+                        }
+
+                        if (verifyData.requires2fa) {
+                            enterTwoFactorMode(verifyData.message || '2FA required');
+                            return;
+                        }
+
+                        window.location.href = verifyData.redirect || '/home';
+                    } catch (err) {
+                        passkeyError.textContent = err.message || 'Passkey login failed.';
+                    } finally {
+                        passkeyLoginBtn.textContent = originalText;
+                        passkeyLoginBtn.disabled = false;
                     }
                 });
             }
@@ -177,40 +377,6 @@
                 });
             }
 
-            var forgotLink = document.querySelector('.forgot-link');
-            if (forgotLink) {
-                forgotLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var modal = document.createElement('div');
-                    modal.className = 'modal active';
-                    modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>Reset Password</h2><button class="modal-close">&times;</button></div><form class="reset-form"><div class="form-group"><label for="resetEmail">Enter your email</label><input type="email" id="resetEmail" placeholder="Email address" required><span class="error-message" id="resetError"></span></div><button type="submit" class="btn btn-primary">Send Reset Link</button></form></div>';
-                    document.body.appendChild(modal);
-                    var closeBtn = modal.querySelector('.modal-close');
-                    var resetForm = modal.querySelector('.reset-form');
-                    closeBtn.addEventListener('click', function() { modal.remove(); });
-                    modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
-                    if (resetForm) {
-                        resetForm.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            var resetEmail = document.getElementById('resetEmail').value;
-                            var resetError = document.getElementById('resetError');
-                            if (!resetEmail || !isValidEmail(resetEmail)) {
-                                resetError.textContent = 'Please enter a valid email address';
-                                return;
-                            }
-                            var btn = this.querySelector('button[type="submit"]');
-                            btn.textContent = 'Sending...';
-                            btn.disabled = true;
-                            setTimeout(function() {
-                                btn.textContent = 'Send Reset Link';
-                                btn.disabled = false;
-                                alert('Reset link sent to ' + resetEmail);
-                                modal.remove();
-                            }, 1500);
-                        });
-                    }
-                });
-            }
         });
     </script>
 {% endblock %}

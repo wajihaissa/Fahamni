@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Statistiques Messagerie - FAHIMNI</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #333; margin: 20px; }
+        h1 { color: #3b2f63; font-size: 18px; margin-bottom: 4px; }
+        .subtitle { color: #6b7280; font-size: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        th, td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
+        th { background: #f3f4f6; font-weight: bold; color: #374151; }
+        .stats-grid { margin-bottom: 24px; }
+        .stat-box { display: inline-block; width: 22%; margin-right: 2%; margin-bottom: 12px; padding: 12px; background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 6px; vertical-align: top; }
+        .stat-box h3 { margin: 0 0 4px 0; font-size: 20px; color: #3b2f63; }
+        .stat-box p { margin: 0; font-size: 10px; color: #6b7280; }
+        .section-title { font-size: 14px; font-weight: bold; color: #3b2f63; margin: 20px 0 10px 0; padding-bottom: 4px; border-bottom: 2px solid #667eea; }
+        .footer { margin-top: 30px; font-size: 9px; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <h1>Statistiques Messagerie - FAHIMNI</h1>
+    <p class="subtitle">Généré le {{ generatedAt|date('d/m/Y à H:i') }}</p>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <h3>{{ totalConversations }}</h3>
+            <p>Conversations</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ totalMessages }}</h3>
+            <p>Messages</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ totalConversationReports }}</h3>
+            <p>Conversations signalées</p>
+        </div>
+        <div class="stat-box">
+            <h3>{{ totalMessageReports }}</h3>
+            <p>Messages signalés</p>
+        </div>
+    </div>
+
+    <div class="section-title">Répartition : Privé / Groupes</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Privées</td><td>{{ groupVsPrivate.private }}</td></tr>
+            <tr><td>Groupes</td><td>{{ groupVsPrivate.group }}</td></tr>
+        </tbody>
+    </table>
+
+    <div class="section-title">Activité sur les 30 derniers jours (messages par jour)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Messages</th>
+                <th>Conversations</th>
+                <th>Conv. signalées</th>
+                <th>Msg. signalés</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for label in labels %}
+            <tr>
+                <td>{{ label }}</td>
+                <td>{{ messagesByDay[loop.index0] }}</td>
+                <td>{{ conversationsByDay[loop.index0] }}</td>
+                <td>{{ convReportsByDay[loop.index0] }}</td>
+                <td>{{ msgReportsByDay[loop.index0] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="footer">Document généré par l'administration FAHIMNI — Export PDF statistiques messagerie.</p>
+</body>
+</html>

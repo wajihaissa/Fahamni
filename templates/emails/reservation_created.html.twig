@@ -1,0 +1,29 @@
+{% extends 'emails/_base_email.html.twig' %}
+
+{% set subject_line = 'Reservation en attente de validation | Fahimni' %}
+{% set title = 'Reservation enregistree' %}
+{% set subtitle = 'Votre demande a bien ete recue et transmise au tuteur.' %}
+{% set preheader_text = 'Votre reservation est en attente de validation par le tuteur.' %}
+{% set status_label = 'En attente' %}
+{% set status_tone = 'warning' %}
+
+{% block intro %}
+    <p class="mail-paragraph">
+        Nous vous confirmons la bonne reception de votre demande de reservation.
+        Le tuteur doit encore la valider avant que la seance soit definitivement confirmee.
+    </p>
+{% endblock %}
+
+{% block actions %}
+    <ul class="mail-list">
+        <li>Statut actuel: <strong>En attente de validation</strong>.</li>
+        <li>Vous recevrez un nouvel email des que le tuteur accepte la reservation.</li>
+        <li>Les informations de la seance restent disponibles dans votre espace Fahimni.</li>
+    </ul>
+{% endblock %}
+
+{% block outro %}
+    <p class="mail-note">
+        Merci pour votre confiance. Nous restons disponibles pour toute assistance.
+    </p>
+{% endblock %}

@@ -1,0 +1,3538 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Find Tutors - Seances Revision{% endblock %}
+
+{% block stylesheets %}
+<style>
+    :root {
+        --sr-primary: var(--primary-color, #2f6fed);
+        --sr-primary-strong: #2358c1;
+        --sr-secondary: var(--secondary-color, #4e73df);
+        --sr-text: #1f2a3d;
+        --sr-muted: #6c7a90;
+        --sr-bg: #f3f6fb;
+        --sr-card: #ffffff;
+        --sr-line: #e5ecf5;
+        --sr-shadow: 0 10px 24px rgba(29, 47, 80, 0.06);
+        --sr-success-bg: #eaf8f1;
+        --sr-success: #10764f;
+        --sr-warn-bg: #fff4e5;
+        --sr-warn: #9f6a10;
+        --sr-danger: #c2394b;
+        --sr-input-bg: #f8fbff;
+        --sr-input-line: #ced9eb;
+        --sr-input-line-strong: #7ea2eb;
+        --sr-input-placeholder: #8a99af;
+        --sr-radius-xl: 16px;
+        --sr-radius-lg: 12px;
+        --sr-radius-md: 10px;
+    }
+
+    .sr-shell {
+        width: min(96vw, 1580px);
+        margin: 92px auto 34px;
+        padding: 0 10px;
+        color: var(--sr-text);
+    }
+
+    .sr-main {
+        display: grid;
+        gap: 16px;
+    }
+
+    .sr-main > .sr-hero,
+    .sr-main > .sr-panel.sr-panel-wide {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        justify-self: stretch;
+    }
+
+    .sr-hero {
+        background: var(--sr-card);
+        border: 1px solid var(--sr-line);
+        border-radius: var(--sr-radius-xl);
+        padding: 16px 18px;
+        box-shadow: var(--sr-shadow);
+    }
+
+    .sr-hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .sr-eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: #4a6b9d;
+        font-weight: 800;
+    }
+
+    .sr-title {
+        margin: 5px 0 6px;
+        font-size: clamp(25px, 2.6vw, 34px);
+        line-height: 1.2;
+        color: var(--sr-text);
+        font-weight: 800;
+    }
+
+    .sr-subtitle {
+        margin: 0;
+        color: var(--sr-muted);
+        max-width: 900px;
+    }
+
+    .sr-role-chip {
+        background: #edf3ff;
+        border: 1px solid #d8e3f7;
+        color: #244a80;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 7px 12px;
+    }
+
+    .sr-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+
+    .sr-stat {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f9fbff;
+        border: 1px solid var(--sr-line);
+        border-radius: var(--sr-radius-md);
+        padding: 10px 12px;
+        min-height: 70px;
+    }
+
+    .sr-stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #eaf1ff;
+        border: 1px solid #d3e0fa;
+        color: var(--sr-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+    }
+
+    .sr-stat-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .sr-stat-content {
+        min-width: 0;
+    }
+
+    .sr-stat-label {
+        display: block;
+        font-size: 11px;
+        color: var(--sr-muted);
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+    }
+
+    .sr-stat-value {
+        display: block;
+        font-size: 23px;
+        line-height: 1;
+        font-weight: 800;
+        color: var(--sr-primary);
+    }
+
+    .sr-flashes {
+        display: grid;
+        gap: 8px;
+    }
+
+    .sr-flash {
+        border-radius: var(--sr-radius-md);
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        font-size: 13px;
+    }
+
+    .sr-flash-success { background: #eefaf3; border-color: #b8e8cc; color: #156948; }
+    .sr-flash-error { background: #fff0f2; border-color: #f4c2c9; color: #8f2b37; }
+    .sr-flash-info { background: #edf4ff; border-color: #bfd3f6; color: #1f4f8f; }
+
+    .sr-search-panel {
+        border-left: 0;
+    }
+
+    .sr-search-form {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) minmax(180px, 220px) auto auto;
+        gap: 9px;
+        align-items: center;
+    }
+
+    .sr-search-control {
+        position: relative;
+        display: block;
+    }
+
+    .sr-search-ico {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7f8fa8;
+        pointer-events: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .sr-search-ico svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .sr-search-input {
+        width: 100%;
+        padding-left: 39px;
+    }
+
+    .sr-search-mode {
+        width: 100%;
+    }
+
+    .sr-search-result {
+        margin: 9px 0 0;
+        font-size: 12px;
+        color: #4a6288;
+    }
+
+    .sr-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .sr-panel {
+        grid-column: span 1;
+        width: 100%;
+        background: var(--sr-card);
+        border: 1px solid var(--sr-line);
+        border-radius: var(--sr-radius-lg);
+        padding: 14px;
+        box-shadow: 0 8px 20px rgba(27, 46, 79, 0.045);
+    }
+
+    .sr-panel-wide {
+        grid-column: span 1;
+        width: 100%;
+    }
+
+    .sr-panel-title {
+        margin: 0 0 5px;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--sr-text);
+    }
+
+    .sr-panel-subtitle {
+        margin: 0 0 12px;
+        color: var(--sr-muted);
+        font-size: 13px;
+    }
+
+    .sr-hero-tools {
+        display: grid;
+        gap: 8px;
+        justify-items: end;
+    }
+
+    .sr-section-switcher {
+        display: grid;
+        gap: 4px;
+        min-width: 240px;
+    }
+
+    .sr-section-switcher-label {
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #5f7698;
+        font-weight: 800;
+        text-align: right;
+    }
+
+    .sr-section-switcher-select {
+        border: 1px solid #d1deef;
+        background: #f8fbff;
+        color: #234570;
+        border-radius: 10px;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .sr-section-switcher-select:focus {
+        outline: none;
+        border-color: #86aaeb;
+        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.14);
+    }
+
+    .sr-fixed-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        align-items: start;
+    }
+
+    .sr-fixed-left,
+    .sr-fixed-right {
+        display: grid;
+        gap: 14px;
+        align-content: start;
+    }
+
+    .sr-fixed-left .sr-panel,
+    .sr-fixed-left .sr-hero,
+    .sr-fixed-right .sr-panel {
+        margin: 0;
+        width: 100%;
+    }
+
+    [data-sr-dropdown-section='1'][hidden] {
+        display: none !important;
+    }
+
+    .sr-empty {
+        color: var(--sr-muted);
+        background: #f8fbff;
+        border: 1px dashed var(--sr-line);
+        border-radius: var(--sr-radius-md);
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .sr-list { display: grid; gap: 12px; }
+
+    .sr-list-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sr-pagination {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
+    }
+
+    #sr-published-panel.sr-panel-loading {
+        opacity: 0.62;
+        pointer-events: none;
+    }
+
+    .sr-pagination-info {
+        margin: 0 8px;
+        font-size: 12px;
+        color: #5a6f90;
+        font-weight: 700;
+    }
+
+    .sr-page-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: 1px solid #d7e1ef;
+        background: #f8fbff;
+        color: #294d83;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        pointer-events: auto;
+    }
+
+    .sr-page-btn:hover {
+        background: #edf3fd;
+        border-color: #c2d2ea;
+    }
+
+    .sr-page-btn.is-active {
+        background: var(--sr-primary);
+        border-color: var(--sr-primary);
+        color: #ffffff;
+        box-shadow: 0 7px 14px rgba(47, 111, 237, 0.26);
+    }
+
+    .sr-page-btn.is-disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+
+    .sr-item {
+        border: 1px solid var(--sr-line);
+        border-radius: var(--sr-radius-md);
+        padding: 12px;
+        background: #fdfefe;
+        box-shadow: 0 2px 5px rgba(34, 54, 87, 0.035);
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .sr-item:hover {
+        border-color: #c7d5ea;
+        box-shadow: 0 10px 22px rgba(32, 55, 92, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .sr-item-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .sr-item-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .sr-item-time {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--sr-muted);
+    }
+
+    .sr-item-tags {
+        margin-top: 9px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+    }
+
+    .sr-tag {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 11px;
+        font-weight: 700;
+        border: 1px solid #dce4f3;
+        background: #f4f7fc;
+        color: #365074;
+    }
+
+    .sr-tag-capacity {
+        background: #edf3ff;
+        border-color: #d4e0f6;
+        color: #29548f;
+    }
+
+    .sr-item-desc {
+        margin: 9px 0 0;
+        font-size: 13px;
+        color: #3b4f6e;
+        line-height: 1.48;
+    }
+
+    .sr-meta {
+        margin-top: 7px;
+        color: var(--sr-muted);
+        font-size: 13px;
+    }
+
+    .sr-meta p { margin: 3px 0; }
+
+    .sr-status {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sr-status-pending { background: var(--sr-warn-bg); color: var(--sr-warn); }
+    .sr-status-accepted { background: var(--sr-success-bg); color: var(--sr-success); }
+    .sr-status-paid { background: #e8f7ef; color: #0f7b49; }
+
+    .sr-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+        align-items: center;
+    }
+
+    .sr-actions-end {
+        justify-content: flex-end;
+    }
+
+    .sr-inline-form {
+        margin: 0;
+    }
+
+    .sr-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        min-height: 38px;
+        transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.16s ease;
+        text-decoration: none;
+    }
+
+    .sr-btn-primary { background: var(--sr-primary); color: #fff; }
+    .sr-btn-primary:hover { background: var(--sr-primary-strong); box-shadow: 0 8px 18px rgba(47, 111, 237, 0.3); transform: translateY(-1px); }
+    .sr-btn-secondary { background: #f4f7fc; border-color: #d8e1ef; color: #22426f; }
+    .sr-btn-secondary:hover { background: #eaf0fb; border-color: #bfcee4; }
+    .sr-btn-danger { background: #fff2f4; border-color: #f4cad1; color: var(--sr-danger); }
+    .sr-btn-danger:hover { background: #ffe8ec; border-color: #e8a9b4; }
+    .sr-btn-success { background: #e8f7ef; border-color: #bfe7d1; color: #0f7b49; }
+    .sr-btn-success:hover { background: #ddf2e7; border-color: #a8dbbf; }
+    .sr-btn-ghost { background: #f8fbff; border-color: #d6e1f3; color: #31598f; }
+    .sr-btn-ghost:hover { background: #edf3fc; border-color: #c2d3ee; }
+
+    .sr-form { display: grid; gap: 8px; }
+
+    .sr-form-surface {
+        border: 1px solid #dde6f4;
+        border-radius: var(--sr-radius-md);
+        padding: 12px;
+        background: #fbfdff;
+    }
+
+    .sr-form-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e8eef8;
+        margin-bottom: 2px;
+    }
+
+    .sr-form-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        color: #233a58;
+    }
+
+    .sr-form-chip {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #d6e2f4;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #315684;
+        background: #edf4ff;
+    }
+
+    .sr-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .sr-form-grid-add {
+        grid-template-columns:
+            minmax(180px, 1.4fr)
+            minmax(200px, 1.3fr)
+            minmax(120px, 0.8fr)
+            minmax(130px, 0.8fr)
+            minmax(130px, 0.7fr);
+        align-items: end;
+    }
+
+    .sr-form-grid-add .sr-field {
+        min-width: 0;
+    }
+
+    .sr-form-grid-add .sr-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .sr-field-full { grid-column: 1 / -1; }
+
+    .sr-field {
+        display: grid;
+        gap: 5px;
+    }
+
+    .sr-field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .sr-required {
+        color: #bf2a4f;
+        font-weight: 800;
+        margin-left: 4px;
+    }
+
+    .sr-field-help {
+        margin-top: 4px;
+        font-size: 11px;
+        color: var(--sr-muted);
+    }
+
+    .sr-input,
+    .sr-select,
+    .sr-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--sr-input-line);
+        border-radius: 11px;
+        padding: 11px 12px;
+        font-size: 14px;
+        line-height: 1.35;
+        font-weight: 500;
+        color: var(--sr-text);
+        background: var(--sr-input-bg);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 1px 2px rgba(32, 53, 86, 0.045);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.16s ease;
+    }
+
+    .sr-input::placeholder,
+    .sr-textarea::placeholder {
+        color: var(--sr-input-placeholder);
+        font-weight: 400;
+    }
+
+    .sr-input:hover,
+    .sr-select:hover,
+    .sr-textarea:hover {
+        border-color: #b2c5e4;
+        background: #ffffff;
+    }
+
+    .sr-input:focus,
+    .sr-select:focus,
+    .sr-textarea:focus {
+        outline: none;
+        border-color: var(--sr-input-line-strong);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15), 0 8px 16px rgba(42, 75, 134, 0.09);
+        transform: translateY(-1px);
+    }
+
+    .sr-select {
+        appearance: none;
+        padding-right: 38px;
+        background-image:
+            linear-gradient(45deg, transparent 50%, #667ea8 50%),
+            linear-gradient(135deg, #667ea8 50%, transparent 50%);
+        background-position:
+            calc(100% - 17px) calc(50% - 3px),
+            calc(100% - 11px) calc(50% - 3px);
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+    }
+
+    .sr-input[type='datetime-local'] {
+        letter-spacing: 0.01em;
+    }
+
+    .sr-input[type='datetime-local']::-webkit-calendar-picker-indicator {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
+    .sr-input:disabled,
+    .sr-select:disabled,
+    .sr-textarea:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+        background: #f1f5fb;
+    }
+
+    .sr-textarea {
+        min-height: 108px;
+        resize: vertical;
+    }
+
+    .sr-ai-panel {
+        background:
+            linear-gradient(180deg, rgba(47, 111, 237, 0.06), rgba(47, 111, 237, 0) 42%),
+            var(--sr-card);
+    }
+
+    .sr-ai-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .sr-ai-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .sr-ai-source {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 11px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+
+    .sr-ai-source-openai {
+        color: #15553f;
+        background: #e7f9f1;
+        border-color: #b7e8d2;
+    }
+
+    .sr-ai-source-fallback {
+        color: #875d11;
+        background: #fff5e3;
+        border-color: #f4dfb0;
+    }
+
+    .sr-ai-source-none {
+        color: #41516a;
+        background: #edf2fa;
+        border-color: #d5deeb;
+    }
+
+    .sr-ai-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .sr-ai-box {
+        border: 1px solid #dce6f5;
+        border-radius: var(--sr-radius-lg);
+        padding: 12px;
+        background: #ffffff;
+        box-shadow: 0 8px 18px rgba(33, 56, 93, 0.05);
+    }
+
+    .sr-ai-box-title {
+        margin: 0 0 10px;
+        font-size: 16px;
+        font-weight: 800;
+        color: #1f3352;
+    }
+
+    .sr-ai-list {
+        display: grid;
+        gap: 9px;
+    }
+
+    .sr-ai-item {
+        border: 1px solid #e0e8f6;
+        border-radius: var(--sr-radius-md);
+        padding: 10px;
+        background: #fcfdff;
+    }
+
+    .sr-ai-item-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .sr-ai-item-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .sr-ai-item-meta {
+        margin: 3px 0 0;
+        font-size: 12px;
+        color: #637a99;
+    }
+
+    .sr-ai-item-right {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .sr-ai-score {
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 800;
+        color: #1f4a87;
+        background: #e9f0ff;
+        border: 1px solid #cddbf8;
+    }
+
+    .sr-top-badge {
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 10px;
+        font-weight: 800;
+        color: #7e5b09;
+        background: #fff3d4;
+        border: 1px solid #f0dba1;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+
+    .sr-ai-reason {
+        margin: 8px 0 0;
+        font-size: 12px;
+        line-height: 1.45;
+        color: #2e486d;
+    }
+
+    .sr-planner-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 24px;
+        z-index: 60;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid #d8e2f2;
+        border-radius: 999px;
+        padding: 11px 15px;
+        background: linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%);
+        color: #1e3d68;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.015em;
+        box-shadow: 0 10px 22px rgba(25, 52, 94, 0.16);
+        cursor: pointer;
+        text-decoration: none;
+        overflow: hidden;
+        isolation: isolate;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .sr-planner-fab::before {
+        content: "";
+        position: absolute;
+        inset: 1px 1px auto 1px;
+        height: 44%;
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .sr-planner-fab::after {
+        content: "";
+        position: absolute;
+        inset: auto 10px 0 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: radial-gradient(ellipse at center, rgba(39, 76, 132, 0.22), transparent 70%);
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .sr-planner-fab > span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .sr-planner-fab:hover {
+        transform: translateY(-2px);
+        border-color: #c5d4ec;
+        background: linear-gradient(180deg, #ffffff 0%, #ebf2ff 100%);
+        box-shadow: 0 14px 26px rgba(25, 52, 94, 0.2);
+    }
+
+    .sr-planner-fab:active {
+        transform: translateY(0);
+    }
+
+    .sr-planner-fab-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #2a5fcf;
+        background: linear-gradient(135deg, #3f7bff 0%, #2a5fcf 100%);
+        color: #ffffff;
+        box-shadow: 0 6px 12px rgba(34, 76, 151, 0.28);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+    }
+
+    .sr-planner-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 70;
+        display: none;
+    }
+
+    .sr-planner-modal.is-open {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+    }
+
+    .sr-planner-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(16, 26, 44, 0.46);
+        backdrop-filter: blur(2px);
+    }
+
+    .sr-planner-dialog {
+        position: relative;
+        margin: 0;
+        width: min(760px, calc(100vw - 28px));
+        max-height: 90vh;
+        overflow: auto;
+        background: #ffffff;
+        border: 1px solid #dfe8f6;
+        border-radius: 16px;
+        box-shadow: 0 24px 56px rgba(26, 39, 67, 0.28);
+        padding: 16px;
+    }
+
+    .sr-planner-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .sr-planner-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 900;
+        color: #18263f;
+    }
+
+    .sr-planner-subtitle {
+        margin: 6px 0 0;
+        color: #5f7493;
+        font-size: 13px;
+    }
+
+    .sr-planner-close {
+        border: 1px solid #d7e2f2;
+        background: #f6f9ff;
+        color: #264470;
+        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .sr-planner-form {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        align-items: end;
+        margin-bottom: 14px;
+    }
+
+    .sr-planner-output[hidden] {
+        display: none;
+    }
+
+    .sr-planner-summary {
+        border: 1px solid #dce6f5;
+        border-radius: 12px;
+        background: #f7fbff;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        color: #25456f;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .sr-planner-tips {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 12px;
+    }
+
+    .sr-planner-tips[hidden] {
+        display: none;
+    }
+
+    .sr-planner-tip {
+        border-radius: 10px;
+        border: 1px solid #d6e3f7;
+        background: #eff5ff;
+        color: #25456f;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .sr-planner-output {
+        display: grid;
+        gap: 12px;
+    }
+
+    .sr-planner-board {
+        border: 1px solid #dce6f5;
+        border-radius: 16px;
+        background:
+            linear-gradient(180deg, rgba(239, 246, 255, 0.88), rgba(255, 255, 255, 0.96)),
+            #ffffff;
+        padding: 12px;
+    }
+
+    .sr-planner-days {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 2px 6px;
+        scrollbar-width: thin;
+    }
+
+    .sr-planner-day-btn {
+        border: 1px solid #d6e2f4;
+        border-radius: 12px;
+        background: #ffffff;
+        min-width: 118px;
+        padding: 8px 10px;
+        text-align: left;
+        color: #2b456a;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+        box-shadow: 0 4px 10px rgba(25, 44, 76, 0.05);
+    }
+
+    .sr-planner-day-btn:hover {
+        border-color: #b9cbeb;
+        box-shadow: 0 8px 14px rgba(25, 44, 76, 0.09);
+        transform: translateY(-1px);
+    }
+
+    .sr-planner-day-btn.is-active {
+        border-color: #8eb0ea;
+        background: #eff5ff;
+        box-shadow: 0 10px 18px rgba(34, 69, 130, 0.14);
+    }
+
+    .sr-planner-day-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .sr-planner-day-date {
+        display: block;
+        margin-top: 2px;
+        font-size: 11px;
+        color: #667f9f;
+        font-weight: 700;
+    }
+
+    .sr-planner-stage {
+        margin-top: 8px;
+        border: 1px solid #dbe6f6;
+        border-radius: 14px;
+        background: #ffffff;
+        padding: 10px;
+    }
+
+    .sr-planner-stage-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 9px;
+    }
+
+    .sr-planner-stage-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 900;
+        color: #1e3558;
+    }
+
+    .sr-planner-stage-date {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #5e7695;
+    }
+
+    .sr-planner-timeline {
+        position: relative;
+        display: grid;
+        gap: 9px;
+        padding-left: 18px;
+    }
+
+    .sr-planner-timeline::before {
+        content: "";
+        position: absolute;
+        left: 6px;
+        top: 8px;
+        bottom: 8px;
+        border-left: 2px dashed #c6d6ee;
+    }
+
+    .sr-timeline-item {
+        position: relative;
+    }
+
+    .sr-timeline-dot {
+        position: absolute;
+        left: -16px;
+        top: 15px;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 0 0 2px rgba(152, 178, 221, 0.4);
+    }
+
+    .sr-timeline-dot-1 { background: #34c6ab; }
+    .sr-timeline-dot-2 { background: #4f7df0; }
+    .sr-timeline-dot-3 { background: #f2a63a; }
+    .sr-timeline-dot-4 { background: #8e74e8; }
+
+    .sr-timeline-card {
+        border: 1px solid #dbe6f4;
+        border-radius: 13px;
+        background: #ffffff;
+        padding: 9px 11px;
+        box-shadow: 0 5px 12px rgba(23, 44, 79, 0.06);
+    }
+
+    .sr-timeline-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .sr-timeline-subject {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 900;
+        color: #223a5f;
+    }
+
+    .sr-timeline-phase {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: #607a9c;
+        font-weight: 600;
+    }
+
+    .sr-timeline-time {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 800;
+        color: #2f5ea6;
+        white-space: nowrap;
+    }
+
+    .sr-timeline-meta {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .sr-timeline-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid #d4e1f4;
+        background: #f3f8ff;
+        color: #2d4f7d;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .sr-timeline-chip-priority {
+        background: #fff2dc;
+        border-color: #f2d4a0;
+        color: #9e6212;
+    }
+
+    .sr-planner-empty-day {
+        border: 1px dashed #d5e1f4;
+        border-radius: 11px;
+        padding: 10px;
+        background: #f9fbff;
+        color: #607898;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .sr-planner-reminders-title {
+        margin: 8px 0 6px;
+        font-size: 15px;
+        font-weight: 800;
+        color: #1f3558;
+    }
+
+    .sr-planner-reminders {
+        display: grid;
+        gap: 7px;
+    }
+
+    .sr-reminder-chip {
+        border-radius: 10px;
+        border: 1px solid #d7e2f5;
+        background: #f3f7ff;
+        color: #2a4b79;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .sr-toast {
+        position: fixed;
+        right: 20px;
+        bottom: 86px;
+        z-index: 80;
+        background: #153f74;
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        max-width: 320px;
+        box-shadow: 0 14px 26px rgba(20, 43, 78, 0.32);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .sr-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .sr-notif-fab {
+        position: fixed;
+        right: 18px;
+        top: 92px;
+        transform: none;
+        z-index: 70;
+        width: 56px;
+        height: 56px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #f7faff 0%, #e9f0ff 100%);
+        color: #2b4f86;
+        box-shadow: 0 14px 30px rgba(30, 55, 95, 0.22);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .sr-notif-fab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(30, 55, 95, 0.28);
+        background: linear-gradient(180deg, #ffffff 0%, #e4edff 100%);
+    }
+
+    .sr-notif-bell {
+        width: 23px;
+        height: 23px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sr-notif-bell svg {
+        width: 23px;
+        height: 23px;
+    }
+
+    .sr-notif-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        padding: 0 5px;
+        background: #ef3048;
+        color: #fff;
+        border: 2px solid #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 16px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 14px rgba(239, 48, 72, 0.35);
+    }
+
+    .sr-notif-badge.is-visible {
+        display: inline-flex;
+    }
+
+    .sr-notif-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(19, 30, 48, 0.34);
+        backdrop-filter: blur(1px);
+        z-index: 71;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .sr-notif-backdrop.is-open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .sr-notif-drawer {
+        position: fixed;
+        top: 84px;
+        right: 14px;
+        width: min(368px, calc(100vw - 24px));
+        max-height: calc(100vh - 108px);
+        z-index: 72;
+        border: 1px solid #dce6f6;
+        border-radius: 18px;
+        background: #fcfdff;
+        box-shadow: 0 18px 36px rgba(18, 35, 64, 0.24);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(8px) scale(0.985);
+        transform-origin: top right;
+        transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sr-notif-drawer.is-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+    }
+
+    .sr-notif-head {
+        padding: 12px 14px 10px;
+        border-bottom: 1px solid #e7eef9;
+        display: grid;
+        gap: 6px;
+        background: #ffffff;
+    }
+
+    .sr-notif-head-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .sr-notif-head-row-sub {
+        align-items: flex-start;
+    }
+
+    .sr-notif-head-main {
+        min-width: 0;
+    }
+
+    .sr-notif-title-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .sr-notif-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        color: #263a5a;
+        line-height: 1.15;
+        white-space: nowrap;
+    }
+
+    .sr-notif-subtitle {
+        margin: 0;
+        font-size: 12px;
+        color: #6d809d;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sr-notif-head-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .sr-notif-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        color: #274c88;
+        background: #e9f1ff;
+        border: 1px solid #d2def3;
+    }
+
+    .sr-notif-text-btn {
+        border: 0;
+        background: transparent;
+        color: #2d63b0;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 4px 4px;
+    }
+
+    .sr-notif-text-btn:hover {
+        text-decoration: underline;
+    }
+
+    .sr-notif-icon-btn {
+        width: 28px;
+        height: 28px;
+        border: 1px solid #dce6f6;
+        border-radius: 8px;
+        background: #f8fbff;
+        color: #4f6789;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .sr-notif-icon-btn:hover {
+        background: #eef4ff;
+        border-color: #ccd9ee;
+    }
+
+    .sr-notif-body {
+        min-height: 220px;
+        max-height: min(70vh, 560px);
+        overflow-y: auto;
+        background: #fcfdff;
+        padding: 0;
+    }
+
+    .sr-notif-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 12px 14px;
+        border-bottom: 1px solid #edf2fa;
+        cursor: pointer;
+        transition: background-color 0.16s ease;
+    }
+
+    .sr-notif-item:last-child {
+        border-bottom: 0;
+    }
+
+    .sr-notif-item:hover {
+        background: #f8fbff;
+    }
+
+    .sr-notif-item.is-unread {
+        background: linear-gradient(90deg, #f2f7ff 0%, #fbfdff 48%);
+        box-shadow: inset 3px 0 0 #4f7dd4;
+    }
+
+    .sr-notif-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 900;
+        color: #2f558f;
+        flex-shrink: 0;
+        margin-top: 3px;
+        border: 1px solid transparent;
+    }
+
+    .sr-notif-icon--1 { background: #eff5ff; border-color: #d9e7ff; }
+    .sr-notif-icon--2 { background: #ffeef1; border-color: #ffd7de; color: #a64a5c; }
+    .sr-notif-icon--3 { background: #eef9fb; border-color: #d3eff5; color: #3f7a8b; }
+    .sr-notif-icon--4 { background: #f6f0ff; border-color: #e7dcff; color: #67549a; }
+
+    .sr-notif-content {
+        min-width: 0;
+    }
+
+    .sr-notif-item-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .sr-notif-item-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 900;
+        color: #344969;
+        line-height: 1.25;
+        min-width: 0;
+    }
+
+    .sr-notif-item-time {
+        font-size: 11px;
+        font-weight: 700;
+        color: #90a0b6;
+        flex: 0 0 auto;
+    }
+
+    .sr-notif-item-message {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #667a99;
+        line-height: 1.42;
+    }
+
+    .sr-notif-item-action {
+        border: 0;
+        background: transparent;
+        color: #2e6fc8;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 6px;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .sr-notif-item-action:hover {
+        text-decoration: underline;
+    }
+
+    .sr-notif-empty {
+        padding: 26px 14px;
+        text-align: center;
+        color: #6f839f;
+        font-size: 13px;
+        background: #ffffff;
+    }
+
+    .sr-notif-toast {
+        position: fixed;
+        right: 22px;
+        bottom: 26px;
+        z-index: 75;
+        background: #233e67;
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        max-width: 320px;
+        box-shadow: 0 16px 30px rgba(16, 34, 61, 0.35);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .sr-notif-toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 1020px) {
+        .sr-panel,
+        .sr-panel-wide { grid-column: span 1; }
+
+        .sr-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .sr-fixed-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-list-cards {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .sr-form-grid-add {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .sr-form-grid-add {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 760px) {
+        .sr-shell {
+            margin-top: 84px;
+            padding: 0 8px;
+            width: min(98vw, 1580px);
+        }
+
+        .sr-hero {
+            padding: 14px;
+        }
+
+        .sr-title {
+            font-size: 24px;
+        }
+
+        .sr-hero-tools {
+            width: 100%;
+            justify-items: start;
+        }
+
+        .sr-section-switcher {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .sr-section-switcher-label {
+            text-align: left;
+        }
+
+        .sr-actions-end {
+            justify-content: flex-start;
+        }
+
+        .sr-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-list-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-form-grid,
+        .sr-form-grid-add { grid-template-columns: 1fr; }
+
+        .sr-ai-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-search-form {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-planner-form {
+            grid-template-columns: 1fr;
+        }
+
+        .sr-planner-fab {
+            right: 12px;
+            bottom: 14px;
+            padding: 10px 12px;
+        }
+
+        .sr-toast {
+            right: 12px;
+            left: 12px;
+            bottom: 72px;
+            max-width: none;
+        }
+
+        .sr-notif-fab {
+            right: 12px;
+            top: 84px;
+            bottom: auto;
+            transform: none;
+        }
+
+        .sr-notif-fab:hover {
+            transform: translateY(-2px);
+        }
+
+        .sr-notif-drawer {
+            top: 146px;
+            right: 8px;
+            left: 8px;
+            bottom: auto;
+            width: auto;
+            max-height: calc(100vh - 164px);
+        }
+
+        .sr-notif-toast {
+            right: 12px;
+            left: 12px;
+            bottom: 136px;
+            max-width: none;
+        }
+
+        .sr-notif-head-row-sub {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .sr-notif-subtitle {
+            white-space: normal;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (() => {
+            let activeRequest = null;
+            const panelSelector = '#sr-published-panel[data-ajax-pagination="1"]';
+
+            document.addEventListener('click', async (event) => {
+                const link = event.target.closest(`${panelSelector} .sr-pagination .sr-page-btn`);
+                if (!link || link.classList.contains('is-disabled')) {
+                    return;
+                }
+
+                if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const panel = document.querySelector(panelSelector);
+                if (!panel) {
+                    return;
+                }
+
+                if (activeRequest) {
+                    activeRequest.abort();
+                }
+
+                const controller = new AbortController();
+                activeRequest = controller;
+                panel.classList.add('sr-panel-loading');
+
+                try {
+                    const response = await fetch(link.href, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        signal: controller.signal,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Pagination request failed');
+                    }
+
+                    const html = await response.text();
+                    const parsed = new DOMParser().parseFromString(html, 'text/html');
+                    const nextPanel = parsed.querySelector(panelSelector);
+
+                    if (!nextPanel) {
+                        throw new Error('Pagination panel not found');
+                    }
+
+                    panel.replaceWith(nextPanel);
+                    if (typeof window.initFindTutorWorkspacePanels === 'function') {
+                        window.initFindTutorWorkspacePanels();
+                    }
+                    window.history.pushState({}, '', link.href);
+                } catch (error) {
+                    if (!(error instanceof DOMException && error.name === 'AbortError')) {
+                        window.location.href = link.href;
+                    }
+                } finally {
+                    const currentPanel = document.querySelector(panelSelector);
+                    if (currentPanel) {
+                        currentPanel.classList.remove('sr-panel-loading');
+                    }
+
+                    if (activeRequest === controller) {
+                        activeRequest = null;
+                    }
+                }
+            });
+        })();
+
+        (() => {
+            const initFindTutorWorkspacePanels = () => {
+                const pinnedLeft = document.getElementById('srPinnedLeft');
+                const pinnedRight = document.getElementById('srPinnedRight');
+                const workspacePanel = document.getElementById('sr-workspace-panel');
+                const searchPanel = document.getElementById('sr-search-panel');
+                const sectionSelect = document.getElementById('srSectionSelect');
+                const sections = Array.from(document.querySelectorAll('[data-sr-dropdown-section="1"]'));
+
+                if (pinnedLeft && workspacePanel && workspacePanel.parentElement !== pinnedLeft) {
+                    pinnedLeft.appendChild(workspacePanel);
+                }
+
+                if (pinnedLeft && searchPanel && searchPanel.parentElement !== pinnedLeft) {
+                    pinnedLeft.appendChild(searchPanel);
+                }
+
+                if (!(sectionSelect instanceof HTMLSelectElement) || sections.length === 0) {
+                    if (pinnedRight) {
+                        pinnedRight.hidden = true;
+                    }
+                    return;
+                }
+
+                if (pinnedRight) {
+                    sections.forEach((section) => {
+                        if (section.parentElement !== pinnedRight) {
+                            pinnedRight.appendChild(section);
+                        }
+                    });
+                    pinnedRight.hidden = false;
+                }
+
+                const sectionByKey = new Map();
+                sections.forEach((section) => {
+                    const key = String(section.getAttribute('data-sr-section-key') || '').trim();
+                    if (key !== '') {
+                        sectionByKey.set(key, section);
+                    }
+                });
+
+                const applySelection = (requestedKey) => {
+                    let activeKey = String(requestedKey || '').trim();
+                    if (!sectionByKey.has(activeKey)) {
+                        const firstKey = sectionByKey.keys().next().value;
+                        activeKey = typeof firstKey === 'string' ? firstKey : '';
+                    }
+
+                    sections.forEach((section) => {
+                        const key = String(section.getAttribute('data-sr-section-key') || '');
+                        section.hidden = key !== activeKey;
+                    });
+
+                    if (activeKey !== '' && sectionSelect.value !== activeKey) {
+                        sectionSelect.value = activeKey;
+                    }
+                };
+
+                applySelection(sectionSelect.value);
+
+                if (sectionSelect.dataset.srBound !== '1') {
+                    sectionSelect.addEventListener('change', () => {
+                        applySelection(sectionSelect.value);
+                    });
+                    sectionSelect.dataset.srBound = '1';
+                }
+            };
+
+            window.initFindTutorWorkspacePanels = initFindTutorWorkspacePanels;
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initFindTutorWorkspacePanels, { once: true });
+            } else {
+                initFindTutorWorkspacePanels();
+            }
+        })();
+
+        (() => {
+            const initTutorNotifications = () => {
+                const fab = document.getElementById('srNotifFab');
+                const drawer = document.getElementById('srNotifDrawer');
+                const backdrop = document.getElementById('srNotifBackdrop');
+                const closeBtn = document.getElementById('srNotifClose');
+                const settingsBtn = document.getElementById('srNotifSettings');
+                const markAllBtn = document.getElementById('srNotifMarkAll');
+                const listEl = document.getElementById('srNotifList');
+                const badgeEls = document.querySelectorAll('[data-sr-notif-badge]');
+                const countEl = document.getElementById('srNotifUnreadCount');
+                const toastEl = document.getElementById('srNotifToast');
+
+                if (!fab || !drawer || !backdrop || !closeBtn || !markAllBtn || !listEl || !countEl || badgeEls.length === 0 || !toastEl) {
+                    return;
+                }
+
+                const pollUrl = '{{ path('app_in_app_notification_live') }}';
+                const markAllUrl = '{{ path('app_in_app_notification_read_all') }}';
+                const markReadBaseUrl = '{{ path('app_in_app_notification_read', {id: 0}) }}';
+                const csrfToken = '{{ csrf_token('in_app_notif') }}';
+                const pollIntervalMs = 7000;
+
+                let isDrawerOpen = false;
+                let lastUnreadCount = 0;
+                let lastTopNotificationId = 0;
+                let pollTimerId = null;
+
+                const escapeHtml = (value) => String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+
+                const escapeAttr = (value) => escapeHtml(value).replaceAll('`', '&#096;');
+
+                const updateBadge = (count) => {
+                    const safeCount = Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : 0;
+                    const label = safeCount > 99 ? '99+' : String(safeCount);
+
+                    badgeEls.forEach((badgeEl) => {
+                        badgeEl.textContent = label;
+                        badgeEl.classList.toggle('is-visible', safeCount > 0);
+                    });
+                    countEl.textContent = label;
+                };
+
+                const showToast = (message) => {
+                    if (!message) {
+                        return;
+                    }
+
+                    toastEl.textContent = message;
+                    toastEl.classList.add('is-visible');
+                    window.clearTimeout(showToast._timerId);
+                    showToast._timerId = window.setTimeout(() => {
+                        toastEl.classList.remove('is-visible');
+                    }, 3200);
+                };
+
+                const formatRelativeTime = (isoValue) => {
+                    if (!isoValue) {
+                        return '';
+                    }
+
+                    const target = new Date(isoValue);
+                    const time = target.getTime();
+                    if (!Number.isFinite(time)) {
+                        return '';
+                    }
+
+                    const diffMs = Date.now() - time;
+                    if (diffMs < 0) {
+                        return 'a venir';
+                    }
+
+                    const minutes = Math.floor(diffMs / 60000);
+                    if (minutes < 1) {
+                        return "a l'instant";
+                    }
+                    if (minutes < 60) {
+                        return `${minutes} min`;
+                    }
+
+                    const hours = Math.floor(minutes / 60);
+                    if (hours < 24) {
+                        return `${hours} h`;
+                    }
+
+                    const days = Math.floor(hours / 24);
+                    if (days < 7) {
+                        return `${days} j`;
+                    }
+
+                    const weeks = Math.floor(days / 7);
+                    if (weeks < 8) {
+                        return `${weeks} sem`;
+                    }
+
+                    return target.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+                };
+
+                const resolveRoute = (notification) => {
+                    const rawRoute = String(notification?.data?.route || '/seance/revision').trim();
+                    if (rawRoute === '' || !rawRoute.startsWith('/')) {
+                        return '/seance/revision';
+                    }
+
+                    return rawRoute;
+                };
+
+                const resolveActionLabel = (notification) => {
+                    const type = String(notification?.type || '');
+                    if (type === 'payment_received') {
+                        return 'Voir details paiement';
+                    }
+
+                    return 'Voir details';
+                };
+
+                const renderNotifications = (notifications) => {
+                    if (!Array.isArray(notifications) || notifications.length === 0) {
+                        listEl.innerHTML = '<div class="sr-notif-empty">Aucune notification pour le moment.</div>';
+                        return;
+                    }
+
+                    listEl.innerHTML = notifications.map((notification, index) => {
+                        const id = Number(notification.id || 0);
+                        const isRead = Boolean(notification.isRead);
+                        const title = escapeHtml(notification.title || 'Nouveau paiement');
+                        const message = escapeHtml(notification.message || 'Un paiement vient d etre confirme pour une reservation.');
+                        const createdAt = formatRelativeTime(notification.createdAt || '');
+                        const actionLabel = escapeHtml(resolveActionLabel(notification));
+                        const route = escapeAttr(resolveRoute(notification));
+                        const iconVariant = (index % 4) + 1;
+                        const iconSymbol = notification?.type === 'payment_received' ? '$' : '!';
+
+                        return `
+                            <article class="sr-notif-item ${isRead ? '' : 'is-unread'}" data-notification-id="${id}">
+                                <div class="sr-notif-icon sr-notif-icon--${iconVariant}">${iconSymbol}</div>
+                                <div class="sr-notif-content">
+                                    <div class="sr-notif-item-top">
+                                        <h4 class="sr-notif-item-title">${title}</h4>
+                                        <span class="sr-notif-item-time">${escapeHtml(createdAt)}</span>
+                                    </div>
+                                    <p class="sr-notif-item-message">${message}</p>
+                                    <button type="button" class="sr-notif-item-action" data-notification-id="${id}" data-route="${route}">${actionLabel}</button>
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
+                };
+
+                const buildReadUrl = (id) => markReadBaseUrl.replace('/0/read', `/${encodeURIComponent(String(id))}/read`);
+
+                const fetchNotifications = async (isInitial = false) => {
+                    try {
+                        const response = await fetch(pollUrl, {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (!response.ok) {
+                            return;
+                        }
+
+                        const payload = await response.json();
+                        const notifications = Array.isArray(payload.notifications) ? payload.notifications : [];
+                        const unreadCount = Number(payload.unreadCount || 0);
+                        const topId = notifications.length > 0 ? Number(notifications[0].id || 0) : 0;
+
+                        renderNotifications(notifications);
+                        updateBadge(unreadCount);
+
+                        if (!isInitial && !isDrawerOpen && unreadCount > lastUnreadCount && topId !== 0 && topId !== lastTopNotificationId) {
+                            const topTitle = String(notifications[0]?.title || 'Nouveau paiement recu');
+                            showToast(topTitle);
+                        }
+
+                        lastUnreadCount = unreadCount;
+                        lastTopNotificationId = topId;
+                    } catch (error) {
+                        // silent retry on next poll
+                    }
+                };
+
+                const setDrawerOpen = (open) => {
+                    isDrawerOpen = open;
+                    drawer.classList.toggle('is-open', open);
+                    backdrop.classList.toggle('is-open', open);
+                    drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+                    backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+                };
+
+                const markNotificationRead = async (id) => {
+                    if (!Number.isFinite(id) || id <= 0) {
+                        return false;
+                    }
+
+                    try {
+                        const response = await fetch(buildReadUrl(id), {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: new URLSearchParams({ _token: csrfToken }),
+                        });
+
+                        if (!response.ok) {
+                            return false;
+                        }
+
+                        await fetchNotifications(false);
+                        return true;
+                    } catch (error) {
+                        return false;
+                    }
+                };
+
+                const markAllRead = async () => {
+                    try {
+                        const response = await fetch(markAllUrl, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: new URLSearchParams({ _token: csrfToken }),
+                        });
+
+                        if (!response.ok) {
+                            return;
+                        }
+
+                        await fetchNotifications(false);
+                    } catch (error) {
+                        // ignore
+                    }
+                };
+
+                fab.addEventListener('click', () => {
+                    setDrawerOpen(!isDrawerOpen);
+                });
+
+                closeBtn.addEventListener('click', () => setDrawerOpen(false));
+                backdrop.addEventListener('click', () => setDrawerOpen(false));
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => {
+                        showToast('Parametres notifications bientot disponibles.');
+                    });
+                }
+
+                markAllBtn.addEventListener('click', () => {
+                    markAllRead();
+                });
+
+                listEl.addEventListener('click', (event) => {
+                    const actionBtn = event.target.closest('.sr-notif-item-action');
+                    if (actionBtn) {
+                        const id = Number(actionBtn.getAttribute('data-notification-id') || 0);
+                        const route = String(actionBtn.getAttribute('data-route') || '/seance/revision');
+                        markNotificationRead(id).finally(() => {
+                            window.location.href = route;
+                        });
+                        return;
+                    }
+
+                    const item = event.target.closest('.sr-notif-item');
+                    if (!item) {
+                        return;
+                    }
+
+                    if (!item.classList.contains('is-unread')) {
+                        return;
+                    }
+
+                    const id = Number(item.getAttribute('data-notification-id') || 0);
+                    markNotificationRead(id);
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && isDrawerOpen) {
+                        setDrawerOpen(false);
+                    }
+                });
+
+                fetchNotifications(true);
+                pollTimerId = window.setInterval(() => {
+                    fetchNotifications(false);
+                }, pollIntervalMs);
+
+                window.addEventListener('beforeunload', () => {
+                    if (pollTimerId) {
+                        window.clearInterval(pollTimerId);
+                    }
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initTutorNotifications, { once: true });
+            } else {
+                initTutorNotifications();
+            }
+        })();
+
+        (() => {
+            const initPlanner = () => {
+                const plannerStorageKey = 'srPlannerData.v1';
+                const plannerAiGenerateUrl = '{{ path('app_seance_revision_planner_ai_generate') }}';
+                const plannerSubjectsEl = document.getElementById('srPlannerSubjectsData');
+                const plannerFab = document.getElementById('srPlannerFab');
+                const plannerModal = document.getElementById('srPlannerModal');
+                const plannerForm = document.getElementById('srPlannerForm');
+                const plannerExamDateInput = document.getElementById('srPlannerExamDate');
+                const plannerOutput = document.getElementById('srPlannerOutput');
+                const plannerSummary = document.getElementById('srPlannerSummary');
+                const plannerTips = document.getElementById('srPlannerTips');
+                const plannerDays = document.getElementById('srPlannerDays');
+                const plannerTimeline = document.getElementById('srPlannerTimeline');
+                const plannerDayTitle = document.getElementById('srPlannerDayTitle');
+                const plannerDayDate = document.getElementById('srPlannerDayDate');
+                const plannerReminders = document.getElementById('srPlannerReminders');
+                const plannerToast = document.getElementById('srPlannerToast');
+
+                if (!plannerSubjectsEl || !plannerFab || !plannerModal || !plannerForm || !plannerExamDateInput || !plannerOutput || !plannerSummary || !plannerTips || !plannerDays || !plannerTimeline || !plannerDayTitle || !plannerDayDate || !plannerReminders || !plannerToast) {
+                    return;
+                }
+
+                const parseSubjectStats = () => {
+                    try {
+                        const parsed = JSON.parse(plannerSubjectsEl.textContent || '[]');
+                        if (!Array.isArray(parsed)) {
+                            return [];
+                        }
+
+                        const counter = new Map();
+                        parsed
+                            .filter((subject) => typeof subject === 'string')
+                            .map((subject) => subject.trim())
+                            .filter((subject) => subject.length > 0)
+                            .forEach((subject) => {
+                                counter.set(subject, (counter.get(subject) || 0) + 1);
+                            });
+
+                        return [...counter.entries()]
+                            .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+                            .map(([name, count]) => ({
+                                name,
+                                weight: Math.max(1, Math.min(3, count))
+                            }));
+                    } catch (error) {
+                        return [];
+                    }
+                };
+
+                const subjectStats = parseSubjectStats();
+                if (subjectStats.length === 0) {
+                    subjectStats.push(
+                        { name: 'Revision generale', weight: 2 },
+                        { name: 'Exercices pratiques', weight: 1 },
+                        { name: 'Annales', weight: 1 }
+                    );
+                }
+
+                const showToast = (message) => {
+                plannerToast.textContent = message;
+                plannerToast.classList.add('is-visible');
+                window.clearTimeout(showToast._timerId);
+                showToast._timerId = window.setTimeout(() => {
+                    plannerToast.classList.remove('is-visible');
+                }, 3400);
+                };
+
+                const openModal = () => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowIso = tomorrow.toISOString().slice(0, 10);
+                plannerExamDateInput.min = tomorrowIso;
+                if (!plannerExamDateInput.value) {
+                    plannerExamDateInput.value = tomorrowIso;
+                }
+                plannerModal.classList.add('is-open');
+                plannerModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                };
+
+                const closeModal = () => {
+                plannerModal.classList.remove('is-open');
+                plannerModal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+                };
+
+                plannerFab.addEventListener('click', openModal);
+                plannerModal.querySelectorAll('[data-close-planner]').forEach((element) => {
+                    element.addEventListener('click', closeModal);
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && plannerModal.classList.contains('is-open')) {
+                        closeModal();
+                    }
+                });
+
+                const loadPlannerData = () => {
+                try {
+                    const raw = window.localStorage.getItem(plannerStorageKey);
+                    if (!raw) {
+                        return null;
+                    }
+
+                    const parsed = JSON.parse(raw);
+                    if (!parsed || typeof parsed !== 'object') {
+                        return null;
+                    }
+
+                    return parsed;
+                } catch (error) {
+                    return null;
+                }
+                };
+
+                const savePlannerData = (data) => {
+                window.localStorage.setItem(plannerStorageKey, JSON.stringify(data));
+                };
+
+                const formatDateLabel = (dateIso) => {
+                const date = new Date(dateIso);
+                if (Number.isNaN(date.getTime())) {
+                    return '--';
+                }
+                return date.toLocaleDateString('fr-FR', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                };
+
+                const formatShortDateLabel = (dateIso) => {
+                const date = new Date(dateIso);
+                if (Number.isNaN(date.getTime())) {
+                    return '--';
+                }
+                return date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: 'short'
+                });
+                };
+
+                const formatClockFromMinutes = (totalMinutes) => {
+                const minutesNormalized = Math.max(0, totalMinutes);
+                const hours = Math.floor(minutesNormalized / 60) % 24;
+                const minutes = minutesNormalized % 60;
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                };
+
+                const addSessionTimes = (entries) => {
+                let cursorMinutes = 8 * 60 + 30;
+                return entries.map((entry) => {
+                    const duration = Math.max(30, Number(entry.durationMin) || 60);
+                    const startAt = cursorMinutes;
+                    const endAt = cursorMinutes + duration;
+                    cursorMinutes = endAt + 20;
+
+                    return {
+                        ...entry,
+                        _startClock: formatClockFromMinutes(startAt),
+                        _endClock: formatClockFromMinutes(endAt)
+                    };
+                });
+                };
+
+                const renderPlanner = (data) => {
+                if (!data || !Array.isArray(data.planEntries) || data.planEntries.length === 0) {
+                    plannerOutput.hidden = true;
+                    return;
+                }
+
+                plannerOutput.hidden = false;
+                plannerDays.innerHTML = '';
+                plannerTimeline.innerHTML = '';
+                plannerReminders.innerHTML = '';
+                plannerTips.innerHTML = '';
+
+                const tips = Array.isArray(data.tips) ? data.tips : [];
+                if (tips.length > 0) {
+                    plannerTips.hidden = false;
+                    tips.slice(0, 5).forEach((tip) => {
+                        const tipEl = document.createElement('div');
+                        tipEl.className = 'sr-planner-tip';
+                        tipEl.textContent = `Conseil IA: ${String(tip)}`;
+                        plannerTips.appendChild(tipEl);
+                    });
+                } else {
+                    plannerTips.hidden = true;
+                }
+
+                const groupedByDay = new Map();
+                data.planEntries.forEach((entry) => {
+                    const dayKey = entry.day;
+                    if (!groupedByDay.has(dayKey)) {
+                        groupedByDay.set(dayKey, []);
+                    }
+                    groupedByDay.get(dayKey).push(entry);
+                });
+
+                const dayKeys = [...groupedByDay.keys()].sort((a, b) => a.localeCompare(b));
+                if (dayKeys.length === 0) {
+                    plannerOutput.hidden = true;
+                    return;
+                }
+
+                let activeDayKey = dayKeys[0];
+
+                const renderTimelineForDay = (dayKey) => {
+                    plannerTimeline.innerHTML = '';
+
+                    const activeDayIndex = dayKeys.indexOf(dayKey);
+                    plannerDayTitle.textContent = activeDayIndex >= 0 ? `Jour ${activeDayIndex + 1}` : 'Jour';
+                    plannerDayDate.textContent = formatDateLabel(dayKey);
+
+                    const dayEntries = addSessionTimes((groupedByDay.get(dayKey) || []));
+                    if (dayEntries.length === 0) {
+                        const emptyState = document.createElement('div');
+                        emptyState.className = 'sr-planner-empty-day';
+                        emptyState.textContent = 'Aucune session planifiee pour ce jour.';
+                        plannerTimeline.appendChild(emptyState);
+                        return;
+                    }
+
+                    dayEntries.forEach((entry, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'sr-timeline-item';
+
+                        const dot = document.createElement('span');
+                        dot.className = `sr-timeline-dot sr-timeline-dot-${(index % 4) + 1}`;
+                        item.appendChild(dot);
+
+                        const card = document.createElement('article');
+                        card.className = 'sr-timeline-card';
+
+                        const head = document.createElement('div');
+                        head.className = 'sr-timeline-card-head';
+
+                        const left = document.createElement('div');
+                        const subject = document.createElement('p');
+                        subject.className = 'sr-timeline-subject';
+                        subject.textContent = String(entry.subject || 'Revision generale');
+                        left.appendChild(subject);
+
+                        const phase = document.createElement('p');
+                        phase.className = 'sr-timeline-phase';
+                        phase.textContent = String(entry.phase || 'Consolidation');
+                        left.appendChild(phase);
+
+                        const time = document.createElement('p');
+                        time.className = 'sr-timeline-time';
+                        time.textContent = `${entry._startClock} - ${entry._endClock}`;
+
+                        head.appendChild(left);
+                        head.appendChild(time);
+
+                        const meta = document.createElement('div');
+                        meta.className = 'sr-timeline-meta';
+
+                        const durationChip = document.createElement('span');
+                        durationChip.className = 'sr-timeline-chip';
+                        durationChip.textContent = `${Math.max(30, Number(entry.durationMin) || 60)} min`;
+                        meta.appendChild(durationChip);
+
+                        if (entry.priority === 'Haute') {
+                            const priorityChip = document.createElement('span');
+                            priorityChip.className = 'sr-timeline-chip sr-timeline-chip-priority';
+                            priorityChip.textContent = 'Priorite haute';
+                            meta.appendChild(priorityChip);
+                        }
+
+                        card.appendChild(head);
+                        card.appendChild(meta);
+                        item.appendChild(card);
+
+                        plannerTimeline.appendChild(item);
+                    });
+                };
+
+                const renderDaysTabs = () => {
+                    plannerDays.innerHTML = '';
+                    dayKeys.forEach((dayKey, index) => {
+                        const dayButton = document.createElement('button');
+                        dayButton.type = 'button';
+                        dayButton.className = `sr-planner-day-btn${dayKey === activeDayKey ? ' is-active' : ''}`;
+                        dayButton.setAttribute('aria-pressed', dayKey === activeDayKey ? 'true' : 'false');
+
+                        const label = document.createElement('span');
+                        label.className = 'sr-planner-day-label';
+                        label.textContent = `Jour ${index + 1}`;
+
+                        const date = document.createElement('span');
+                        date.className = 'sr-planner-day-date';
+                        date.textContent = formatShortDateLabel(dayKey);
+
+                        dayButton.appendChild(label);
+                        dayButton.appendChild(date);
+
+                        dayButton.addEventListener('click', () => {
+                            activeDayKey = dayKey;
+                            renderDaysTabs();
+                            renderTimelineForDay(activeDayKey);
+                        });
+
+                        plannerDays.appendChild(dayButton);
+                    });
+                };
+
+                renderDaysTabs();
+                renderTimelineForDay(activeDayKey);
+
+                const upcomingReminders = (Array.isArray(data.reminders) ? data.reminders : [])
+                    .slice(0, 8);
+
+                upcomingReminders.forEach((reminder) => {
+                    const reminderChip = document.createElement('div');
+                    reminderChip.className = 'sr-reminder-chip';
+                    reminderChip.textContent = `${formatDateLabel(reminder.at)} a ${new Date(reminder.at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})} - ${reminder.label}`;
+                    plannerReminders.appendChild(reminderChip);
+                });
+
+                const metrics = data.metrics || null;
+                const aiSummary = typeof data.summary === 'string' && data.summary.trim() !== '' ? data.summary.trim() : null;
+                if (metrics && typeof metrics === 'object') {
+                    plannerSummary.textContent = `Planning genere pour l'examen du ${formatDateLabel(data.examDate)}: ${data.planEntries.length} sessions, ${metrics.totalHours} h de revision, intensite ${metrics.intensityScore}% sur ${dayKeys.length} jours.${aiSummary ? ` ${aiSummary}` : ''}`;
+                } else {
+                    plannerSummary.textContent = `Planning genere pour l'examen du ${formatDateLabel(data.examDate)}: ${data.planEntries.length} sessions reparties sur ${dayKeys.length} jours.${aiSummary ? ` ${aiSummary}` : ''}`;
+                }
+                };
+
+                const requestAiPlannerData = async ({ examDateValue, dailySessions, includeWeekend, reminderTime }) => {
+                    try {
+                        const response = await fetch(plannerAiGenerateUrl, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                examDate: examDateValue,
+                                dailySessions,
+                                includeWeekend,
+                                reminderTime,
+                                subjects: subjectStats.map((subject) => subject.name)
+                            })
+                        });
+
+                        if (!response.ok) {
+                            return null;
+                        }
+
+                        const payload = await response.json();
+                        if (!payload || !Array.isArray(payload.planEntries) || payload.planEntries.length === 0) {
+                            return null;
+                        }
+
+                        return payload;
+                    } catch (error) {
+                        return null;
+                    }
+                };
+
+                const buildPlannerData = ({ examDateValue, dailySessions, includeWeekend, reminderTime }) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const examDate = new Date(`${examDateValue}T00:00:00`);
+                    if (Number.isNaN(examDate.getTime()) || examDate <= today) {
+                        return { error: "La date d'examen doit etre dans le futur." };
+                    }
+
+                    const revisionDays = [];
+                    const cursor = new Date(today);
+                    while (cursor < examDate) {
+                        const weekDay = cursor.getDay();
+                        if (includeWeekend || (weekDay !== 0 && weekDay !== 6)) {
+                            revisionDays.push(new Date(cursor));
+                        }
+                        cursor.setDate(cursor.getDate() + 1);
+                    }
+
+                    if (revisionDays.length === 0) {
+                        const fallbackDay = new Date(examDate);
+                        fallbackDay.setDate(fallbackDay.getDate() - 1);
+                        revisionDays.push(fallbackDay);
+                    }
+
+                    const dayMs = 24 * 60 * 60 * 1000;
+                    const [reminderHour, reminderMinute] = reminderTime.split(':').map((value) => Number.parseInt(value, 10));
+                    const weightedSubjectsPool = subjectStats.flatMap((subject) =>
+                        Array.from({ length: subject.weight }, () => subject.name)
+                    );
+
+                    const choosePhase = (daysLeft, slotIndex, slotsToday) => {
+                        let phase = 'Consolidation';
+                        let durationMin = 80;
+
+                        if (daysLeft > 14) {
+                            phase = 'Apprentissage actif';
+                            durationMin = 65;
+                        } else if (daysLeft > 7) {
+                            phase = 'Exercices cibles';
+                            durationMin = 75;
+                        } else if (daysLeft > 3) {
+                            phase = 'Simulation annales';
+                            durationMin = 90;
+                        } else {
+                            phase = 'Revision finale';
+                            durationMin = 55;
+                        }
+
+                        if (daysLeft <= 7 && slotIndex === slotsToday - 1) {
+                            durationMin = Math.max(35, durationMin - 20);
+                        }
+
+                        return { phase, durationMin };
+                    };
+
+                    const planEntries = [];
+                    let poolCursor = 0;
+                    let lastSubject = '';
+
+                    revisionDays.forEach((dayDate, dayIndex) => {
+                        const daysLeft = Math.max(1, Math.ceil((examDate.getTime() - dayDate.getTime()) / dayMs));
+                        const sessionsToday = Math.min(
+                            4,
+                            Math.max(
+                                1,
+                                dailySessions + (daysLeft <= 5 && dailySessions < 4 ? 1 : 0) - (dayIndex === revisionDays.length - 1 ? 1 : 0)
+                            )
+                        );
+
+                        const recentSubjects = [];
+                        for (let slot = 0; slot < sessionsToday; slot += 1) {
+                            let subject = weightedSubjectsPool[poolCursor % weightedSubjectsPool.length];
+                            let attempts = 0;
+                            while ((subject === lastSubject || recentSubjects.includes(subject)) && attempts < weightedSubjectsPool.length) {
+                                poolCursor += 1;
+                                subject = weightedSubjectsPool[poolCursor % weightedSubjectsPool.length];
+                                attempts += 1;
+                            }
+                            poolCursor += 1;
+                            lastSubject = subject;
+                            recentSubjects.push(subject);
+                            if (recentSubjects.length > 2) {
+                                recentSubjects.shift();
+                            }
+
+                            const { phase, durationMin } = choosePhase(daysLeft, slot, sessionsToday);
+                            planEntries.push({
+                                day: dayDate.toISOString().slice(0, 10),
+                                subject,
+                                phase,
+                                durationMin,
+                                priority: daysLeft <= 3 ? 'Haute' : 'Normale'
+                            });
+                        }
+                    });
+
+                    const reminders = [];
+                    const remindersIndex = new Set();
+                    const now = Date.now();
+                    const pushReminder = (dateValue, label) => {
+                        if (!(dateValue instanceof Date) || Number.isNaN(dateValue.getTime())) {
+                            return;
+                        }
+                        if (dateValue.getTime() <= now) {
+                            return;
+                        }
+
+                        const id = `${dateValue.toISOString()}|${label}`;
+                        if (remindersIndex.has(id)) {
+                            return;
+                        }
+
+                        remindersIndex.add(id);
+                        reminders.push({
+                            id,
+                            at: dateValue.toISOString(),
+                            label
+                        });
+                    };
+
+                    revisionDays.forEach((dayDate, index) => {
+                        const reminderDate = new Date(dayDate);
+                        reminderDate.setHours(reminderHour, reminderMinute, 0, 0);
+                        const subject = subjectStats[index % subjectStats.length]?.name || 'Revision generale';
+                        pushReminder(reminderDate, `Session du jour: ${subject}`);
+                    });
+
+                    [7, 3, 1].forEach((offset) => {
+                        const strategicDate = new Date(examDate);
+                        strategicDate.setDate(strategicDate.getDate() - offset);
+                        strategicDate.setHours(reminderHour, reminderMinute, 0, 0);
+                        pushReminder(strategicDate, `J-${offset} avant l'examen: revise les points critiques`);
+                    });
+
+                    const examMorning = new Date(examDate);
+                    examMorning.setHours(7, 30, 0, 0);
+                    pushReminder(examMorning, 'Jour J: relire fiches resumees et rester confiant');
+
+                    reminders.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
+
+                    const totalMinutes = planEntries.reduce((sum, entry) => sum + (Number(entry.durationMin) || 0), 0);
+                    const intensityScore = Math.min(100, Math.round((totalMinutes / Math.max(1, revisionDays.length * 90)) * 100));
+
+                    return {
+                        examDate: examDate.toISOString(),
+                        generatedAt: new Date().toISOString(),
+                        planEntries,
+                        reminders,
+                        metrics: {
+                            totalMinutes,
+                            totalHours: Number((totalMinutes / 60).toFixed(1)),
+                            intensityScore,
+                            revisionDays: revisionDays.length
+                        },
+                        subjectStats,
+                        notified: {}
+                    };
+                };
+
+                plannerForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const examDateValue = String(document.getElementById('srPlannerExamDate')?.value || '');
+                const dailySessionsValue = Number.parseInt(String(document.getElementById('srPlannerSessions')?.value || '2'), 10);
+                const reminderTime = String(document.getElementById('srPlannerReminderTime')?.value || '19:00');
+                const includeWeekend = Boolean(document.getElementById('srPlannerWeekend')?.checked);
+                const enableNotifications = Boolean(document.getElementById('srPlannerEnableNotif')?.checked);
+
+                if (!examDateValue) {
+                    showToast("Ajoute d'abord la date de ton examen.");
+                    return;
+                }
+
+                const dailySessions = Number.isNaN(dailySessionsValue) ? 2 : Math.min(4, Math.max(1, dailySessionsValue));
+                const aiPlannerData = await requestAiPlannerData({
+                    examDateValue,
+                    dailySessions,
+                    includeWeekend,
+                    reminderTime
+                });
+
+                const plannerData = aiPlannerData || buildPlannerData({
+                    examDateValue,
+                    dailySessions,
+                    includeWeekend,
+                    reminderTime
+                });
+
+                if (plannerData.error) {
+                    showToast(plannerData.error);
+                    return;
+                }
+
+                if (enableNotifications && 'Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().catch(() => {});
+                }
+
+                savePlannerData(plannerData);
+                renderPlanner(plannerData);
+                const generatedHours = plannerData.metrics && Number.isFinite(plannerData.metrics.totalHours)
+                    ? plannerData.metrics.totalHours
+                    : '?';
+                if (plannerData.source === 'openai' || plannerData.source === 'openai_service') {
+                    showToast(`Plan IA genere avec succes (${generatedHours} h).`);
+                } else {
+                    showToast(`Planner genere (${generatedHours} h) en mode secours.`);
+                }
+                });
+
+                const runReminderWatcher = () => {
+                const data = loadPlannerData();
+                if (!data || !Array.isArray(data.reminders) || !data.notified || typeof data.notified !== 'object') {
+                    return;
+                }
+
+                const now = Date.now();
+                let hasUpdates = false;
+
+                data.reminders.forEach((reminder) => {
+                    const reminderTime = new Date(reminder.at).getTime();
+                    if (!Number.isFinite(reminderTime) || data.notified[reminder.id]) {
+                        return;
+                    }
+
+                    if (reminderTime <= now) {
+                        const delayMs = now - reminderTime;
+                        data.notified[reminder.id] = true;
+                        hasUpdates = true;
+
+                        if (delayMs <= 5 * 60 * 1000) {
+                            showToast(`Rappel: ${reminder.label}`);
+
+                            if ('Notification' in window && Notification.permission === 'granted') {
+                                new Notification('Rappel de revision', { body: reminder.label });
+                            }
+                        }
+                    }
+                });
+
+                if (hasUpdates) {
+                    savePlannerData(data);
+                }
+                };
+
+                const savedPlannerData = loadPlannerData();
+                if (savedPlannerData) {
+                    renderPlanner(savedPlannerData);
+                }
+
+                runReminderWatcher();
+                window.setInterval(runReminderWatcher, 45000);
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPlanner, { once: true });
+            } else {
+                initPlanner();
+            }
+        })();
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="sr-shell">
+    <div class="sr-main">
+        <section id="sr-workspace-panel" class="sr-hero sr-panel-wide sr-static-panel">
+            <div class="sr-hero-top">
+                <div>
+                    <span class="sr-eyebrow">Find Tutors Workspace</span>
+                    <h1 class="sr-title">Gestion professionnelle des seances</h1>
+                    <p class="sr-subtitle">
+                        {% if app.user %}
+                            Bonjour {{ app.user.fullName }}. Gere tes seances, reservations et validations depuis un seul espace.
+                        {% else %}
+                            Espace de gestion des seances et reservations.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="sr-hero-tools">
+                    <div class="sr-role-chip">
+                        {% if isTutor and isStudent %}
+                            Tuteur + Etudiant
+                        {% elseif isTutor %}
+                            Tuteur
+                        {% elseif isStudent %}
+                            Etudiant
+                        {% else %}
+                            Utilisateur
+                        {% endif %}
+                    </div>
+                    <label class="sr-section-switcher" for="srSectionSelect">
+                        <span class="sr-section-switcher-label">Menu des sections</span>
+                        <select id="srSectionSelect" class="sr-section-switcher-select" aria-label="Choisir la section a afficher">
+                            {% if isStudent %}
+                                <option value="published">Seances publiees par les tuteurs</option>
+                                <option value="accepted-reservations">Mes reservations validees</option>
+                                {% if showRecommendations %}
+                                    <option value="recommendations">Recommandations personnalisees</option>
+                                {% endif %}
+                            {% endif %}
+                            {% if isTutor %}
+                                <option value="my-seances">Mes seances</option>
+                                <option value="add-seance">Ajouter une seance</option>
+                                <option value="other-seances">Seances des autres tuteurs</option>
+                                <option value="reservations-on-my-seances">Reservations sur mes seances</option>
+                            {% endif %}
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="sr-stats">
+                <div class="sr-stat">
+                    <span class="sr-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M7 3v3M17 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <div class="sr-stat-content">
+                        <span class="sr-stat-label">Seances publiees</span>
+                        <span class="sr-stat-value">{{ allSeances|length }}</span>
+                    </div>
+                </div>
+                <div class="sr-stat">
+                    <span class="sr-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 6h16M4 12h10M4 18h7M17 12l2 2 3-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <div class="sr-stat-content">
+                        <span class="sr-stat-label">Mes seances</span>
+                        <span class="sr-stat-value">{{ mySeances|length }}</span>
+                    </div>
+                </div>
+                <div class="sr-stat">
+                    <span class="sr-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M4 6h16v12H4zM8 10h8M8 14h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <div class="sr-stat-content">
+                        <span class="sr-stat-label">Mes reservations</span>
+                        <span class="sr-stat-value">{{ myReservations|length }}</span>
+                    </div>
+                </div>
+                <div class="sr-stat">
+                    <span class="sr-stat-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M20 7 9 18l-5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <div class="sr-stat-content">
+                        <span class="sr-stat-label">Reservations acceptees</span>
+                        <span class="sr-stat-value">{{ acceptedReservations|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sr-flashes">
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="sr-flash sr-flash-{{ label }}">{{ message }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div id="srPinnedPanels" class="sr-fixed-layout">
+            <div id="srPinnedLeft" class="sr-fixed-left"></div>
+            <div id="srPinnedRight" class="sr-fixed-right"></div>
+        </div>
+
+        <section id="sr-search-panel" class="sr-panel sr-panel-wide sr-search-panel sr-static-panel">
+            <h2 class="sr-panel-title">Chercher sur Fahamni</h2>
+            <p class="sr-panel-subtitle">Choisis un mode: recherche simple ou recommandation IA, puis lance la recherche.</p>
+
+            <form class="sr-search-form" method="get" action="{{ path('app_seance_revision') }}">
+                <label class="sr-search-control">
+                    <span class="sr-search-ico" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+                            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                        </svg>
+                    </span>
+                    <input
+                        class="sr-input sr-search-input"
+                        type="text"
+                        name="search"
+                        value="{{ searchQuery|default('') }}"
+                        placeholder="Ex: analyse, nour, 2026-03-12"
+                    >
+                </label>
+                <select class="sr-select sr-search-mode" name="mode" aria-label="Mode de recherche">
+                    <option value="simple" {{ searchMode == 'simple' ? 'selected' : '' }}>Recherche simple</option>
+                    {% if isStudent %}
+                        <option value="recommendation" {{ searchMode == 'recommendation' ? 'selected' : '' }}>Recommandation IA</option>
+                    {% endif %}
+                </select>
+                <button class="sr-btn sr-btn-primary" type="submit">Chercher</button>
+                {% if searchApplied %}
+                    <a class="sr-btn sr-btn-secondary" href="{{ path('app_seance_revision') }}">Reinitialiser</a>
+                {% endif %}
+            </form>
+
+            {% if searchApplied %}
+                <p class="sr-search-result">
+                    Resultats: {{ filteredSeancesCount }} / {{ totalSeancesCount }} seances pour "{{ searchQuery }}".
+                </p>
+            {% endif %}
+        </section>
+
+        {% if isStudent and showRecommendations %}
+            <section id="sr-recommendations-panel" class="sr-hero sr-ai-panel" data-sr-dropdown-section="1" data-sr-section-key="recommendations">
+                <div class="sr-ai-head">
+                    <div>
+                        <span class="sr-eyebrow">Matching IA avance</span>
+                        <h2 class="sr-panel-title">Recommandations personnalisees</h2>
+                        <p class="sr-panel-subtitle">
+                            {{ aiMatching.summary ?: 'Selection intelligente selon ton historique de reservations et les disponibilites.' }}
+                        </p>
+                    </div>
+
+                    <div class="sr-ai-toolbar">
+                        {% set aiSource = aiMatching.source|default('fallback') %}
+                        {% set refreshParams = app.request.query.all|merge({mode: 'recommendation', refresh_ia: 1, page: 1}) %}
+                        <span class="sr-ai-source sr-ai-source-{{ aiSource == 'openai' ? 'openai' : (aiSource == 'none' ? 'none' : 'fallback') }}">
+                            {{ aiSource == 'openai' ? 'Source OpenAI' : (aiSource == 'none' ? 'Aucune suggestion' : 'Mode secours') }}
+                        </span>
+                        <a
+                            class="sr-btn sr-btn-ghost"
+                            href="{{ path('app_seance_revision', refreshParams) }}"
+                        >Rafraichir IA</a>
+                    </div>
+                </div>
+
+                {% if aiMatching.error %}
+                    <div class="sr-empty">{{ aiMatching.error }}</div>
+                {% endif %}
+
+                <div class="sr-ai-grid">
+                    <section class="sr-ai-box">
+                        <h3 class="sr-ai-box-title">Top seances recommandees</h3>
+                        {% if aiMatching.recommendedSeances is empty %}
+                            <div class="sr-empty">Aucune recommandation de seance pour le moment.</div>
+                        {% else %}
+                            <div class="sr-ai-list">
+                                {% for recommendation in aiMatching.recommendedSeances %}
+                                    {% set seance = recommendation.seance %}
+                                    {% if seance %}
+                                        {% set reservationStatus = reservationBySeance[seance.id]|default(null) %}
+                                        {% set reservationId = reservationIdBySeance[seance.id]|default(null) %}
+                                        <article class="sr-ai-item">
+                                            <div class="sr-ai-item-head">
+                                                <div>
+                                                    <h4 class="sr-ai-item-title">{{ seance.matiere }}</h4>
+                                                    <p class="sr-ai-item-meta">
+                                                        {{ seance.startAt|date('d/m/Y H:i') }} | {{ seance.durationMin }} min | {{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}
+                                                    </p>
+                                                </div>
+                                                <div class="sr-ai-item-right">
+                                                    {% if loop.first %}
+                                                        <span class="sr-top-badge">Top recommande</span>
+                                                    {% endif %}
+                                                    {% if recommendation.score is not null %}
+                                                        <span class="sr-ai-score">Score {{ recommendation.score }}/100</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            {% if recommendation.reason %}
+                                                <p class="sr-ai-reason">{{ recommendation.reason }}</p>
+                                            {% endif %}
+
+                                            <div class="sr-actions">
+                                                {% if reservationStatus is null %}
+                                                    <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_reserve', {id: seance.id}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('reserve_seance_' ~ seance.id) }}">
+                                                        <button class="sr-btn sr-btn-primary" type="submit">Reserver</button>
+                                                    </form>
+                                                {% elseif reservationStatus == statusAccepted and reservationId %}
+                                                    <form class="sr-inline-form" method="post" action="{{ path('app_payment_checkout', {id: reservationId}) }}">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('pay_reservation_' ~ reservationId) }}">
+                                                        <button class="sr-btn sr-btn-primary" type="submit">Payer</button>
+                                                    </form>
+                                                    <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                        <button class="sr-btn sr-btn-danger" type="submit">Annuler</button>
+                                                    </form>
+                                                {% elseif reservationStatus == statusPaid %}
+                                                    <span class="sr-status sr-status-paid">Payee</span>
+                                                {% elseif reservationId %}
+                                                    <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                        <button class="sr-btn sr-btn-danger" type="submit">Annuler</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </article>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </section>
+
+                    <section class="sr-ai-box">
+                        <h3 class="sr-ai-box-title">Top tuteurs recommandes</h3>
+                        {% if aiMatching.recommendedTutors is empty %}
+                            <div class="sr-empty">Aucune recommandation de tuteur pour le moment.</div>
+                        {% else %}
+                            <div class="sr-ai-list">
+                                {% for recommendation in aiMatching.recommendedTutors %}
+                                    {% set tutor = recommendation.tutor %}
+                                    {% if tutor %}
+                                        <article class="sr-ai-item">
+                                            <div class="sr-ai-item-head">
+                                                <div>
+                                                    <h4 class="sr-ai-item-title">{{ tutor.fullName }}</h4>
+                                                    <p class="sr-ai-item-meta">{{ tutor.email }}</p>
+                                                </div>
+                                                <div class="sr-ai-item-right">
+                                                    {% if loop.first %}
+                                                        <span class="sr-top-badge">Top recommande</span>
+                                                    {% endif %}
+                                                    {% if recommendation.score is not null %}
+                                                        <span class="sr-ai-score">Score {{ recommendation.score }}/100</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if recommendation.reason %}
+                                                <p class="sr-ai-reason">{{ recommendation.reason }}</p>
+                                            {% endif %}
+                                        </article>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </section>
+                </div>
+            </section>
+        {% endif %}
+
+        <div class="sr-grid">
+            {% if isStudent %}
+                <section id="sr-published-panel" class="sr-panel sr-published-panel" data-ajax-pagination="1" data-sr-dropdown-section="1" data-sr-section-key="published">
+                    <h2 class="sr-panel-title">Seances publiees par les tuteurs</h2>
+                    <p class="sr-panel-subtitle">Tu peux consulter toutes les seances et reserver celles qui t'interessent.</p>
+
+                    {% if filteredSeancesCount == 0 %}
+                        <div class="sr-empty">Aucune seance disponible.</div>
+                    {% else %}
+                        <div class="sr-list sr-list-cards">
+                            {% for seance in allSeancesPaginated %}
+                                <article class="sr-item">
+                                    <div class="sr-item-head">
+                                        <div>
+                                            <h3 class="sr-item-title">{{ seance.matiere }}</h3>
+                                            <div class="sr-item-time">{{ seance.startAt|date('d/m/Y H:i') }} - {{ seance.durationMin }} min</div>
+                                        </div>
+                                        {% set reservationStatus = reservationBySeance[seance.id]|default(null) %}
+                                        {% set reservationId = reservationIdBySeance[seance.id]|default(null) %}
+                                        {% if reservationStatus is not null %}
+                                            <span class="sr-status {{ reservationStatus == statusPaid ? 'sr-status-paid' : (reservationStatus == statusAccepted ? 'sr-status-accepted' : 'sr-status-pending') }}">
+                                                {{ reservationStatus == statusPaid ? 'Payee' : (reservationStatus == statusAccepted ? 'Acceptee' : 'En attente') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="sr-item-tags">
+                                        <span class="sr-tag">Tuteur: {{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</span>
+                                        <span class="sr-tag sr-tag-capacity">Capacite: {{ seance.maxParticipants }}</span>
+                                    </div>
+                                    {% if seance.description %}
+                                        <p class="sr-item-desc">{{ seance.description }}</p>
+                                    {% endif %}
+
+                                    <div class="sr-actions">
+                                        {% if reservationStatus is null %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_reserve', {id: seance.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reserve_seance_' ~ seance.id) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Reserver la seance</button>
+                                            </form>
+                                        {% elseif reservationStatus == statusAccepted and reservationId %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_payment_checkout', {id: reservationId}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('pay_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Payer</button>
+                                            </form>
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-danger" type="submit">Annuler la reservation</button>
+                                            </form>
+                                        {% elseif reservationStatus == statusPaid %}
+                                            <span class="sr-status sr-status-paid">Reservation payee</span>
+                                        {% elseif reservationId %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-danger" type="submit">Annuler la reservation</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+
+                        {% set baseQueryParams = app.request.query.all %}
+                        <nav class="sr-pagination" aria-label="Pagination des seances">
+                            {% set prevPage = studentSeancesPage > 1 ? studentSeancesPage - 1 : 1 %}
+                            <a
+                                class="sr-page-btn {{ studentSeancesPage <= 1 ? 'is-disabled' : '' }}"
+                                href="{{ path('app_seance_revision', baseQueryParams|merge({page: prevPage})) }}"
+                            >&lsaquo;</a>
+
+                            {% for page in 1..studentSeancesTotalPages %}
+                                <a
+                                    class="sr-page-btn {{ page == studentSeancesPage ? 'is-active' : '' }}"
+                                    href="{{ path('app_seance_revision', baseQueryParams|merge({page: page})) }}"
+                                >{{ page }}</a>
+                            {% endfor %}
+
+                            {% set nextPage = studentSeancesPage < studentSeancesTotalPages ? studentSeancesPage + 1 : studentSeancesTotalPages %}
+                            <a
+                                class="sr-page-btn {{ studentSeancesPage >= studentSeancesTotalPages ? 'is-disabled' : '' }}"
+                                href="{{ path('app_seance_revision', baseQueryParams|merge({page: nextPage})) }}"
+                            >&rsaquo;</a>
+
+                            <span class="sr-pagination-info">Page {{ studentSeancesPage }} / {{ studentSeancesTotalPages }}</span>
+                        </nav>
+                    {% endif %}
+                </section>
+
+                <section id="sr-accepted-reservations-panel" class="sr-panel" data-sr-dropdown-section="1" data-sr-section-key="accepted-reservations">
+                    <h2 class="sr-panel-title">Mes reservations validees</h2>
+                    {% if acceptedReservations is empty %}
+                        <div class="sr-empty">Aucune reservation acceptee/payee.</div>
+                    {% else %}
+                        <div class="sr-list">
+                            {% for reservation in acceptedReservations %}
+                                {% set seance = reservation.seance %}
+                                <article class="sr-item">
+                                    <div class="sr-item-head">
+                                        <div>
+                                            <h3 class="sr-item-title">{{ seance.matiere }}</h3>
+                                            <div class="sr-item-time">{{ seance.startAt|date('d/m/Y H:i') }} - {{ seance.durationMin }} min</div>
+                                        </div>
+                                        <span class="sr-status {{ reservation.status == statusPaid ? 'sr-status-paid' : 'sr-status-accepted' }}">
+                                            {{ reservation.status == statusPaid ? 'Payee' : 'Acceptee' }}
+                                        </span>
+                                    </div>
+                                    <div class="sr-meta">Tuteur: {{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</div>
+                                    <div class="sr-actions">
+                                        {% if reservation.status == statusAccepted %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_payment_checkout', {id: reservation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('pay_reservation_' ~ reservation.id) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Payer</button>
+                                            </form>
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservation.id}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservation.id) }}">
+                                                <button class="sr-btn sr-btn-danger" type="submit">Annuler la reservation</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="sr-status sr-status-paid">Paiement confirme</span>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+            {% endif %}
+
+            {% if isTutor %}
+                <section id="sr-add-seance-panel" class="sr-panel sr-panel-wide" data-sr-dropdown-section="1" data-sr-section-key="add-seance">
+                    <h2 class="sr-panel-title">Ajouter une seance</h2>
+                    <p class="sr-panel-subtitle">Publie une nouvelle seance avec un format clair pour les etudiants.</p>
+
+                    <form class="sr-form sr-form-surface" method="post" action="{{ path('app_seance_revision_add_seance') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('add_seance') }}">
+                        <div class="sr-form-head">
+                            <h3 class="sr-form-title">Creation de la seance</h3>
+                            <span class="sr-form-chip">Edition rapide</span>
+                        </div>
+                        <div class="sr-form-grid sr-form-grid-add">
+                            <div class="sr-field sr-field-full">
+                                <label for="add_matiere">Matiere <span class="sr-required">*</span></label>
+                                <input id="add_matiere" class="sr-input" type="text" name="matiere" placeholder="Ex: Mathematiques, Physique..." required>
+                            </div>
+                            <div class="sr-field">
+                                <label for="add_startAt">Date et heure <span class="sr-required">*</span></label>
+                                <input id="add_startAt" class="sr-input" type="datetime-local" name="startAt" required>
+                            </div>
+                            <div class="sr-field">
+                                <label for="add_durationMin">Duree (min) <span class="sr-required">*</span></label>
+                                <input id="add_durationMin" class="sr-input" type="number" name="durationMin" min="15" value="60" required>
+                            </div>
+                            <div class="sr-field">
+                                <label for="add_maxParticipants">Participants max <span class="sr-required">*</span></label>
+                                <input id="add_maxParticipants" class="sr-input" type="number" name="maxParticipants" min="1" value="5" required>
+                            </div>
+                            <div class="sr-field">
+                                <label for="add_status">Statut</label>
+                                <select id="add_status" class="sr-select" name="status">
+                                    <option value="1">Active</option>
+                                    <option value="0">Brouillon</option>
+                                </select>
+                            </div>
+                            <div class="sr-field sr-field-full">
+                                <label for="add_description">Description</label>
+                                <textarea id="add_description" class="sr-textarea" name="description" placeholder="Objectifs de la seance, niveau requis, points abordes..."></textarea>
+                            </div>
+                        </div>
+                        <div class="sr-actions sr-actions-end">
+                            <button class="sr-btn sr-btn-primary" type="submit">Enregistrer la seance</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="sr-my-seances-panel" class="sr-panel sr-panel-wide" data-sr-dropdown-section="1" data-sr-section-key="my-seances">
+                    <h2 class="sr-panel-title">Mes seances (modifier / supprimer)</h2>
+                    {% if mySeances is empty %}
+                        <div class="sr-empty">Vous n'avez pas encore de seance.</div>
+                    {% else %}
+                        <div class="sr-list">
+                            {% for seance in mySeances %}
+                                <article class="sr-item">
+                                    <div class="sr-item-head">
+                                        <div>
+                                            <h3 class="sr-item-title">{{ seance.matiere }}</h3>
+                                            <div class="sr-item-time">{{ seance.startAt|date('d/m/Y H:i') }} - {{ seance.durationMin }} min</div>
+                                        </div>
+                                    </div>
+
+                                    <form class="sr-form sr-form-surface" method="post" action="{{ path('app_seance_revision_edit_seance', {id: seance.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit_seance_' ~ seance.id) }}">
+                                        <div class="sr-form-head">
+                                            <h4 class="sr-form-title">Modification de la seance</h4>
+                                            <span class="sr-form-chip">Edition rapide</span>
+                                        </div>
+                                        <div class="sr-form-grid">
+                                            <div class="sr-field sr-field-full">
+                                                <label for="matiere_{{ seance.id }}">Matiere <span class="sr-required">*</span></label>
+                                                <input id="matiere_{{ seance.id }}" class="sr-input" type="text" name="matiere" value="{{ seance.matiere }}" required>
+                                            </div>
+                                            <div class="sr-field">
+                                                <label for="startAt_{{ seance.id }}">Date et heure <span class="sr-required">*</span></label>
+                                                <input id="startAt_{{ seance.id }}" class="sr-input" type="datetime-local" name="startAt" value="{{ seance.startAt|date('Y-m-d\\TH:i') }}" required>
+                                            </div>
+                                            <div class="sr-field">
+                                                <label for="duration_{{ seance.id }}">Duree (min) <span class="sr-required">*</span></label>
+                                                <input id="duration_{{ seance.id }}" class="sr-input" type="number" name="durationMin" min="15" value="{{ seance.durationMin }}" required>
+                                            </div>
+                                            <div class="sr-field">
+                                                <label for="max_{{ seance.id }}">Participants max <span class="sr-required">*</span></label>
+                                                <input id="max_{{ seance.id }}" class="sr-input" type="number" name="maxParticipants" min="1" value="{{ seance.maxParticipants }}" required>
+                                            </div>
+                                            <div class="sr-field">
+                                                <label for="status_{{ seance.id }}">Statut</label>
+                                                <select id="status_{{ seance.id }}" class="sr-select" name="status">
+                                                    <option value="1" {% if seance.status == 1 %}selected{% endif %}>Active</option>
+                                                    <option value="0" {% if seance.status == 0 %}selected{% endif %}>Brouillon</option>
+                                                </select>
+                                            </div>
+                                            <div class="sr-field sr-field-full">
+                                                <label for="description_{{ seance.id }}">Description</label>
+                                                <textarea id="description_{{ seance.id }}" class="sr-textarea" name="description" placeholder="Details pedagogiques de la seance...">{{ seance.description }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="sr-actions sr-actions-end">
+                                            <button class="sr-btn sr-btn-primary" type="submit">Enregistrer les changements</button>
+                                        </div>
+                                    </form>
+
+                                    <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_delete_seance', {id: seance.id}) }}" onsubmit="return confirm('Supprimer cette seance ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_seance_' ~ seance.id) }}">
+                                        <button class="sr-btn sr-btn-danger" type="submit">Supprimer la seance</button>
+                                    </form>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section id="sr-other-seances-panel" class="sr-panel" data-sr-dropdown-section="1" data-sr-section-key="other-seances">
+                    <h2 class="sr-panel-title">Seances des autres tuteurs</h2>
+                    <p class="sr-panel-subtitle">Vous pouvez reserver les seances publiees par les autres tuteurs puis annuler votre reservation si besoin.</p>
+                    {% if otherSeances is empty %}
+                        <div class="sr-empty">Aucune seance d'autres tuteurs.</div>
+                    {% else %}
+                        <div class="sr-list">
+                            {% for seance in otherSeances %}
+                                <article class="sr-item">
+                                    {% set reservationStatus = reservationBySeance[seance.id]|default(null) %}
+                                    {% set reservationId = reservationIdBySeance[seance.id]|default(null) %}
+
+                                    <div class="sr-item-head">
+                                        <div>
+                                            <h3 class="sr-item-title">{{ seance.matiere }}</h3>
+                                            <div class="sr-item-time">{{ seance.startAt|date('d/m/Y H:i') }} - {{ seance.durationMin }} min</div>
+                                        </div>
+                                        {% if reservationStatus is not null %}
+                                            <span class="sr-status {{ reservationStatus == statusPaid ? 'sr-status-paid' : (reservationStatus == statusAccepted ? 'sr-status-accepted' : 'sr-status-pending') }}">
+                                                {{ reservationStatus == statusPaid ? 'Payee' : (reservationStatus == statusAccepted ? 'Acceptee' : 'En attente') }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="sr-item-tags">
+                                        <span class="sr-tag">Tuteur: {{ seance.tuteur ? seance.tuteur.fullName : 'N/A' }}</span>
+                                        <span class="sr-tag sr-tag-capacity">Capacite: {{ seance.maxParticipants }}</span>
+                                    </div>
+                                    {% if seance.description %}
+                                        <p class="sr-item-desc">{{ seance.description }}</p>
+                                    {% endif %}
+
+                                    <div class="sr-actions">
+                                        {% if reservationStatus is null %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_reserve', {id: seance.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reserve_seance_' ~ seance.id) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Reserver la seance</button>
+                                            </form>
+                                        {% elseif reservationStatus == statusAccepted and reservationId %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_payment_checkout', {id: reservationId}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('pay_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Payer</button>
+                                            </form>
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-danger" type="submit">Annuler la reservation</button>
+                                            </form>
+                                        {% elseif reservationStatus == statusPaid %}
+                                            <span class="sr-status sr-status-paid">Reservation payee</span>
+                                        {% elseif reservationId %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_cancel_reservation', {id: reservationId}) }}" onsubmit="return confirm('Annuler cette reservation ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('cancel_reservation_' ~ reservationId) }}">
+                                                <button class="sr-btn sr-btn-danger" type="submit">Annuler la reservation</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                <section id="sr-reservations-on-my-seances-panel" class="sr-panel" data-sr-dropdown-section="1" data-sr-section-key="reservations-on-my-seances">
+                    <h2 class="sr-panel-title">Reservations sur mes seances</h2>
+                    {% if reservationsOnMySeances is empty %}
+                        <div class="sr-empty">Aucune reservation pour le moment.</div>
+                    {% else %}
+                        <div class="sr-list">
+                            {% for reservation in reservationsOnMySeances %}
+                                {% set seance = reservation.seance %}
+                                <article class="sr-item">
+                                    <div class="sr-item-head">
+                                        <div>
+                                            <h3 class="sr-item-title">{{ seance.matiere }}</h3>
+                                            <div class="sr-item-time">{{ seance.startAt|date('d/m/Y H:i') }} - {{ seance.durationMin }} min</div>
+                                        </div>
+                                        <span class="sr-status {{ reservation.status == statusPaid ? 'sr-status-paid' : (reservation.status == statusAccepted ? 'sr-status-accepted' : 'sr-status-pending') }}">
+                                            {{ reservation.status == statusPaid ? 'Payee' : (reservation.status == statusAccepted ? 'Acceptee' : 'En attente') }}
+                                        </span>
+                                    </div>
+
+                                    <div class="sr-meta">Etudiant: {{ reservation.participant ? reservation.participant.fullName : 'N/A' }}</div>
+
+                                    <div class="sr-actions">
+                                        {% if reservation.status == statusPending %}
+                                            <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_accept_reservation', {id: reservation.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('accept_reservation_' ~ reservation.id) }}">
+                                                <button class="sr-btn sr-btn-primary" type="submit">Accepter</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+
+                                    <form class="sr-form sr-form-surface" method="post" action="{{ path('app_seance_revision_edit_reservation', {id: reservation.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('edit_reservation_' ~ reservation.id) }}">
+                                        <div class="sr-form-head">
+                                            <h4 class="sr-form-title">Modifier la reservation</h4>
+                                            <span class="sr-form-chip">Suivi etudiant</span>
+                                        </div>
+                                        <div class="sr-form-grid">
+                                            <div class="sr-field">
+                                                <label for="status_res_{{ reservation.id }}">Statut <span class="sr-required">*</span></label>
+                                                <select id="status_res_{{ reservation.id }}" class="sr-select" name="status">
+                                                    <option value="{{ statusPending }}" {% if reservation.status == statusPending %}selected{% endif %}>En attente</option>
+                                                    <option value="{{ statusAccepted }}" {% if reservation.status == statusAccepted %}selected{% endif %}>Acceptee</option>
+                                                    {% if reservation.status == statusPaid %}
+                                                        <option value="{{ statusPaid }}" selected>Payee</option>
+                                                    {% endif %}
+                                                </select>
+                                            </div>
+                                            <div class="sr-field sr-field-full">
+                                                <label for="notes_res_{{ reservation.id }}">Notes</label>
+                                                <input id="notes_res_{{ reservation.id }}" class="sr-input" type="text" name="notes" value="{{ reservation.notes ?? '' }}" placeholder="Note interne">
+                                            </div>
+                                        </div>
+                                        <div class="sr-actions sr-actions-end">
+                                            <button class="sr-btn sr-btn-primary" type="submit">Modifier la reservation</button>
+                                        </div>
+                                    </form>
+
+                                    {% if reservation.status != statusPaid %}
+                                        <form class="sr-inline-form" method="post" action="{{ path('app_seance_revision_delete_reservation', {id: reservation.id}) }}" onsubmit="return confirm('Supprimer cette reservation ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_reservation_' ~ reservation.id) }}">
+                                            <button class="sr-btn sr-btn-danger" type="submit">Supprimer la reservation</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="sr-status sr-status-paid">Suppression verrouillee (payee)</span>
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+            {% endif %}
+        </div>
+    </div>
+
+    {% if isTutor %}
+        <button id="srNotifFab" class="sr-notif-fab" type="button" aria-label="Ouvrir les notifications de paiement">
+            <span class="sr-notif-bell">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 4a5 5 0 0 0-5 5v2.6c0 .6-.2 1.2-.6 1.7L4.9 15c-.5.6-.1 1.5.7 1.5h12.8c.8 0 1.2-.9.7-1.5l-1.5-1.7c-.4-.5-.6-1.1-.6-1.7V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.5 18.5a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <span class="sr-notif-badge" data-sr-notif-badge>0</span>
+        </button>
+
+        <div id="srNotifBackdrop" class="sr-notif-backdrop" aria-hidden="true"></div>
+
+        <aside id="srNotifDrawer" class="sr-notif-drawer" aria-hidden="true">
+            <header class="sr-notif-head">
+                <div class="sr-notif-head-row">
+                    <div class="sr-notif-title-wrap">
+                        <h3 class="sr-notif-title">Notifications</h3>
+                        <span id="srNotifUnreadCount" class="sr-notif-count">0</span>
+                    </div>
+                    <div class="sr-notif-head-actions">
+                        <button id="srNotifSettings" class="sr-notif-icon-btn" type="button" aria-label="Parametres notifications">&#9881;</button>
+                        <button id="srNotifClose" class="sr-notif-icon-btn" type="button" aria-label="Fermer notifications">&times;</button>
+                    </div>
+                </div>
+                <div class="sr-notif-head-row sr-notif-head-row-sub">
+                    <button id="srNotifMarkAll" class="sr-notif-text-btn" type="button">Tout marquer lu</button>
+                </div>
+            </header>
+            <div id="srNotifList" class="sr-notif-body">
+                <div class="sr-notif-empty">Chargement...</div>
+            </div>
+        </aside>
+
+        <div id="srNotifToast" class="sr-notif-toast" role="status" aria-live="polite"></div>
+    {% endif %}
+
+    {% if isStudent or isTutor %}
+        <a id="srPlannerFab" class="sr-planner-fab" href="{{ path('app_seance_revision_planner') }}" aria-label="Ouvrir le planner de revision intelligent">
+            <span class="sr-planner-fab-icon">PL</span>
+            <span>Planner de revision</span>
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+

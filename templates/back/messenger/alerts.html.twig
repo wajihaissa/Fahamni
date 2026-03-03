@@ -1,0 +1,644 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Alertes - Messagerie Admin - FAHIMNI{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text: #0b1220;
+            --border: #e5e7eb;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-width: 280px;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+            --radius: 12px;
+        }
+        body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--muted); }
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%); color: #fff; box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25); z-index: 1000; overflow-y: auto; }
+        .sidebar-header { padding: 1rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 6px; }
+        .sidebar .logo h2 { color: #fff; font-size: 18px; font-weight: 700; margin: 0 0 4px 8px; }
+        .sidebar .logo .brand-sub { color: rgba(255,255,255,0.75); font-size: 12px; margin-left: 8px; }
+        .admin-profile { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .admin-info h4 { color: #fff; margin: 0; font-size: 14px; }
+        .admin-info p { color: rgba(255,255,255,0.65); margin: 2px 0 0 0; font-size: 12px; }
+        .sidebar-nav { list-style: none; padding: 6px; margin: 6px 0; }
+        .sidebar-nav li { margin: 6px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: rgba(255,255,255,0.86); text-decoration: none; border-radius: 10px; transition: background 0.18s ease, transform 0.12s ease; }
+        .sidebar-nav a i { width: 26px; text-align: center; font-size: 14px; }
+        .sidebar-nav a .label { font-size: 14px; }
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.04); color: #fff; transform: translateX(3px); }
+        .sidebar-nav li.active a { background: rgba(255,255,255,0.04); color: #fff; font-weight: 600; }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
+        .admin-container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .admin-header { margin-bottom: 2rem; }
+        .admin-header h1 { font-size: 2rem; font-weight: 700; color: var(--text); }
+        .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .card h3 { font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .table-container { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .data-table th, .data-table td { text-align: left; padding: 14px 12px; vertical-align: middle; }
+        .data-table thead th { font-weight: 700; color: var(--muted); font-size: 0.85rem; }
+        .data-table tbody tr { background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 22px rgba(14, 22, 50, 0.04); transition: all 0.18s ease; }
+        .data-table tbody tr:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(14, 22, 50, 0.08); border-color: #667eea; }
+        .data-table tbody tr td { border: none; padding: 12px 16px; font-size: 0.9rem; background: transparent; }
+        .data-table tbody tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        .data-table tbody tr td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+        .text-muted { color: var(--muted); font-size: 0.875rem; }
+        .empty { text-align: center; padding: 2.5rem; color: var(--muted); }
+        .empty i { font-size: 2.5rem; color: var(--border); display: block; margin-bottom: 0.75rem; }
+        .content-preview { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+
+        /* Tabs Alertes */
+        .alerts-tabs-wrap { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; margin-bottom: 1.5rem; }
+        .alerts-tabs-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: linear-gradient(180deg, #f8fafc 0%, #fff 100%); padding: 0 0.5rem 0 0; }
+        .alerts-tab-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 1.5rem; border: none; background: transparent; font-size: 0.95rem; font-weight: 600; color: var(--muted); cursor: pointer; position: relative; margin-bottom: -2px; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s, background 0.2s; font-family: inherit; }
+        .alerts-tab-btn:hover { color: var(--text); background: rgba(102, 126, 234, 0.06); }
+        .alerts-tab-btn.active { color: #667eea; border-bottom-color: #667eea; background: #fff; }
+        .alerts-tab-btn i { font-size: 1rem; opacity: 0.9; }
+        .alerts-tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; background: var(--border); color: var(--muted); }
+        .alerts-tab-btn.active .alerts-tab-badge { background: rgba(102, 126, 234, 0.2); color: #667eea; }
+        .alerts-tab-btn[data-tab="messages"] .alerts-tab-badge { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
+        .alerts-tab-btn[data-tab="messages"].active .alerts-tab-badge { background: rgba(239, 68, 68, 0.25); color: #dc2626; }
+        .alerts-tab-panel { display: none; padding: 1.5rem; }
+        .alerts-tab-panel.active { display: block; animation: alertsTabFade 0.2s ease; }
+        @keyframes alertsTabFade { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Cards des conversations signalées */
+        .alert-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+        .alert-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; box-shadow: 0 8px 22px rgba(14, 22, 50, 0.04); transition: all 0.18s ease; }
+        .alert-card:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(14, 22, 50, 0.08); border-color: #667eea; }
+        .alert-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .alert-card-title { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; line-height: 1.35; flex: 1; min-width: 0; }
+        .alert-card-badge { flex-shrink: 0; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.7rem; font-weight: 600; background: rgba(245, 158, 11, 0.15); color: #b45309; }
+        .alert-card-meta { display: flex; flex-direction: column; gap: 0.5rem; }
+        .alert-card-row { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; }
+        .alert-card-row i { width: 20px; text-align: center; color: #667eea; font-size: 0.8rem; }
+        .alert-card-row .label { color: var(--muted); font-weight: 500; min-width: 90px; }
+        .alert-card-row .value { color: var(--text); }
+        .alert-card-reason { background: #f8fafc; border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 0.875rem; color: var(--text); border-left: 4px solid #667eea; }
+        .alert-card-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+        .alert-card-actions { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .btn-view-conv-alerts { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; height: 38px; box-sizing: border-box; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-view-conv-alerts:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4); }
+        .alert-card-actions .actions-icons { display: inline-flex; align-items: center; gap: 8px; }
+        .btn-warning-report { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; min-width: 38px; height: 38px; box-sizing: border-box; border: 1px solid rgba(217, 119, 6, 0.4); border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #d97706; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s; font-size: 1rem; }
+        .btn-warning-report:hover { background: #d97706; color: #fff; border-color: rgba(217, 119, 6, 0.6); transform: translateY(-1px); }
+        .btn-warning-report:focus { outline: none; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35); }
+        .btn-remove-report { display: inline-flex; align-items: center; justify-content: center; padding: 8px 14px; min-width: 38px; height: 38px; box-sizing: border-box; border: 1px solid rgba(220, 53, 69, 0.4); border-radius: 10px; background: rgba(220, 53, 69, 0.1); color: #dc3545; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s; font-size: 1rem; }
+        .btn-remove-report:hover { background: #dc3545; color: #fff; border-color: rgba(220, 53, 69, 0.6); transform: translateY(-1px); }
+        .btn-remove-report:focus { outline: none; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3); }
+
+        /* Cartes des messages signalés (design distinct : bordure rouge/coral, icône message) */
+        .msg-alert-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
+        .msg-alert-card { background: var(--card); border: 1px solid var(--border); border-left: 4px solid #ef4444; border-radius: 14px; padding: 1.25rem; box-shadow: 0 8px 22px rgba(14, 22, 50, 0.04); transition: all 0.18s ease; }
+        .msg-alert-card:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(239, 68, 68, 0.08); border-left-color: #dc2626; }
+        .msg-alert-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .msg-alert-card-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin: 0; line-height: 1.35; flex: 1; min-width: 0; }
+        .msg-alert-card-badge { flex-shrink: 0; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.7rem; font-weight: 600; background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+        .msg-alert-card-content-box { background: #fef2f2; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: var(--text); border-left: 3px solid #ef4444; max-height: 4.5em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; line-height: 1.4; }
+        .msg-alert-card-content-box.msg-type-only { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; max-height: none; }
+        .msg-alert-card-content-box .msg-type-tag { display: inline-flex; align-items: center; gap: 4px; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
+        .msg-alert-card-meta { display: flex; flex-direction: column; gap: 0.4rem; }
+        .msg-alert-card-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .msg-alert-card-row i { width: 20px; text-align: center; color: #ef4444; font-size: 0.8rem; }
+        .msg-alert-card-row .label { color: var(--muted); font-weight: 500; min-width: 85px; }
+        .msg-alert-card-row .value { color: var(--text); }
+        .msg-alert-card-reason { background: #f8fafc; border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text); border-left: 4px solid #94a3b8; }
+        .msg-alert-card-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+        .msg-alert-card-actions { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .msg-alert-card-actions .btn-view-msg-conv { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; height: 38px; box-sizing: border-box; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; transition: transform 0.2s, box-shadow 0.2s; }
+        .msg-alert-card-actions .btn-view-msg-conv:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
+        .msg-alert-card-actions .actions-icons { display: inline-flex; align-items: center; gap: 8px; }
+
+        /* Modal contenu conversation */
+        .conv-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 24px; }
+        .conv-modal-overlay.is-open { display: flex; animation: convModalFade 0.2s ease; }
+        @keyframes convModalFade { from { opacity: 0; } to { opacity: 1; } }
+        .conv-modal { width: 100%; max-width: 640px; max-height: 85vh; background: #fff; border-radius: 20px; box-shadow: 0 24px 48px rgba(0,0,0,0.18); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; animation: convModalSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes convModalSlide { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .conv-modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%); }
+        .conv-modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .conv-modal-header h2 i { color: #667eea; }
+        .conv-modal-close { width: 40px; height: 40px; border: none; background: rgba(0,0,0,0.06); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.1rem; transition: background 0.2s, color 0.2s; }
+        .conv-modal-close:hover { background: rgba(0,0,0,0.1); color: var(--text); }
+        .conv-modal-meta { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+        .conv-modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; min-height: 0; }
+        .conv-messages { display: flex; flex-direction: column; gap: 16px; }
+        .conv-msg { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; position: relative; }
+        .conv-msg.sent { align-self: flex-end; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-bottom-right-radius: 4px; }
+        .conv-msg.received { align-self: flex-start; background: #f1f5f9; color: var(--text); border-bottom-left-radius: 4px; }
+        .conv-msg.deleted { opacity: 0.6; font-style: italic; }
+        .conv-msg-author { font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; opacity: 0.9; }
+        .conv-msg-time { font-size: 0.7rem; opacity: 0.8; margin-top: 6px; }
+        .conv-modal-loading { text-align: center; padding: 40px; color: var(--muted); }
+        .conv-modal-loading i { font-size: 2rem; margin-bottom: 12px; display: block; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .conv-modal-empty { text-align: center; padding: 40px; color: var(--muted); }
+
+        /* Modal confirmation suppression du signal */
+        .remove-report-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 2100; align-items: center; justify-content: center; padding: 24px; }
+        .remove-report-overlay.is-open { display: flex; animation: convModalFade 0.2s ease; }
+        .remove-report-modal { width: 100%; max-width: 420px; background: #fff; border-radius: 16px; box-shadow: 0 24px 48px rgba(0,0,0,0.18); border: 1px solid var(--border); overflow: hidden; animation: convModalSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .remove-report-modal .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+        .remove-report-modal .modal-header i { font-size: 1.5rem; color: #dc3545; }
+        .remove-report-modal .modal-header h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text); }
+        .remove-report-modal .modal-body { padding: 20px 24px; color: var(--muted); font-size: 0.95rem; line-height: 1.5; }
+        .remove-report-modal .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+        .remove-report-modal .btn-cancel { padding: 10px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); transition: background 0.2s, border-color 0.2s; }
+        .remove-report-modal .btn-cancel:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .remove-report-modal .btn-confirm-remove { padding: 10px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; background: #dc3545; color: #fff; transition: background 0.2s, transform 0.2s; }
+        .remove-report-modal .btn-confirm-remove:hover { background: #c82333; }
+        .remove-report-modal .btn-confirm-remove:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Modal envoi avertissement */
+        .warn-report-overlay { display: none; position: fixed; inset: 0; background: rgba(11, 18, 32, 0.45); backdrop-filter: blur(8px); z-index: 2150; align-items: center; justify-content: center; padding: 24px; }
+        .warn-report-overlay.is-open { display: flex; animation: convModalFade 0.25s ease; }
+        .warn-report-modal { width: 100%; max-width: 580px; max-height: 88vh; background: #fff; border-radius: 20px; box-shadow: 0 32px 64px rgba(11, 18, 32, 0.2), 0 0 0 1px rgba(255,255,255,0.5); overflow: hidden; display: flex; flex-direction: column; animation: convModalSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .warn-report-modal .modal-header { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: #fff; }
+        .warn-report-modal .modal-header .header-icon { color: #d97706; font-size: 1.25rem; }
+        .warn-report-modal .modal-header h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--text); }
+        .warn-report-modal .modal-body { padding: 24px 28px; overflow-y: auto; flex: 1; min-height: 0; }
+        .warn-report-modal .warn-intro { color: var(--text); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem; padding: 14px 18px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; border-left: 4px solid #667eea; }
+        .warn-report-modal .warn-intro strong { color: #4338ca; }
+        .warn-report-modal .warn-section-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .warn-report-modal .warn-section-label i { font-size: 0.7rem; color: #d97706; }
+        .warn-report-modal .recipients-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+        .warn-report-modal .recipient-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: #fff; border: 1px solid var(--border); border-radius: 10px; font-size: 0.8rem; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .warn-report-modal .recipient-chip i { color: #667eea; font-size: 0.75rem; }
+        .warn-report-modal .email-preview-box { border-radius: 14px; overflow: hidden; margin-bottom: 0; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
+        .warn-report-modal .email-preview-box .email-preview-label { padding: 10px 16px; background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+        .warn-report-modal .email-preview-box .email-subject { padding: 14px 18px; background: #fff; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+        .warn-report-modal .email-preview-box .email-body { padding: 18px; max-height: 260px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; color: var(--text); background: #fafafa; }
+        .warn-report-modal .email-preview-box .email-body * { max-width: 100%; }
+        .warn-report-modal .modal-footer { padding: 20px 28px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; flex-shrink: 0; background: #fafafa; }
+        .warn-report-modal .btn-cancel-warn { padding: 12px 22px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text); transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+        .warn-report-modal .btn-cancel-warn:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .warn-report-modal .btn-confirm-warn { padding: 12px 22px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #fff; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35); transition: transform 0.2s, box-shadow 0.2s; }
+        .warn-report-modal .btn-confirm-warn:hover { box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4); transform: translateY(-1px); }
+        .warn-report-modal .btn-confirm-warn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .warn-report-modal .warn-loading { text-align: center; padding: 40px 24px; color: var(--muted); }
+        .warn-report-modal .warn-loading i { font-size: 1.75rem; display: block; margin-bottom: 12px; animation: spin 1s linear infinite; color: #d97706; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1><i class="fas fa-bell" style="margin-right: 0.5rem;"></i> Alertes</h1>
+                <p class="text-muted" style="margin-top: 0.5rem;">Conversations et messages signalés par les utilisateurs.</p>
+            </div>
+
+            <div class="alerts-tabs-wrap">
+                <nav class="alerts-tabs-nav" role="tablist">
+                    <button type="button" class="alerts-tab-btn active" role="tab" id="tab-conversations" aria-selected="true" aria-controls="panel-conversations" data-tab="conversations">
+                        <i class="fas fa-comments"></i>
+                        <span>Conversations signalées</span>
+                        <span class="alerts-tab-badge">{{ reportedConversations|length }}</span>
+                    </button>
+                    <button type="button" class="alerts-tab-btn" role="tab" id="tab-messages" aria-selected="false" aria-controls="panel-messages" data-tab="messages">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>Messages signalés</span>
+                        <span class="alerts-tab-badge">{{ reportedMessages|length }}</span>
+                    </button>
+                </nav>
+
+                <div id="panel-conversations" class="alerts-tab-panel active" role="tabpanel" aria-labelledby="tab-conversations">
+                {% if reportedConversations|length > 0 %}
+                    <div class="alert-cards">
+                        {% for report in reportedConversations %}
+                            <div class="alert-card">
+                                <div class="alert-card-header">
+                                    <h4 class="alert-card-title">
+                                        {% if report.conversation.title %}
+                                            {{ report.conversation.title }}
+                                        {% else %}
+                                            Conversation #{{ report.conversation.id }}
+                                        {% endif %}
+                                    </h4>
+                                    {% if report.conversation.isGroup %}<span class="alert-card-badge">Groupe</span>{% endif %}
+                                </div>
+                                <div class="alert-card-meta">
+                                    <div class="alert-card-row">
+                                        <i class="fas fa-user"></i>
+                                        <span class="label">Signalé par</span>
+                                        <span class="value">{{ report.reportedBy.fullName|default(report.reportedBy.email) }}</span>
+                                    </div>
+                                    {% set other_participants = report.conversation.participants|filter(p => p.id != report.reportedBy.id) %}
+                                    <div class="alert-card-row">
+                                        <i class="fas fa-users"></i>
+                                        <span class="label">{% if report.conversation.isGroup %}Membres{% else %}Avec{% endif %}</span>
+                                        <span class="value">{% if other_participants|length %}{{ other_participants|map(p => p.fullName|default(p.email))|join(', ') }}{% else %}—{% endif %}</span>
+                                    </div>
+                                    <div class="alert-card-row">
+                                        <i class="fas fa-comments"></i>
+                                        <span class="label">Conversation</span>
+                                        <span class="value">#{{ report.conversation.id }}</span>
+                                    </div>
+                                </div>
+                                {% if report.reason %}
+                                    <div class="alert-card-reason">{{ report.reason }}</div>
+                                {% endif %}
+                                <div class="alert-card-date"><i class="fas fa-clock" style="margin-right: 6px;"></i>{{ report.createdAt|date('d/m/Y à H:i') }}</div>
+                                <div class="alert-card-actions">
+                                    <button type="button" class="btn-view-conv-alerts btn-view-conv" data-conv-id="{{ report.conversation.id }}" title="Voir le contenu de la conversation">
+                                        <i class="fas fa-eye"></i> Voir le contenu
+                                    </button>
+                                    <span class="actions-icons">
+                                        <button type="button" class="btn-warning-report btn-send-warning-report" data-report-id="{{ report.id }}" data-conv-title="{{ (report.conversation.title ?: 'Conversation #' ~ report.conversation.id)|e('html_attr') }}" data-preview-url="{{ path('admin_messenger_conversation_report_warn_preview', { id: report.id }) }}" data-warn-url="{{ path('admin_messenger_conversation_report_warn', { id: report.id }) }}" data-warn-token="{{ csrf_token('warn_report_' ~ report.id) }}" title="Envoyer avertissement">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </button>
+                                        <button type="button" class="btn-remove-report btn-remove-report-open" data-report-id="{{ report.id }}" data-remove-url="{{ path('admin_messenger_conversation_report_remove', { id: report.id }) }}" data-remove-token="{{ csrf_token('remove_report_' ~ report.id) }}" data-conv-title="{{ (report.conversation.title ?: 'Conversation #' ~ report.conversation.id)|e('html_attr') }}" title="Supprimer le signal">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fas fa-flag"></i>
+                        <p>Aucune conversation signalée</p>
+                    </div>
+                {% endif %}
+                </div>
+
+                <div id="panel-messages" class="alerts-tab-panel" role="tabpanel" aria-labelledby="tab-messages">
+                {% if reportedMessages|length > 0 %}
+                    <div class="msg-alert-cards">
+                        {% for report in reportedMessages %}
+                            {% set msg = report.message %}
+                            {% set content_text = msg.content|striptags|trim %}
+                            {% set has_text = content_text|length > 0 %}
+                            {% set has_attachments = msg.attachments|length > 0 %}
+
+                            <div class="msg-alert-card">
+                                <div class="msg-alert-card-header">
+                                    <h4 class="msg-alert-card-title">
+                                        {% if report.message.conversation.title %}
+                                            {{ (report.message.conversation.title|default(''))|length > 35 ? (report.message.conversation.title|default(''))|slice(0, 35) ~ '…' : (report.message.conversation.title|default('')) }}
+                                        {% else %}
+                                            Conversation #{{ report.message.conversation.id }}
+                                        {% endif %}
+                                    </h4>
+                                    {% if report.message.conversation.isGroup %}<span class="msg-alert-card-badge">Groupe</span>{% endif %}
+                                </div>
+
+                                <div class="msg-alert-card-content-box{{ has_text ? '' : ' msg-type-only' }}">
+                                    {% if has_text %}
+                                        <span title="{{ content_text|e('html_attr') }}">{{ content_text|length > 120 ? content_text|slice(0, 120) ~ '…' : content_text }}</span>
+                                    {% elseif has_attachments %}
+                                        {% for att in msg.attachments %}
+                                            {% if att.isImage %}
+                                                <span class="msg-type-tag"><i class="fas fa-image"></i> Image</span>
+                                            {% elseif att.mimeType == 'application/pdf' %}
+                                                <span class="msg-type-tag"><i class="fas fa-file-pdf"></i> PDF</span>
+                                            {% elseif att.mimeType is defined and att.mimeType and ('word' in att.mimeType or 'msword' in att.mimeType) %}
+                                                <span class="msg-type-tag"><i class="fas fa-file-word"></i> Document Word</span>
+                                            {% else %}
+                                                <span class="msg-type-tag"><i class="fas fa-file-alt"></i> Fichier</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="msg-alert-card-meta">
+                                    <div class="msg-alert-card-row">
+                                        <i class="fas fa-user-edit"></i>
+                                        <span class="label">Auteur</span>
+                                        <span class="value">{{ msg.sender.fullName|default(msg.sender.email) }}</span>
+                                    </div>
+                                    <div class="msg-alert-card-row">
+                                        <i class="fas fa-user"></i>
+                                        <span class="label">Signalé par</span>
+                                        <span class="value">{{ report.reportedBy.fullName|default(report.reportedBy.email) }}</span>
+                                    </div>
+                                    <div class="msg-alert-card-row">
+                                        <i class="fas fa-comments"></i>
+                                        <span class="label">Conversation</span>
+                                        <span class="value">#{{ report.message.conversation.id }}</span>
+                                    </div>
+                                </div>
+                                {% if report.reason %}
+                                    <div class="msg-alert-card-reason">{{ report.reason }}</div>
+                                {% endif %}
+                                <div class="msg-alert-card-date"><i class="fas fa-clock" style="margin-right: 6px;"></i>{{ report.createdAt|date('d/m/Y à H:i') }}</div>
+                                <div class="msg-alert-card-actions">
+                                    <button type="button" class="btn-view-conv-alerts btn-view-msg-conv btn-view-conv" data-conv-id="{{ report.message.conversation.id }}" title="Voir la conversation">
+                                        <i class="fas fa-eye"></i> Voir la conversation
+                                    </button>
+                                    <span class="actions-icons">
+                                        <button type="button" class="btn-warning-report btn-send-warning-report" data-report-id="{{ report.id }}" data-preview-url="{{ path('admin_messenger_message_report_warn_preview', { id: report.id }) }}" data-warn-url="{{ path('admin_messenger_message_report_warn', { id: report.id }) }}" data-warn-token="{{ csrf_token('warn_msg_report_' ~ report.id) }}" data-conv-title="Message #{{ msg.id }}" title="Envoyer avertissement à l'auteur du message">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </button>
+                                        <button type="button" class="btn-remove-report btn-remove-report-open btn-remove-msg-report" data-report-id="{{ report.id }}" data-remove-url="{{ path('admin_messenger_message_report_remove', { id: report.id }) }}" data-remove-token="{{ csrf_token('remove_msg_report_' ~ report.id) }}" data-conv-title="Message #{{ msg.id }}" title="Supprimer le signal">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fas fa-comment-slash"></i>
+                        <p>Aucun message signalé</p>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="remove-report-overlay" id="removeReportOverlay" aria-hidden="true">
+        <div class="remove-report-modal" id="removeReportModal" role="dialog" aria-labelledby="removeReportModalTitle">
+            <div class="modal-header">
+                <i class="fas fa-flag"></i>
+                <h3 id="removeReportModalTitle">Supprimer le signal</h3>
+            </div>
+            <div class="modal-body">
+                <p id="removeReportModalBody">Voulez-vous vraiment supprimer ce signal ? Il ne sera plus listé dans les alertes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="removeReportModalCancel">Annuler</button>
+                <form id="removeReportForm" method="post" action="" style="display: inline;">
+                    <input type="hidden" name="_token" id="removeReportToken" value="">
+                    <button type="submit" class="btn-confirm-remove" id="removeReportModalConfirm"><i class="fas fa-check" style="margin-right: 6px;"></i>Supprimer le signal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="warn-report-overlay" id="warnReportOverlay" aria-hidden="true">
+        <div class="warn-report-modal" id="warnReportModal" role="dialog" aria-labelledby="warnReportModalTitle">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle header-icon"></i>
+                <h3 id="warnReportModalTitle">Envoyer un avertissement</h3>
+            </div>
+            <div class="modal-body">
+                <div class="warn-loading" id="warnModalLoading"><i class="fas fa-spinner"></i> Chargement de l’aperçu…</div>
+                <div id="warnModalContent" style="display: none;">
+                    <p class="warn-intro">Cette action enverra un <strong>email</strong> à chaque participant. Vérifiez l’aperçu ci-dessous avant d’envoyer.</p>
+                    <div class="warn-section-label"><i class="fas fa-users"></i> Destinataires</div>
+                    <div class="recipients-chips" id="warnRecipients"></div>
+                    <div class="warn-section-label"><i class="fas fa-envelope-open-text"></i> Aperçu du message</div>
+                    <div class="email-preview-box">
+                        <div class="email-preview-label">Sujet</div>
+                        <div class="email-subject" id="warnEmailSubject"></div>
+                        <div class="email-preview-label" style="border-top: 1px solid #e2e8f0;">Corps du message</div>
+                        <div class="email-body" id="warnEmailBody"></div>
+                    </div>
+                </div>
+                <div id="warnModalError" style="display: none;" class="text-muted"></div>
+            </div>
+            <div class="modal-footer" id="warnModalFooter" style="display: none;">
+                <button type="button" class="btn-cancel-warn" id="warnModalCancel">Annuler</button>
+                <form id="warnReportForm" method="post" action="" style="display: inline;">
+                    <input type="hidden" name="_token" id="warnReportToken" value="">
+                    <button type="submit" class="btn-confirm-warn" id="warnModalConfirm"><i class="fas fa-paper-plane" style="margin-right: 6px;"></i>Envoyer l’avertissement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="conv-modal-overlay" id="convModalOverlay" aria-hidden="true">
+        <div class="conv-modal" id="convModal" role="dialog">
+            <div class="conv-modal-header">
+                <div>
+                    <h2 id="convModalTitle"><i class="fas fa-comments"></i> <span id="convModalTitleText">Conversation</span></h2>
+                    <div class="conv-modal-meta" id="convModalMeta">—</div>
+                </div>
+                <button type="button" class="conv-modal-close" id="convModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="conv-modal-body">
+                <div class="conv-modal-loading" id="convModalLoading" style="display: none;">
+                    <i class="fas fa-spinner"></i>
+                    Chargement…
+                </div>
+                <div class="conv-messages" id="convModalMessages"></div>
+                <div class="conv-modal-empty" id="convModalEmpty" style="display: none;">Aucun message.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ----- Tabs Alertes -----
+            var tabBtns = document.querySelectorAll('.alerts-tab-btn');
+            var tabPanels = document.querySelectorAll('.alerts-tab-panel');
+            tabBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var tab = this.getAttribute('data-tab');
+                    tabBtns.forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+                    tabPanels.forEach(function(p) { p.classList.remove('active'); });
+                    this.classList.add('active');
+                    this.setAttribute('aria-selected', 'true');
+                    var panel = document.getElementById('panel-' + tab);
+                    if (panel) panel.classList.add('active');
+                });
+            });
+
+            var overlay = document.getElementById('convModalOverlay');
+            var modal = document.getElementById('convModal');
+            var closeBtn = document.getElementById('convModalClose');
+            var loading = document.getElementById('convModalLoading');
+            var messagesEl = document.getElementById('convModalMessages');
+            var emptyEl = document.getElementById('convModalEmpty');
+            var titleText = document.getElementById('convModalTitleText');
+            var metaEl = document.getElementById('convModalMeta');
+            var contentUrlBase = '{{ path('admin_messenger_conversation_content', { id: 0 }) }}';
+
+            function openModal() {
+                if (overlay) { overlay.classList.add('is-open'); overlay.setAttribute('aria-hidden', 'false'); }
+            }
+            function closeModal() {
+                if (overlay) { overlay.classList.remove('is-open'); overlay.setAttribute('aria-hidden', 'true'); }
+            }
+
+            if (overlay) overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+            if (modal) modal.addEventListener('click', function(e) { e.stopPropagation(); });
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+            document.querySelectorAll('.btn-view-conv').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = this.getAttribute('data-conv-id');
+                    if (!id) return;
+                    openModal();
+                    loading.style.display = 'block';
+                    messagesEl.innerHTML = '';
+                    messagesEl.style.display = 'none';
+                    emptyEl.style.display = 'none';
+                    titleText.textContent = 'Conversation #' + id;
+                    metaEl.textContent = 'Chargement…';
+
+                    fetch(contentUrlBase.replace(/\/0\//, '/' + id + '/'), { headers: { 'Accept': 'application/json' } })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            loading.style.display = 'none';
+                            if (data.error) {
+                                metaEl.textContent = data.error;
+                                return;
+                            }
+                            var c = data.conversation || {};
+                            titleText.textContent = c.title || ('Conversation #' + c.id);
+                            var parts = (c.participants || []).map(function(p) { return p.fullName; }).join(', ');
+                            metaEl.textContent = (c.isGroup ? 'Groupe' : 'Privée') + ' — ' + (parts || '—');
+                            var msgs = data.messages || [];
+                            if (msgs.length === 0) {
+                                emptyEl.style.display = 'block';
+                                return;
+                            }
+                            var senderOrder = [];
+                            msgs.forEach(function(m) {
+                                if (m.senderId != null && senderOrder.indexOf(m.senderId) === -1) senderOrder.push(m.senderId);
+                            });
+                            messagesEl.style.display = 'flex';
+                            msgs.forEach(function(m) {
+                                var senderIndex = senderOrder.indexOf(m.senderId);
+                                var isRight = (senderIndex === 1);
+                                var div = document.createElement('div');
+                                div.className = 'conv-msg ' + (isRight ? 'sent' : 'received') + (m.deletedAt ? ' deleted' : '');
+                                var author = (m.senderName || 'Inconnu') + (m.deletedAt ? ' (supprimé)' : '');
+                                var time = m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                                div.innerHTML = '<div class="conv-msg-author">' + escapeHtml(author) + '</div><div class="conv-msg-content">' + escapeHtml(m.content || '') + '</div><div class="conv-msg-time">' + escapeHtml(time) + '</div>';
+                                messagesEl.appendChild(div);
+                            });
+                        })
+                        .catch(function() {
+                            loading.style.display = 'none';
+                            metaEl.textContent = 'Erreur de chargement.';
+                        });
+                });
+            });
+
+            function escapeHtml(s) {
+                if (s == null) return '';
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+
+            /* Modal suppression du signal */
+            var removeOverlay = document.getElementById('removeReportOverlay');
+            var removeForm = document.getElementById('removeReportForm');
+            var removeTokenInput = document.getElementById('removeReportToken');
+            var removeModalCancel = document.getElementById('removeReportModalCancel');
+            var removeModalConfirm = document.getElementById('removeReportModalConfirm');
+            document.querySelectorAll('.btn-remove-report-open').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var url = this.getAttribute('data-remove-url');
+                    var token = this.getAttribute('data-remove-token');
+                    var title = this.getAttribute('data-conv-title') || 'cette conversation';
+                    if (!url || !token) return;
+                    if (removeForm) removeForm.action = url;
+                    if (removeTokenInput) removeTokenInput.value = token;
+                    if (removeModalConfirm) removeModalConfirm.disabled = false;
+                    if (removeOverlay) { removeOverlay.classList.add('is-open'); removeOverlay.setAttribute('aria-hidden', 'false'); }
+                });
+            });
+            if (removeOverlay) removeOverlay.addEventListener('click', function(e) { if (e.target === removeOverlay) { removeOverlay.classList.remove('is-open'); removeOverlay.setAttribute('aria-hidden', 'true'); } });
+            if (removeModalCancel) removeModalCancel.addEventListener('click', function() { if (removeOverlay) { removeOverlay.classList.remove('is-open'); removeOverlay.setAttribute('aria-hidden', 'true'); } });
+            if (removeForm) removeForm.addEventListener('submit', function() { if (removeModalConfirm) removeModalConfirm.disabled = true; });
+
+            /* Modal envoi avertissement */
+            var warnOverlay = document.getElementById('warnReportOverlay');
+            var warnModalLoading = document.getElementById('warnModalLoading');
+            var warnModalContent = document.getElementById('warnModalContent');
+            var warnModalError = document.getElementById('warnModalError');
+            var warnModalFooter = document.getElementById('warnModalFooter');
+            var warnRecipients = document.getElementById('warnRecipients');
+            var warnEmailSubject = document.getElementById('warnEmailSubject');
+            var warnEmailBody = document.getElementById('warnEmailBody');
+            var warnModalCancel = document.getElementById('warnModalCancel');
+            var warnReportForm = document.getElementById('warnReportForm');
+            var warnReportToken = document.getElementById('warnReportToken');
+            var warnModalConfirm = document.getElementById('warnModalConfirm');
+
+            document.querySelectorAll('.btn-send-warning-report').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var reportId = this.getAttribute('data-report-id');
+                    var previewUrl = this.getAttribute('data-preview-url');
+                    var warnUrl = this.getAttribute('data-warn-url');
+                    var warnToken = this.getAttribute('data-warn-token');
+                    if (!reportId || !previewUrl || !warnUrl || !warnToken) return;
+
+                    warnReportForm.action = warnUrl;
+                    warnReportToken.value = warnToken;
+                    warnModalContent.style.display = 'none';
+                    warnModalError.style.display = 'none';
+                    warnModalFooter.style.display = 'none';
+                    warnModalLoading.style.display = 'block';
+                    if (warnOverlay) { warnOverlay.classList.add('is-open'); warnOverlay.setAttribute('aria-hidden', 'false'); }
+
+                    fetch(previewUrl, { headers: { 'Accept': 'application/json' } })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            warnModalLoading.style.display = 'none';
+                            if (data.error) {
+                                warnModalError.textContent = data.error;
+                                warnModalError.style.display = 'block';
+                                return;
+                            }
+                            var recipients = data.recipients || [];
+                            if (recipients.length === 0) {
+                                warnRecipients.innerHTML = '<span class="recipient-chip" style="color: var(--muted);">Aucun destinataire</span>';
+                            } else {
+                                warnRecipients.innerHTML = recipients.map(function(r) {
+                                    var name = escapeHtml(r.fullName || r.email);
+                                    var email = escapeHtml(r.email);
+                                    return '<span class="recipient-chip"><i class="fas fa-user"></i><span>' + name + ' <small style="color: var(--muted); font-size: 0.75rem;">' + email + '</small></span></span>';
+                                }).join('');
+                            }
+                            warnEmailSubject.textContent = data.subject || '';
+                            warnEmailBody.innerHTML = data.bodyHtml || '';
+                            warnModalContent.style.display = 'block';
+                            warnModalFooter.style.display = 'flex';
+                        })
+                        .catch(function() {
+                            warnModalLoading.style.display = 'none';
+                            warnModalError.textContent = 'Impossible de charger l’aperçu.';
+                            warnModalError.style.display = 'block';
+                        });
+                });
+            });
+
+            if (warnOverlay) warnOverlay.addEventListener('click', function(e) { if (e.target === warnOverlay) { warnOverlay.classList.remove('is-open'); warnOverlay.setAttribute('aria-hidden', 'true'); } });
+            if (warnModalCancel) warnModalCancel.addEventListener('click', function() { if (warnOverlay) { warnOverlay.classList.remove('is-open'); warnOverlay.setAttribute('aria-hidden', 'true'); } });
+
+            if (warnReportForm) {
+                warnReportForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (warnModalConfirm) warnModalConfirm.disabled = true;
+                    var form = this;
+                    var action = form.action;
+                    var token = warnReportToken ? warnReportToken.value : '';
+                    var body = new FormData();
+                    body.append('_token', token);
+
+                    fetch(action, { method: 'POST', body: body, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (warnOverlay) { warnOverlay.classList.remove('is-open'); warnOverlay.setAttribute('aria-hidden', 'true'); }
+                            if (data.ok && data.message) alert(data.message);
+                            else if (data.error) alert(data.error);
+                            if (warnModalConfirm) warnModalConfirm.disabled = false;
+                            if (data.ok) window.location.reload();
+                        })
+                        .catch(function() {
+                            if (warnModalConfirm) warnModalConfirm.disabled = false;
+                            alert('Erreur lors de l’envoi.');
+                        });
+                });
+            }
+        })();
+    </script>
+{% endblock %}

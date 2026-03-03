@@ -1,0 +1,29 @@
+{% extends 'emails/_base_email.html.twig' %}
+
+{% set subject_line = 'Reservation confirmee | Fahimni' %}
+{% set title = 'Reservation acceptee' %}
+{% set subtitle = 'Votre tuteur a valide votre demande de seance.' %}
+{% set preheader_text = 'Bonne nouvelle: votre reservation est confirmee.' %}
+{% set status_label = 'Acceptee' %}
+{% set status_tone = 'success' %}
+
+{% block intro %}
+    <p class="mail-paragraph">
+        Bonne nouvelle: votre reservation a ete <strong>acceptee</strong> par votre tuteur.
+        La seance est maintenant confirmee et planifiee a la date indiquee ci-dessous.
+    </p>
+{% endblock %}
+
+{% block actions %}
+    <ul class="mail-list">
+        <li>Ajoutez un rappel personnel pour etre pret quelques minutes a l'avance.</li>
+        <li>Preparez vos questions et supports pour profiter pleinement de la seance.</li>
+        <li>En cas d'imprevu, gerez votre reservation depuis votre espace Fahimni.</li>
+    </ul>
+{% endblock %}
+
+{% block outro %}
+    <p class="mail-note">
+        Nous vous souhaitons une excellente seance d'apprentissage.
+    </p>
+{% endblock %}

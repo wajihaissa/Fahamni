@@ -1,0 +1,29 @@
+{% extends 'emails/_base_email.html.twig' %}
+
+{% set subject_line = 'Rappel de seance dans 24h | Fahimni' %}
+{% set title = 'Rappel de seance' %}
+{% set subtitle = 'Votre seance approche. Verifiez les informations ci-dessous.' %}
+{% set preheader_text = 'Rappel automatique: votre seance commence dans moins de 24 heures.' %}
+{% set status_label = 'Rappel 24h' %}
+{% set status_tone = 'info' %}
+
+{% block intro %}
+    <p class="mail-paragraph">
+        Ceci est un rappel automatique: votre seance debutera dans moins de 24 heures.
+        Merci de verifier les informations importantes avant le debut du cours.
+    </p>
+{% endblock %}
+
+{% block actions %}
+    <ul class="mail-list">
+        <li>Assurez-vous d'etre disponible a l'horaire indique.</li>
+        <li>Preparez vos objectifs de travail et les points a aborder avec le tuteur.</li>
+        <li>Connectez-vous quelques minutes en avance pour demarrer dans de bonnes conditions.</li>
+    </ul>
+{% endblock %}
+
+{% block outro %}
+    <p class="mail-note">
+        Merci et bonne seance avec Fahimni.
+    </p>
+{% endblock %}

@@ -1,0 +1,481 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conversations - Messagerie Admin - FAHIMNI{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --nav: #0b1220;
+            --card: #ffffff;
+            --muted: #6b7280;
+            --text: #0b1220;
+            --border: #e5e7eb;
+            --primary: #6c5ce7;
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --radius: 12px;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+            --sidebar-width: 280px;
+        }
+        body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--muted); }
+        .sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, #3b2f63 0%, #2b2350 100%); color: #fff; box-shadow: 0 12px 40px rgba(19, 24, 44, 0.25); z-index: 1000; overflow-y: auto; }
+        .sidebar-header { padding: 1rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); margin-bottom: 6px; }
+        .sidebar .logo h2 { color: #fff; font-size: 18px; font-weight: 700; margin: 0 0 4px 8px; }
+        .sidebar .logo .brand-sub { color: rgba(255,255,255,0.75); font-size: 12px; margin-left: 8px; }
+        .admin-profile { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .admin-info h4 { color: #fff; margin: 0; font-size: 14px; }
+        .admin-info p { color: rgba(255,255,255,0.65); margin: 2px 0 0 0; font-size: 12px; }
+        .sidebar-nav { list-style: none; padding: 6px; margin: 6px 0; }
+        .sidebar-nav li { margin: 6px 0; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: rgba(255,255,255,0.86); text-decoration: none; border-radius: 10px; transition: background 0.18s ease, transform 0.12s ease; }
+        .sidebar-nav a i { width: 26px; text-align: center; font-size: 14px; }
+        .sidebar-nav a .label { font-size: 14px; }
+        .sidebar-nav a:hover { background: rgba(255,255,255,0.04); color: #fff; transform: translateX(3px); }
+        .sidebar-nav li.active a { background: rgba(255,255,255,0.04); color: #fff; font-weight: 600; }
+        .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
+        .admin-container { max-width: 1400px; margin: 0 auto; padding: 2rem; overflow-x: hidden; }
+        .admin-header { margin-bottom: 2rem; }
+        .admin-header h1 { font-size: 2rem; font-weight: 700; color: var(--text); }
+        .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .card h3 { font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+        .table-container { overflow-x: hidden; }
+        .data-table { width: 100%; min-width: 0; table-layout: fixed; border-collapse: separate; border-spacing: 0 16px; }
+        .data-table th, .data-table td { text-align: left; padding: 16px 12px; vertical-align: middle; overflow: hidden; }
+        .data-table thead th { font-weight: 700; color: var(--muted); font-size: 0.85rem; }
+        .data-table thead th.th-nowrap { white-space: nowrap; min-width: 130px; }
+        .data-table thead th.th-dernier-msg { white-space: nowrap; min-width: 11em; }
+        .data-table tbody td.td-dernier-msg { white-space: nowrap; }
+        .data-table tbody tr { background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 22px rgba(14, 22, 50, 0.04); transition: all 0.18s ease; }
+        .data-table tbody tr:hover { transform: translateY(-3px); box-shadow: 0 18px 50px rgba(14, 22, 50, 0.08); border-color: #667eea; }
+        .data-table tbody tr td { border: none; padding: 16px 16px; font-size: 0.9rem; background: transparent; }
+        .data-table tbody tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        .data-table tbody tr td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+        .btn-view { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-view:hover { transform: translateY(-1px); }
+        .badge-group { background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%); color: #6c5ce7; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+        .badge-private { background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; }
+        .empty { text-align: center; padding: 2.5rem; color: var(--muted); }
+        .content-preview { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+
+        /* Pagination back-office — design moderne et harmonisé */
+        .pagination-wrapper { margin-top: 1.5rem; }
+        .back-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.25rem; background: linear-gradient(135deg, #667eea06 0%, #764ba208 100%); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 2px 10px rgba(11, 18, 32, 0.03); }
+        .back-pagination__info { font-size: 0.875rem; color: var(--muted); font-weight: 500; }
+        .back-pagination__range { color: var(--text); font-weight: 600; }
+        .back-pagination__sep { margin: 0 0.35em; opacity: 0.7; }
+        .back-pagination__total { color: var(--text); font-weight: 600; }
+        .back-pagination__label { margin-left: 0.25rem; }
+        .back-pagination__list { display: flex; align-items: center; gap: 6px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+        .back-pagination__item { display: inline-flex; }
+        .back-pagination__link { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; text-decoration: none; color: var(--text); background: var(--card); border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(11, 18, 32, 0.04); transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease; }
+        .back-pagination__link:hover { background: #f1f5f9; border-color: #c4b5fd; color: #667eea; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12); }
+        .back-pagination__link--nav { min-width: 40px; color: var(--muted); }
+        .back-pagination__link--nav:hover { color: #667eea; }
+        .back-pagination__link--current { background: var(--primary-gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35); cursor: default; }
+        .back-pagination__link--current:hover { transform: none; background: var(--primary-gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35); }
+
+        /* Modal conversation */
+        .conv-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 24px; }
+        .conv-modal-overlay.is-open { display: flex; animation: convModalFade 0.2s ease; }
+        @keyframes convModalFade { from { opacity: 0; } to { opacity: 1; } }
+        .conv-modal { width: 100%; max-width: 640px; max-height: 85vh; background: #fff; border-radius: 20px; box-shadow: 0 24px 48px rgba(0,0,0,0.18); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; animation: convModalSlide 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes convModalSlide { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .conv-modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%); }
+        .conv-modal-header h2 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .conv-modal-header h2 i { color: #667eea; }
+        .conv-modal-close { width: 40px; height: 40px; border: none; background: rgba(0,0,0,0.06); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 1.1rem; transition: background 0.2s, color 0.2s; }
+        .conv-modal-close:hover { background: rgba(0,0,0,0.1); color: var(--text); }
+        .conv-modal-meta { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+        .conv-modal-body { flex: 1; overflow-y: auto; padding: 20px 24px; min-height: 0; }
+        .conv-messages { display: flex; flex-direction: column; gap: 16px; }
+        .conv-msg { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; position: relative; }
+        .conv-msg.sent { align-self: flex-end; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-bottom-right-radius: 4px; }
+        .conv-msg.received { align-self: flex-start; background: #f1f5f9; color: var(--text); border-bottom-left-radius: 4px; }
+        .conv-msg.deleted { opacity: 0.6; font-style: italic; }
+        .conv-msg-author { font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; opacity: 0.9; }
+        .conv-msg-time { font-size: 0.7rem; opacity: 0.8; margin-top: 6px; }
+        .conv-modal-loading { text-align: center; padding: 40px; color: var(--muted); }
+        .conv-modal-loading i { font-size: 2rem; margin-bottom: 12px; display: block; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .conv-modal-empty { text-align: center; padding: 40px; color: var(--muted); }
+
+        /* Boutons d'action : compacts pour éviter le scroll horizontal — design pilule (Voir actif / Résumé inactif) */
+        .table-actions-cell { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+        .data-table tbody tr td:last-child { padding: 12px 10px; }
+        .btn-view { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 9999px; font-size: 0.8125rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; white-space: nowrap; }
+        .btn-view:hover { transform: translateY(-1px); opacity: 0.95; }
+        .btn-view-conv { border: none; background: linear-gradient(180deg, #7c6ee8 0%, #6c5ce7 50%, #5b4cd6 100%); color: #fff; box-shadow: none; }
+        .btn-view-conv i, .btn-view-conv .btn-view-label { color: #fff; }
+        .btn-view-conv:hover { box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4); }
+        .btn-view-summary {
+            background: #fff;
+            color: #6c5ce7;
+            border: 1.5px solid #c4b5fd;
+            box-shadow: none;
+        }
+        .btn-view-summary i, .btn-view-summary .btn-view-label { color: #6c5ce7; }
+        .btn-view-summary:hover {
+            border-color: #a78bfa;
+            box-shadow: 0 2px 10px rgba(108, 92, 231, 0.12);
+        }
+
+        /* Modal résumé dédié back-office (design cohérent avec la sidebar / admin) */
+        .back-summary-overlay { display: none; position: fixed; inset: 0; background: rgba(11, 18, 32, 0.5); backdrop-filter: blur(8px); z-index: 2001; align-items: center; justify-content: center; padding: 24px; }
+        .back-summary-overlay.is-open { display: flex; animation: backSummaryFade 0.2s ease; }
+        @keyframes backSummaryFade { from { opacity: 0; } to { opacity: 1; } }
+        .back-summary-modal { width: 100%; max-width: 540px; max-height: 85vh; background: var(--card); border-radius: 16px; box-shadow: 0 24px 56px rgba(11, 18, 32, 0.2), 0 0 0 1px rgba(102, 126, 234, 0.08); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; animation: backSummarySlide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes backSummarySlide { from { opacity: 0; transform: scale(0.96) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .back-summary-header { position: relative; padding: 24px 24px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; flex-shrink: 0; }
+        .back-summary-header h2 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .back-summary-header h2 i { opacity: 0.95; }
+        .back-summary-header p { margin: 0; font-size: 0.8125rem; opacity: 0.9; }
+        .back-summary-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border: none; background: rgba(255,255,255,0.2); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; transition: background 0.2s; }
+        .back-summary-close:hover { background: rgba(255,255,255,0.35); }
+        .back-summary-body { padding: 24px; overflow-y: auto; flex: 1; min-height: 0; }
+        .back-summary-loading { text-align: center; padding: 32px 16px; }
+        .back-summary-spinner { width: 44px; height: 44px; margin: 0 auto 16px; border: 3px solid var(--border); border-top-color: #667eea; border-radius: 50%; animation: backSummarySpin 0.9s linear infinite; }
+        @keyframes backSummarySpin { to { transform: rotate(360deg); } }
+        .back-summary-loading-text { margin: 0; font-size: 0.9375rem; color: var(--muted); font-weight: 500; }
+        .back-summary-loading-hint { margin: 6px 0 0; font-size: 0.8125rem; color: var(--muted); }
+        .back-summary-content { margin-bottom: 20px; }
+        .back-summary-text { padding: 18px 20px; background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%); border: 1px solid var(--border); border-radius: 12px; border-left: 4px solid #667eea; font-size: 0.9375rem; line-height: 1.6; color: var(--text); white-space: pre-wrap; }
+        .back-summary-saved { margin: 12px 0 0; font-size: 0.8125rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+        .back-summary-saved i { color: #7c3aed; }
+        .back-summary-actions-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .back-summary-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: transform 0.2s, box-shadow 0.2s; }
+        .back-summary-btn:hover { transform: translateY(-1px); }
+        .back-summary-btn-regenerate { background: #f1f5f9; color: var(--text); }
+        .back-summary-btn-regenerate:hover { background: var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .back-summary-btn-close { background: var(--primary-gradient); color: #fff; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3); }
+        .back-summary-btn-close:hover { box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4); }
+        .back-summary-error { text-align: center; padding: 20px 16px; margin-bottom: 16px; background: rgba(220, 53, 69, 0.06); border: 1px solid rgba(220, 53, 69, 0.15); border-radius: 12px; }
+        .back-summary-error-icon { font-size: 28px; color: #dc3545; margin-bottom: 10px; }
+        .back-summary-error-text { margin: 0 0 8px; font-size: 0.875rem; color: var(--text); }
+        .back-summary-error-debug { margin: 0 0 12px; font-size: 0.75rem; color: var(--muted); word-break: break-word; padding: 8px 10px; background: rgba(0,0,0,0.04); border-radius: 8px; }
+        .back-summary-btn-retry { background: #667eea; color: #fff; }
+        .back-summary-btn-retry:hover { background: #5a67d8; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35); }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            {# Consommer les flashes sans les afficher (évite d'afficher ceux du front messenger) #}
+            {% for type, messages in app.flashes %}{% endfor %}
+
+            <div class="admin-header" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+                <h1><i class="fas fa-comments" style="margin-right: 0.5rem;"></i> Conversations</h1>
+                <a href="{{ path('admin_messenger_export_conversations_pdf') }}" class="btn-view" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border: none; text-decoration: none;"><i class="fas fa-file-pdf"></i> Export PDF</a>
+            </div>
+
+            <div class="card">
+                <h3><i class="fas fa-list" style="margin-right: 0.5rem;"></i> Liste des conversations</h3>
+                {% if pagination is defined and pagination.getTotalItemCount > 0 %}
+                    <div class="table-container">
+                        <table class="data-table">
+                            <colgroup>
+                                <col style="width: 5%;">
+                                <col style="width: 22%;">
+                                <col style="width: 8%;">
+                                <col style="width: 22%;">
+                                <col style="width: 6%;">
+                                <col style="width: 17%;">
+                                <col style="width: 20%;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Titre</th>
+                                    <th>Type</th>
+                                    <th>Participants</th>
+                                    <th>Messages</th>
+                                    <th class="th-nowrap th-dernier-msg">Dernier&nbsp;message</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for conv in pagination %}
+                                    {% set participants = conv.participants|map(p => p.fullName|default(p.email))|join(', ') %}
+                                    {% set msgCount = conv.messages|length %}
+                                    <tr>
+                                        <td>#{{ conv.id }}</td>
+                                        <td><span class="content-preview" title="{{ conv.title ?? '—' }}">{{ conv.title ?? ('Conversation #' ~ conv.id) }}</span></td>
+                                        <td>{% if conv.isGroup %}<span class="badge-group">Groupe</span>{% else %}<span class="badge-private">Privée</span>{% endif %}</td>
+                                        <td><span class="content-preview" title="{{ participants }}">{{ participants|slice(0, 40) }}{% if participants|length > 40 %}…{% endif %}</span></td>
+                                        <td>{{ msgCount }}</td>
+                                        <td class="td-dernier-msg">{{ conv.lastMessageAt ? conv.lastMessageAt|date('d/m/Y H:i') : '—' }}</td>
+                                        <td>
+                                            <div class="table-actions-cell">
+                                                <button type="button" class="btn-view btn-view-conv" data-conv-id="{{ conv.id }}" title="Voir le contenu de la conversation" aria-label="Voir">
+                                                    <i class="fas fa-eye"></i><span class="btn-view-label">Voir</span>
+                                                </button>
+                                                <button type="button" class="btn-view btn-view-summary" data-conv-id="{{ conv.id }}" title="Voir le résumé de la conversation" aria-label="Résumé">
+                                                    <i class="fas fa-file-alt"></i><span class="btn-view-label">Résumé</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-wrapper">
+                        {{ knp_pagination_render(pagination, 'back/_pagination_modern.html.twig') }}
+                    </div>
+                {% else %}
+                    <div class="empty">
+                        <i class="fas fa-comments" style="font-size: 2.5rem; color: var(--border); margin-bottom: 0.75rem;"></i>
+                        <p>Aucune conversation.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="conv-modal-overlay" id="convModalOverlay" aria-hidden="true">
+        <div class="conv-modal" id="convModal" role="dialog">
+            <div class="conv-modal-header">
+                <div>
+                    <h2 id="convModalTitle"><i class="fas fa-comments"></i> <span id="convModalTitleText">Conversation</span></h2>
+                    <div class="conv-modal-meta" id="convModalMeta">—</div>
+                </div>
+                <button type="button" class="conv-modal-close" id="convModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="conv-modal-body">
+                <div class="conv-modal-loading" id="convModalLoading" style="display: none;">
+                    <i class="fas fa-spinner"></i>
+                    Chargement…
+                </div>
+                <div class="conv-messages" id="convModalMessages"></div>
+                <div class="conv-modal-empty" id="convModalEmpty" style="display: none;">Aucun message.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="back-summary-overlay" id="summaryModalOverlay" aria-hidden="true">
+        <div class="back-summary-modal" id="summaryModal" role="dialog">
+            <div class="back-summary-header">
+                <h2><i class="fas fa-file-alt"></i> Résumé de la conversation</h2>
+                <p>Résumé généré par IA à partir des messages de la conversation.</p>
+                <button type="button" class="back-summary-close" id="summaryModalClose" aria-label="Fermer"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="back-summary-body">
+                <div class="back-summary-loading" id="summaryModalLoading">
+                    <div class="back-summary-spinner"></div>
+                    <p class="back-summary-loading-text">Génération du résumé en cours…</p>
+                    <p class="back-summary-loading-hint">Cela peut prendre 5 à 15 secondes.</p>
+                </div>
+                <div class="back-summary-content" id="summaryModalContent" style="display: none;">
+                    <div class="back-summary-text" id="summaryModalText"></div>
+                    <p class="back-summary-saved"><i class="fas fa-check-circle"></i> Résumé enregistré.</p>
+                    <div class="back-summary-actions-row">
+                        <button type="button" class="back-summary-btn back-summary-btn-regenerate" id="summaryModalRegenerate"><i class="fas fa-sync-alt"></i> Régénérer</button>
+                        <button type="button" class="back-summary-btn back-summary-btn-close" id="summaryModalBtnClose">Fermer</button>
+                    </div>
+                </div>
+                <div class="back-summary-error" id="summaryModalError" style="display: none;">
+                    <i class="fas fa-exclamation-triangle back-summary-error-icon"></i>
+                    <p class="back-summary-error-text" id="summaryModalErrorText"></p>
+                    <p class="back-summary-error-debug" id="summaryModalErrorDebug"></p>
+                    <div class="back-summary-actions-row" style="border-top: none; padding-top: 12px; margin-top: 12px;">
+                        <button type="button" class="back-summary-btn back-summary-btn-retry" id="summaryModalRetry"><i class="fas fa-redo"></i> Réessayer</button>
+                        <button type="button" class="back-summary-btn back-summary-btn-close" id="summaryModalBtnCloseError">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var overlay = document.getElementById('convModalOverlay');
+            var modal = document.getElementById('convModal');
+            var closeBtn = document.getElementById('convModalClose');
+            var loading = document.getElementById('convModalLoading');
+            var messagesEl = document.getElementById('convModalMessages');
+            var emptyEl = document.getElementById('convModalEmpty');
+            var titleText = document.getElementById('convModalTitleText');
+            var metaEl = document.getElementById('convModalMeta');
+            var contentUrlBase = '{{ path('admin_messenger_conversation_content', { id: 0 }) }}';
+            var summaryUrlBase = '{{ path('admin_messenger_conversation_summary', { id: 0 }) }}';
+
+            function openModal() {
+                overlay.classList.add('is-open');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+            function closeModal() {
+                overlay.classList.remove('is-open');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+
+            overlay.addEventListener('click', function(e) { if (e.target === overlay) closeModal(); });
+            modal.addEventListener('click', function(e) { e.stopPropagation(); });
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+            function openConvModal(convId, focusSummary) {
+                if (!convId) return;
+                openModal();
+                loading.style.display = 'block';
+                messagesEl.innerHTML = '';
+                messagesEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+                titleText.textContent = 'Conversation #' + convId;
+                metaEl.textContent = 'Chargement…';
+
+                fetch(contentUrlBase.replace(/\/0\//, '/' + convId + '/'), { headers: { 'Accept': 'application/json' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        loading.style.display = 'none';
+                        if (data.error) {
+                            metaEl.textContent = data.error;
+                            return;
+                        }
+                        var c = data.conversation || {};
+                        titleText.textContent = c.title || ('Conversation #' + c.id);
+                        var parts = (c.participants || []).map(function(p) { return p.fullName; }).join(', ');
+                        metaEl.textContent = (c.isGroup ? 'Groupe' : 'Privée') + ' — ' + (parts || '—');
+                        var msgs = data.messages || [];
+                            if (msgs.length === 0) {
+                                emptyEl.style.display = 'block';
+                                return;
+                            }
+                            var senderOrder = [];
+                            msgs.forEach(function(m) {
+                                if (m.senderId != null && senderOrder.indexOf(m.senderId) === -1) senderOrder.push(m.senderId);
+                            });
+                            messagesEl.style.display = 'flex';
+                            msgs.forEach(function(m) {
+                                var senderIndex = senderOrder.indexOf(m.senderId);
+                                var isRight = (senderIndex === 1);
+                                var div = document.createElement('div');
+                                div.className = 'conv-msg ' + (isRight ? 'sent' : 'received') + (m.deletedAt ? ' deleted' : '');
+                                var author = (m.senderName || 'Inconnu') + (m.deletedAt ? ' (supprimé)' : '');
+                                var time = m.createdAt ? new Date(m.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                                div.innerHTML = '<div class="conv-msg-author">' + escapeHtml(author) + '</div><div class="conv-msg-content">' + escapeHtml(m.content || '') + '</div><div class="conv-msg-time">' + escapeHtml(time) + '</div>';
+                                messagesEl.appendChild(div);
+                            });
+                    })
+                    .catch(function() {
+                        loading.style.display = 'none';
+                        metaEl.textContent = 'Erreur de chargement.';
+                    });
+            }
+
+            document.querySelectorAll('.btn-view-conv').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = this.getAttribute('data-conv-id');
+                    openConvModal(id, false);
+                });
+            });
+
+            /* Modal résumé seul (GET cache / POST génération + Régénérer) */
+            var summaryOverlay = document.getElementById('summaryModalOverlay');
+            var summaryLoading = document.getElementById('summaryModalLoading');
+            var summaryContent = document.getElementById('summaryModalContent');
+            var summaryText = document.getElementById('summaryModalText');
+            var summaryError = document.getElementById('summaryModalError');
+            var summaryErrorText = document.getElementById('summaryModalErrorText');
+            var summaryErrorDebug = document.getElementById('summaryModalErrorDebug');
+            var summaryClose = document.getElementById('summaryModalClose');
+            var summaryBtnClose = document.getElementById('summaryModalBtnClose');
+            var summaryRegenerate = document.getElementById('summaryModalRegenerate');
+            var summaryRetry = document.getElementById('summaryModalRetry');
+
+            function summaryShowState(loading, content, err) {
+                if (summaryLoading) summaryLoading.style.display = loading ? 'block' : 'none';
+                if (summaryContent) summaryContent.style.display = content ? 'block' : 'none';
+                if (summaryError) summaryError.style.display = err ? 'block' : 'none';
+            }
+
+            function doPostSummary(convId) {
+                if (!convId || !summaryUrlBase) return;
+                var url = summaryUrlBase.replace(/\/0\//, '/' + convId + '/').replace(/\/0$/, '/' + convId);
+                summaryShowState(true, false, false);
+                if (summaryText) summaryText.textContent = '';
+                if (summaryErrorDebug) { summaryErrorDebug.textContent = ''; summaryErrorDebug.style.display = 'none'; }
+                fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.ok && data.summary !== undefined) {
+                            if (summaryText) summaryText.textContent = data.summary;
+                            summaryShowState(false, true, false);
+                        } else {
+                            if (summaryErrorText) summaryErrorText.textContent = data.error || 'Impossible de générer le résumé.';
+                            if (summaryErrorDebug && data.debug) {
+                                summaryErrorDebug.textContent = 'Détail : ' + data.debug;
+                                summaryErrorDebug.style.display = 'block';
+                            }
+                            summaryShowState(false, false, true);
+                        }
+                    })
+                    .catch(function() {
+                        if (summaryErrorText) summaryErrorText.textContent = 'Erreur de connexion. Réessayez.';
+                        summaryShowState(false, false, true);
+                    });
+            }
+
+            function openSummaryModal(convId) {
+                if (!summaryOverlay || !convId) return;
+                var url = summaryUrlBase.replace(/\/0\//, '/' + convId + '/').replace(/\/0$/, '/' + convId);
+                summaryOverlay.classList.add('is-open');
+                summaryOverlay.setAttribute('aria-hidden', 'false');
+                summaryOverlay.setAttribute('data-current-conv-id', String(convId));
+                summaryShowState(true, false, false);
+                if (summaryText) summaryText.textContent = '';
+                fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.ok && data.cached && data.summary) {
+                            if (summaryText) summaryText.textContent = data.summary;
+                            summaryShowState(false, true, false);
+                        } else {
+                            doPostSummary(convId);
+                        }
+                    })
+                    .catch(function() { doPostSummary(convId); });
+            }
+
+            function closeSummaryModal() {
+                if (summaryOverlay) {
+                    summaryOverlay.classList.remove('is-open');
+                    summaryOverlay.setAttribute('aria-hidden', 'true');
+                }
+            }
+
+            if (summaryOverlay) {
+                if (summaryClose) summaryClose.addEventListener('click', closeSummaryModal);
+                if (summaryBtnClose) summaryBtnClose.addEventListener('click', closeSummaryModal);
+                var summaryBtnCloseError = document.getElementById('summaryModalBtnCloseError');
+                if (summaryBtnCloseError) summaryBtnCloseError.addEventListener('click', closeSummaryModal);
+                summaryOverlay.addEventListener('click', function(e) { if (e.target === summaryOverlay) closeSummaryModal(); });
+                var summaryModalEl = document.getElementById('summaryModal');
+                if (summaryModalEl) summaryModalEl.addEventListener('click', function(e) { e.stopPropagation(); });
+            }
+            if (summaryRegenerate) summaryRegenerate.addEventListener('click', function() {
+                var convId = summaryOverlay && summaryOverlay.getAttribute('data-current-conv-id');
+                if (convId) doPostSummary(convId);
+            });
+            if (summaryRetry) summaryRetry.addEventListener('click', function() {
+                var convId = summaryOverlay && summaryOverlay.getAttribute('data-current-conv-id');
+                if (convId) doPostSummary(convId);
+            });
+            document.querySelectorAll('.btn-view-summary').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = this.getAttribute('data-conv-id');
+                    openSummaryModal(id);
+                });
+            });
+
+            function escapeHtml(s) {
+                if (s == null) return '';
+                var div = document.createElement('div');
+                div.textContent = s;
+                return div.innerHTML;
+            }
+        })();
+    </script>
+{% endblock %}

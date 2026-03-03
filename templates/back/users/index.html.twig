@@ -294,6 +294,16 @@
                         </thead>
                         <tbody>
                             {% for user in users %}
+                                {% set userAi = aiUserSummaries[user.id]|default(null) %}
+                                {% set roleLabel = 'Student' %}
+                                {% set roleClass = 'badge-student' %}
+                                {% if 'ROLE_ADMIN' in user.roles %}
+                                    {% set roleLabel = 'Admin' %}
+                                    {% set roleClass = 'badge-admin' %}
+                                {% elseif 'ROLE_TUTOR' in user.roles %}
+                                    {% set roleLabel = 'Tutor' %}
+                                    {% set roleClass = 'badge-tutor' %}
+                                {% endif %}
                                 <tr>
                                     <td>
                                         <div class="user-cell">
@@ -322,9 +332,31 @@
                                     <td>{{ user.createdAt|date('M d, Y') }}</td>
                                     <td>
                                         <div class="actions">
-                                            <button class="btn-action btn-view" title="View" onclick="event.preventDefault(); event.stopPropagation();">
+                                            <form method="POST" action="{{ path('admin_users_toggle_status', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
+                                                <button type="submit" class="btn-action {% if user.status %}btn-status-off{% else %}btn-status-on{% endif %}" title="{% if user.status %}Deactivate account{% else %}Activate account{% endif %}" {% if app.user and app.user.id == user.id and user.status %}disabled{% endif %}>
+                                                    <i class="fas {% if user.status %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                            {% if user.profile %}
+                                            <form method="POST" action="{{ path('admin_users_toggle_activity', {id: user.id}) }}" style="display:inline-block; margin:0;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_activity_' ~ user.id) }}">
+                                                <button type="submit" class="btn-action {% if user.profile.isActive %}btn-activity-off{% else %}btn-activity-on{% endif %}" title="{% if user.profile.isActive %}Set inactive{% else %}Set active{% endif %}" {% if not user.status %}disabled{% endif %}>
+                                                    <i class="fas {% if user.profile.isActive %}fa-power-off{% else %}fa-bolt{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            <a href="{{ path('admin_users_show', {id: user.id}) }}"
+                                               class="btn-action btn-view"
+                                               title="View"
+                                               data-user-id="{{ user.id }}"
+                                               data-user-name="{{ user.fullName }}"
+                                               data-user-email="{{ user.email }}"
+                                               data-user-role="{{ roleLabel|lower }}"
+                                               data-user-status="{{ user.status ? 'Active' : 'Inactive' }}"
+                                               data-ai-summary="{{ userAi ? userAi|json_encode : '' }}">
                                                 <i class="fas fa-eye"></i>
-                                            </button>
+                                            </a>
                                             <button class="btn-action btn-edit" title="Edit" onclick="event.preventDefault();" data-user-id="{{ user.id }}">
                                                 <i class="fas fa-edit"></i>
                                             </button>
