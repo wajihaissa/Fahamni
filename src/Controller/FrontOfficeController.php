@@ -17,15 +17,6 @@ final class FrontOfficeController extends AbstractController
         ]);
     }
 
-    #[Route('/calendar', name: 'app_calendar')]
-    public function calendar(): Response
-    {
-        return $this->render('front/reservation/calendar.html.twig', [
-            'controller_name' => 'QuizController',
-            'user' => $this->getUser(),
-        ]);
-    }
-
     #[Route('/articles', name: 'app_articles')]
     public function articles(): Response
     {
@@ -38,10 +29,7 @@ final class FrontOfficeController extends AbstractController
     #[Route('/tutor', name: 'app_tutor')]
     public function tutor(): Response
     {
-        return $this->render('front/reservation/tutor.html.twig', [
-            'controller_name' => 'QuizController',
-            'user' => $this->getUser(),
-        ]);
+        return $this->redirectToRoute('app_seance_revision');
     }
 
     /**

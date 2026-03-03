@@ -1,14 +1,14 @@
-{# Pagination moderne harmonisée avec le back-office FAHIMNI #}
-{% if pageCount > 1 %}
-    <nav class="back-pagination" role="navigation" aria-label="Pagination">
-        <div class="back-pagination__info">
-            {% if firstItemNumber is defined and lastItemNumber is defined and totalCount is defined %}
-                <span class="back-pagination__range">{{ firstItemNumber }}–{{ lastItemNumber }}</span>
-                <span class="back-pagination__sep" aria-hidden="true">sur</span>
-                <span class="back-pagination__total">{{ totalCount }}</span>
-                <span class="back-pagination__label">conversation{{ totalCount > 1 ? 's' : '' }}</span>
-            {% endif %}
-        </div>
+{# Pagination moderne harmonisée avec le back-office FAHIMNI — toujours visible quand il y a des résultats #}
+<nav class="back-pagination" role="navigation" aria-label="Pagination">
+    <div class="back-pagination__info">
+        {% if firstItemNumber is defined and lastItemNumber is defined and totalCount is defined %}
+            <span class="back-pagination__range">{{ firstItemNumber }}–{{ lastItemNumber }}</span>
+            <span class="back-pagination__sep" aria-hidden="true">sur</span>
+            <span class="back-pagination__total">{{ totalCount }}</span>
+            <span class="back-pagination__label">conversation{{ totalCount > 1 ? 's' : '' }}</span>
+        {% endif %}
+    </div>
+    {% if pageCount|default(1) > 1 %}
         <ul class="back-pagination__list">
             {% if previous is defined %}
                 <li class="back-pagination__item">
@@ -17,7 +17,7 @@
                     </a>
                 </li>
             {% endif %}
-            {% for page in pagesInRange %}
+            {% for page in pagesInRange|default([]) %}
                 <li class="back-pagination__item">
                     {% if page != current %}
                         <a class="back-pagination__link" href="{{ path(route, knp_pagination_query(query, page, options)) }}" aria-label="Page {{ page }}">{{ page }}</a>
@@ -34,5 +34,5 @@
                 </li>
             {% endif %}
         </ul>
-    </nav>
-{% endif %}
+    {% endif %}
+</nav>

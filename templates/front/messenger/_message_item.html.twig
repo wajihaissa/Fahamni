@@ -108,33 +108,35 @@
                 </div>
                 {% endif %}
                 
-                {# Bulle du message (masquée si contenu vide et pièces jointes uniquement) #}
-                {% if is_deleted %}
-                <div class="message-content">
-                    <span class="message-deleted-text">Ce message a été supprimé</span>
+                {# Contenu bulle : pièces jointes au-dessus, texte en dessous (même ordre que le back) #}
+                <div class="message-bubble-body">
+                    {% if not is_deleted and msg.attachments|length > 0 %}
+                    <div class="message-attachments">
+                        {% for att in msg.attachments %}
+                            {% if att.isImage %}
+                                {% set _inline = attachment_inline_srcs|default({}) %}
+                                {% set img_src = _inline[att.id]|default(path('app_messenger_attachment', { id: att.id })) %}
+                                <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" target="_blank" rel="noopener" class="message-attachment message-attachment-image">
+                                    <img src="{{ img_src }}" alt="{{ att.originalName }}" loading="eager" decoding="async">
+                                </a>
+                            {% else %}
+                                <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" class="message-attachment message-attachment-file" download="{{ att.originalName }}">
+                                    <i class="fas fa-file-alt"></i> {{ att.originalName }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if is_deleted %}
+                    <div class="message-content">
+                        <span class="message-deleted-text">Ce message a été supprimé</span>
+                    </div>
+                    {% elseif (msg.content|trim)|length > 0 %}
+                    <div class="message-content">
+                        {{ msg.content }}
+                    </div>
+                    {% endif %}
                 </div>
-                {% elseif (msg.content|trim)|length > 0 %}
-                <div class="message-content">
-                    {{ msg.content }}
-                </div>
-                {% endif %}
-                {% if not is_deleted and msg.attachments|length > 0 %}
-                <div class="message-attachments">
-                    {% for att in msg.attachments %}
-                        {% if att.isImage %}
-                            {% set _inline = attachment_inline_srcs|default({}) %}
-                            {% set img_src = _inline[att.id]|default(path('app_messenger_attachment', { id: att.id })) %}
-                            <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" target="_blank" rel="noopener" class="message-attachment message-attachment-image">
-                                <img src="{{ img_src }}" alt="{{ att.originalName }}" loading="eager" decoding="async">
-                            </a>
-                        {% else %}
-                            <a href="{{ path('app_messenger_attachment', { id: att.id }) }}" class="message-attachment message-attachment-file" download="{{ att.originalName }}">
-                                <i class="fas fa-file-alt"></i> {{ att.originalName }}
-                            </a>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
             
             {% if not is_deleted %}

@@ -8,8 +8,8 @@
                     <ul>
                         <li><a href="/home" class="nav-link{{ (current_page|default('')) == 'home' ? ' active' : '' }}" data-page="home">Home</a></li>
                         <li><a href="/articles" class="nav-link{{ (current_page|default('')) == 'articles' ? ' active' : '' }}" data-page="articles">Articles</a></li>
-                        <li><a href="/tutor" class="nav-link{{ (current_page|default('')) == 'tutors' ? ' active' : '' }}" data-page="tutors">Find Tutors</a></li>
-                        <li><a href="/calendar" class="nav-link{{ (current_page|default('')) == 'calendar' ? ' active' : '' }}" data-page="calendar">Calendar</a></li>
+                        <li><a href="{{ path('app_seance_revision') }}" class="nav-link{{ (current_page|default('')) == 'tutors' ? ' active' : '' }}" data-page="tutors">Find Tutors</a></li>
+                        <li><a href="/calendar" class="nav-link{{ (current_page|default('')) == 'calendar' ? ' active' : '' }}" data-page="calendar" data-turbo="false">Calendar</a></li>
                         <li><a href="{{ path('app_quiz_list') }}" class="nav-link{{ (current_page|default('')) == 'quiz' ? ' active' : '' }}" data-page="quiz">Quiz</a></li>
                         <li><a href="/messenger" class="nav-link{{ (current_page|default('')) == 'messenger' ? ' active' : '' }}" data-page="messenger">Messenger</a></li>
                     </ul>

@@ -1,0 +1,660 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques Revision - FAHIMNI Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-primary: #0b1220;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 6px 18px rgba(11, 18, 32, 0.06);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sidebar-width: 280px;
+            --status-pending: #f59e0b;
+            --status-accepted: #3b82f6;
+            --status-paid: #10b981;
+            --status-canceled: #ef4444;
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--muted);
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.4rem;
+        }
+
+        .admin-title {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .admin-subtitle {
+            margin: 0.4rem 0 0;
+            color: #52627f;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .period-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.6rem;
+            padding: 0.8rem;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .period-form label {
+            display: grid;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #475467;
+        }
+
+        .period-form select {
+            min-width: 150px;
+            padding: 0.56rem 0.75rem;
+            border: 1px solid #d9e2ef;
+            border-radius: 9px;
+            background: #fff;
+            color: #0f172a;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .btn-apply {
+            border: none;
+            border-radius: 9px;
+            background: var(--primary-gradient);
+            color: #fff;
+            font-size: 0.86rem;
+            font-weight: 700;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+        }
+
+        .flashes {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid transparent;
+            font-size: 0.86rem;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .alert-success {
+            background: #ecfdf3;
+            border-color: #b7f0cc;
+            color: #166534;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
+        .kpi-label {
+            margin: 0;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .kpi-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: #eef2ff;
+            color: #4f46e5;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
+        .kpi-value {
+            margin: 0;
+            font-size: 1.7rem;
+            line-height: 1.15;
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .kpi-meta {
+            margin: 0;
+            font-size: 0.82rem;
+            color: #667085;
+            font-weight: 600;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+        }
+
+        .card h3 {
+            margin: 0 0 0.3rem;
+            color: var(--text-primary);
+            font-size: 1.08rem;
+            font-weight: 700;
+        }
+
+        .card-subtitle {
+            margin: 0 0 0.95rem;
+            color: #64748b;
+            font-size: 0.84rem;
+        }
+
+        .metric-list {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: 90px 1fr 70px;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.83rem;
+            color: #475467;
+        }
+
+        .metric-label {
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .metric-value {
+            text-align: right;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .metric-bar-track {
+            position: relative;
+            height: 9px;
+            border-radius: 999px;
+            background: #eef2f7;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            border-radius: inherit;
+            background: var(--primary-gradient);
+        }
+
+        .metric-bar-fill.revenue {
+            background: linear-gradient(90deg, #10b981 0%, #22c55e 100%);
+        }
+
+        .distribution-list {
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .distribution-item {
+            display: grid;
+            gap: 0.32rem;
+        }
+
+        .distribution-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.84rem;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .distribution-track {
+            height: 8px;
+            border-radius: 999px;
+            background: #eef2f7;
+            overflow: hidden;
+        }
+
+        .distribution-fill {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+        }
+
+        .distribution-fill.pending { background: var(--status-pending); }
+        .distribution-fill.accepted { background: var(--status-accepted); }
+        .distribution-fill.paid { background: var(--status-paid); }
+        .distribution-fill.canceled { background: var(--status-canceled); }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 560px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.72rem 0.7rem;
+            text-align: left;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+
+        .data-table td {
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .tutor-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .tutor-item {
+            border: 1px solid #e8edf5;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 0.8rem;
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .tutor-title {
+            margin: 0;
+            font-size: 0.94rem;
+            color: #0f172a;
+            font-weight: 800;
+        }
+
+        .tutor-meta {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .tutor-stars {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .star {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            line-height: 1;
+        }
+
+        .star.is-filled {
+            color: #f59e0b;
+        }
+
+        .empty-box {
+            border: 1px dashed #d7e0ee;
+            background: #f8fbff;
+            border-radius: 10px;
+            padding: 0.85rem;
+            color: #64748b;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1100px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .main-content {
+                margin-left: 0;
+            }
+
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .admin-header {
+                align-items: stretch;
+            }
+
+            .period-form {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+        <div class="admin-container">
+            <div class="admin-header">
+                <div>
+                    <h1 class="admin-title"><i class="fas fa-chart-pie" style="margin-right:0.5rem;"></i>Statistiques revision</h1>
+                    <p class="admin-subtitle">
+                        Vue globale des seances, reservations, paiements et performance tuteurs.
+                    </p>
+                </div>
+                <form method="get" class="period-form">
+                    <label for="period">
+                        Periode
+                        <select id="period" name="period">
+                            {% for period in availablePeriods %}
+                                <option value="{{ period }}" {% if period == periodDays %}selected{% endif %}>
+                                    {{ period }} derniers jours
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <button type="submit" class="btn-apply">Appliquer</button>
+                </form>
+            </div>
+
+            <div class="flashes">
+                {% for type, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ type }}">
+                            <i class="fas fa-{% if type == 'success' %}check-circle{% elseif type == 'warning' %}triangle-exclamation{% else %}circle-exclamation{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+
+            <section class="kpi-grid">
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Utilisateurs</p>
+                        <span class="kpi-icon"><i class="fas fa-users"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ totalUsers }}</p>
+                    <p class="kpi-meta">Comptes total plateforme</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Seances</p>
+                        <span class="kpi-icon"><i class="fas fa-calendar-check"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ totalSeances }}</p>
+                    <p class="kpi-meta">{{ activeSeances }} actives | {{ draftSeances }} brouillons</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Seances a venir</p>
+                        <span class="kpi-icon"><i class="fas fa-clock"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ upcomingSeances }}</p>
+                    <p class="kpi-meta">Basee sur la date actuelle</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Reservations</p>
+                        <span class="kpi-icon"><i class="fas fa-ticket-alt"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ totalReservations }}</p>
+                    <p class="kpi-meta">{{ reservationsInPeriod }} sur {{ periodDays }} jours</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Conversion reservation</p>
+                        <span class="kpi-icon"><i class="fas fa-percent"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ reservationConversionRate|number_format(1, ',', ' ') }}%</p>
+                    <p class="kpi-meta">{{ acceptedOrPaidReservations }} acceptees/payees</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Paiements reussis</p>
+                        <span class="kpi-icon"><i class="fas fa-credit-card"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ paymentSuccessRate|number_format(1, ',', ' ') }}%</p>
+                    <p class="kpi-meta">{{ paidTransactionsCount }} / {{ totalTransactions }} transactions</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Chiffre total</p>
+                        <span class="kpi-icon"><i class="fas fa-wallet"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ totalRevenueFormatted }}</p>
+                    <p class="kpi-meta">{{ periodRevenueFormatted }} sur la periode</p>
+                </article>
+
+                <article class="kpi-card">
+                    <div class="kpi-top">
+                        <p class="kpi-label">Rating tuteurs</p>
+                        <span class="kpi-icon"><i class="fas fa-star"></i></span>
+                    </div>
+                    <p class="kpi-value">{{ avgGlobalRating|number_format(2, ',', ' ') }}/5</p>
+                    <p class="kpi-meta">{{ totalRatings }} avis total, {{ ratingsInPeriodCount }} recents</p>
+                </article>
+            </section>
+
+            <section class="grid-2">
+                <article class="card">
+                    <h3>Evolution des reservations</h3>
+                    <p class="card-subtitle">6 derniers mois, avec taux d'acceptation par mois.</p>
+                    {% if monthlyRows is empty %}
+                        <div class="empty-box">Aucune donnee disponible.</div>
+                    {% else %}
+                        <div class="metric-list">
+                            {% for row in monthlyRows %}
+                                <div class="metric-row">
+                                    <span class="metric-label">{{ row.label }}</span>
+                                    <div class="metric-bar-track">
+                                        <span class="metric-bar-fill" style="width: {{ row.reservationsPct }}%;"></span>
+                                    </div>
+                                    <span class="metric-value">
+                                        {{ row.reservations }} ({{ row.acceptanceRate|number_format(1, ',', ' ') }}%)
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+
+                <article class="card">
+                    <h3>Evolution des revenus ({{ currency }})</h3>
+                    <p class="card-subtitle">Montant encaisse par mois sur transactions payees.</p>
+                    {% if monthlyRows is empty %}
+                        <div class="empty-box">Aucune donnee disponible.</div>
+                    {% else %}
+                        <div class="metric-list">
+                            {% for row in monthlyRows %}
+                                <div class="metric-row">
+                                    <span class="metric-label">{{ row.label }}</span>
+                                    <div class="metric-bar-track">
+                                        <span class="metric-bar-fill revenue" style="width: {{ row.revenuePct }}%;"></span>
+                                    </div>
+                                    <span class="metric-value">{{ row.revenueFormatted }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            </section>
+
+            <section class="grid-2">
+                <article class="card">
+                    <h3>Repartition des reservations</h3>
+                    <p class="card-subtitle">Distribution par statut sur l'ensemble des reservations.</p>
+                    <div class="distribution-list">
+                        {% for item in reservationDistribution %}
+                            <div class="distribution-item">
+                                <div class="distribution-head">
+                                    <span>{{ item.label }}</span>
+                                    <span>{{ item.count }} ({{ item.pct|number_format(1, ',', ' ') }}%)</span>
+                                </div>
+                                <div class="distribution-track">
+                                    <span class="distribution-fill {{ item.key }}" style="width: {{ item.pct }}%;"></span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <article class="card">
+                    <h3>Top matieres</h3>
+                    <p class="card-subtitle">Matiere les plus reservees, avec conversion paiement.</p>
+                    {% if topSubjects is empty %}
+                        <div class="empty-box">Aucune matiere disponible.</div>
+                    {% else %}
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Matiere</th>
+                                        <th>Reservations</th>
+                                        <th>Acceptees/Payees</th>
+                                        <th>Payees</th>
+                                        <th>Taux paiement</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in topSubjects %}
+                                        <tr>
+                                            <td>{{ row.subject }}</td>
+                                            <td>{{ row.reservationsCount }}</td>
+                                            <td>{{ row.acceptedPaidCount }}</td>
+                                            <td>{{ row.paidCount }}</td>
+                                            <td>{{ row.paymentRate|number_format(1, ',', ' ') }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </article>
+            </section>
+
+            <section class="card">
+                <h3>Top tuteurs</h3>
+                <p class="card-subtitle">Classement par volume de reservations et performance de conversion.</p>
+                {% if topTutors is empty %}
+                    <div class="empty-box">Aucun tuteur avec reservation pour le moment.</div>
+                {% else %}
+                    <div class="tutor-list">
+                        {% for tutor in topTutors %}
+                            <article class="tutor-item">
+                                <h4 class="tutor-title">{{ tutor.name }}</h4>
+                                <p class="tutor-meta">{{ tutor.seancesCount }} seance(s) publiee(s)</p>
+                                <p class="tutor-meta">{{ tutor.reservationsCount }} reservation(s), {{ tutor.paidCount }} payee(s), conversion {{ tutor.conversionRate|number_format(1, ',', ' ') }}%</p>
+                                <p class="tutor-meta">
+                                    <span class="tutor-stars">
+                                        {% set rounded = tutor.avgRating|round(0, 'common') %}
+                                        {% for i in 1..5 %}
+                                            <span class="star {{ i <= rounded ? 'is-filled' : '' }}">&#9733;</span>
+                                        {% endfor %}
+                                    </span>
+                                    {{ tutor.avgRating|number_format(2, ',', ' ') }}/5 ({{ tutor.ratingsCount }} avis)
+                                </p>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+{% endblock %}

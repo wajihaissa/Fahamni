@@ -120,7 +120,7 @@ final class MessengerAdminController extends AbstractController
                     'data' => $this->fillDataForLabels($labels, $convReportsByDay),
                 ],
                 [
-                    'label' => 'Messages signalÃ©s',
+                    'label' => 'Messages signalés',
                     'backgroundColor' => 'rgba(239, 68, 68, 0.2)',
                     'borderColor' => 'rgb(239, 68, 68)',
                     'borderWidth' => 2,
@@ -141,7 +141,7 @@ final class MessengerAdminController extends AbstractController
 
         $chartTypes = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $chartTypes->setData([
-            'labels' => ['PrivÃ©es', 'Groupes'],
+            'labels' => ['Privées', 'Groupes'],
             'datasets' => [[
                 'data' => [$groupVsPrivate['private'], $groupVsPrivate['group']],
                 'backgroundColor' => ['rgb(102, 126, 234)', 'rgb(118, 75, 162)'],
@@ -289,6 +289,15 @@ final class MessengerAdminController extends AbstractController
             $title = implode(', ', $names) ?: 'Conversation #' . $conversation->getId();
         }
         $messagesData = array_map(function (Message $m) {
+            $attachments = [];
+            foreach ($m->getAttachments() as $att) {
+                $attachments[] = [
+                    'id' => $att->getId(),
+                    'originalName' => $att->getOriginalName(),
+                    'isImage' => $att->isImage(),
+                    'url' => $this->generateUrl('app_messenger_attachment', ['id' => $att->getId()]),
+                ];
+            }
             return [
                 'id' => $m->getId(),
                 'content' => $m->getContent(),
@@ -296,6 +305,7 @@ final class MessengerAdminController extends AbstractController
                 'senderId' => $m->getSender()?->getId(),
                 'senderName' => $m->getSender()?->getFullName(),
                 'deletedAt' => $m->getDeletedAt()?->format(\DateTimeInterface::ATOM),
+                'attachments' => $attachments,
             ];
         }, $messages);
         return $this->json([
@@ -354,7 +364,7 @@ final class MessengerAdminController extends AbstractController
     }
 
     /**
-     * Alertes : conversations et messages signalÃ©s.
+     * Alertes : conversations et messages signalés.
      */
     #[Route('/alerts', name: 'alerts', methods: ['GET'])]
     public function alerts(): Response
