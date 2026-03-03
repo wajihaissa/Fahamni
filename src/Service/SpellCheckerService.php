@@ -305,7 +305,7 @@ class SpellCheckerService
             'point de vue' => 'point de vue',
         ];
     }
-
+//fautes frequentes
     private function buildTypoCorrections(): array
     {
         return [

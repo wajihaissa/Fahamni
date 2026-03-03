@@ -13,7 +13,6 @@ class BadWordDetector
         'connard', 'connasse', 'conasse',
         'salaud', 'salope', 'salopard', 'saloperie',
         'enculé', 'encule', 'enculer', 'enculeur',
-        'nique', 'niquer', 'niqué',
         'ntm', 'fdp', 'tg',
         'fils de pute', 'fils de putain', 'fille de pute',
         'ta gueule', 'ferme ta gueule', 'ferme-la',
@@ -70,12 +69,7 @@ class BadWordDetector
         // =====================================================================
         'msatek', 'msakha',
         'zamel', 'zamla', 'zamil',
-        'kahba', 'qahba',
         'kelb', 'kalb', 'kilab',
-        'manyak', 'manyok', 'manyek', 'manyouk',
-        'zebbi', 'zebi', 'zeb', 'zebb', 'zbeb',
-        'nayek', 'naik', 'nik', 'nikk', 'nikomok', 'nik omek', 'nik okhtek',
-        'koss', 'kossomek', 'koss ommek', 'koss omok', 'koss omek',
         'thalla', 'thali',
         'barra', 'tozz', 'toz', 'tozzfik',
         'hmar', 'hmara', 'bhim', 'bhima', 'bheima',
@@ -83,16 +77,16 @@ class BadWordDetector
         'haywan', 'haywana', 'haywane', 'hayawane',
         'basla', 'baslaoui', 'baslounia', 'baslouni',
         'wisekh', 'wosekh', 'weskha', 'wisakh', 'wsekh',
-        'miboun', 'mabyoun', 'mabyouna', 'mabyoun',
-        'ta7an', 'tahan', 'tahhan', 'ta7ana',
+    
+    
         'karba', 'harboucha', 'harbouch',
-        'chkoun rabbek', 'chkoun omek',
+
         'yezzi', 'bouzbal',
         'hashek', 'ya7chik', 'ya hchik',
         'ya3ayel', 'w3el', 'wa3el',
         'nayla', 'naylou',
         'yel3en', 'la3nek', 'lakhtek', 'la3en',
-        'bzoula', 'bziwla',
+    
         'ykhzi', 'ykhzik',
         'ya khinzir', 'khinzir',
         'ya hmar',
@@ -108,15 +102,15 @@ class BadWordDetector
         'yakhrib', 'yakhreb', 'yakhrib betak',
         'weld el kahba', 'bent el kahba',
         'ibn el haram', 'weld el haram',
-        'yel3an omak', 'yel3an deenak',
+        
         // =====================================================================
         // ARABE — Script arabe
         // =====================================================================
-        'كلب', 'حمار', 'قحبة', 'زبي', 'نيك',
+        'كلب', 'حمار',
         'شرموطة', 'خنزير', 'أحمق', 'غبي', 'خرا',
         'عاهرة', 'كس', 'طيز', 'منيوك',
         'يلعن', 'لعين', 'ملعون', 'قذر', 'وسخ',
-        'حيوان', 'وليد الكلب', 'ابن القحبة',
+        'حيوان', 'وليد الكلب', 
         'اخرس', 'روح من هنا', 'يخزيك',
     ];
 

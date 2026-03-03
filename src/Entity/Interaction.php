@@ -21,11 +21,11 @@ class Interaction
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
-
+    //plusieurs commentaires peuvent appartenir à un seul user
     #[ORM\ManyToOne(inversedBy: 'interactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $innteractor = null;
-
+    //plusieurs interactions appartiennent à un blog
     #[ORM\ManyToOne(inversedBy: 'interactions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Blog $blog = null;

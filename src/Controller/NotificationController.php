@@ -38,7 +38,7 @@ class NotificationController extends AbstractController
 
         $notifications = $repo->findUnreadNotifications($user);
 
-        return $this->render('front/_notifications_panel.html.twig', [
+        return $this->render('front/article/_notifications_panel.html.twig', [
             'notifications' => $notifications,
         ]);
     }
@@ -100,7 +100,7 @@ class NotificationController extends AbstractController
         $statusNotifs = $blogRepo->findStatusNotifications($user);
         $interactionNotifs = $interactionRepo->findUnreadNotifications($user);
 
-        return $this->render('front/_tutor_notifications_panel.html.twig', [
+        return $this->render('front/article/_tutor_notifications_panel.html.twig', [
             'statusNotifs' => $statusNotifs,
             'interactionNotifs' => $interactionNotifs,
         ]);
