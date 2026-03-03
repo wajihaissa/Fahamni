@@ -1,0 +1,20 @@
+{% extends 'back/admin_base.html.twig' %}
+
+{% block title %}New Category - FAHIMNI Admin{% endblock %}
+
+{% block body %}
+<div style="padding: 3rem; display: flex; justify-content: center;">
+    
+    <div style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        
+        <div style="margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Create Category</h1>
+            <p style="color: #64748b; margin-top: 5px;">Add a new topic for your courses</p>
+        </div>
+
+        {{ include('back/category/_form.html.twig') }}
+
+    </div>
+
+</div>
+{% endblock %}

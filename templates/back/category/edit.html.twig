@@ -1,0 +1,26 @@
+{% extends 'back/admin_base.html.twig' %}
+
+{% block title %}Edit Category - FAHIMNI Admin{% endblock %}
+
+{% block body %}
+<div style="padding: 3rem; display: flex; justify-content: center;">
+    
+    <div style="width: 100%; max-width: 600px; background: white; padding: 2.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+        
+        <div style="margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Edit Category</h1>
+                <p style="color: #64748b; margin-top: 5px;">Update category details</p>
+            </div>
+            
+            {# Delete Button (styled minimally) #}
+            {{ include('back/category/_delete_form.html.twig') }}
+        </div>
+
+        {# FIX: Updated path to include 'back/' #}
+        {{ include('back/category/_form.html.twig', {'button_label': 'Update'}) }}
+
+    </div>
+
+</div>
+{% endblock %}

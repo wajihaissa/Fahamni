@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Certificate of Completion</title>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            text-align: center;
+            border: 20px solid #7209b3; /* Purple Border */
+            padding: 50px;
+            height: 90vh;
+            color: #333;
+        }
+        .header {
+            font-size: 50px;
+            font-weight: bold;
+            color: #4361ee; /* Blue Title */
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .sub-header {
+            font-size: 25px;
+            margin-bottom: 50px;
+            color: #666;
+        }
+        .presented-to {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .student-name {
+            font-size: 40px;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            display: inline-block;
+            padding: 0 40px 10px 40px;
+            margin-bottom: 40px;
+            color: #222;
+        }
+        .course-title {
+            font-size: 30px;
+            font-weight: bold;
+            color: #7209b3;
+            margin-bottom: 60px;
+        }
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 80px;
+            padding: 0 50px;
+        }
+        .signature {
+            border-top: 1px solid #333;
+            width: 200px;
+            padding-top: 10px;
+            margin: 0 auto;
+        }
+        .cert-id {
+            font-size: 10px;
+            color: #999;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Certificate of Completion</div>
+    <div class="sub-header">This creates is proudly presented to</div>
+
+    <div class="presented-to">Student</div>
+    
+    {# Uses User's First Name or Email if name is missing #}
+    <div class="student-name">
+        {{ user.nom ? user.nom ~ ' ' ~ user.prenom : user.email }}
+    </div>
+
+    <div class="presented-to">For successfully completing the course</div>
+    
+    <div class="course-title">{{ matiere.titre }}</div>
+
+    <div style="margin-top: 50px;">
+        <div style="float: left; width: 40%;">
+            <div class="signature">{{ date|date('F d, Y') }}</div>
+            <div>Date</div>
+        </div>
+        <div style="float: right; width: 40%;">
+            <div class="signature">Fahamni Team</div>
+            <div>Instructor</div>
+        </div>
+    </div>
+
+    <div class="cert-id">ID: {{ certificateId }}</div>
+</body>
+</html>

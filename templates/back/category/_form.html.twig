@@ -1,0 +1,33 @@
+{{ form_start(form) }}
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; color: #475569; font-weight: 600; font-size: 0.9rem;">Category Name</label>
+        {{ form_widget(form.name, {
+            'attr': {
+                'style': 'width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #1e293b; outline: none; transition: all 0.2s;', 
+                'placeholder': 'e.g. Development',
+                'class': 'form-control-admin' 
+            }
+        }) }}
+        <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form_errors(form.name) }}</div>
+    </div>
+    
+    <div style="margin-bottom: 25px;">
+        <label style="display: block; margin-bottom: 8px; color: #475569; font-weight: 600; font-size: 0.9rem;">Slug</label>
+        {{ form_widget(form.slug, {
+            'attr': {
+                'style': 'width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; color: #64748b;', 
+                'placeholder': 'e.g. development'
+            }
+        }) }}
+    </div>
+
+    <div style="display: none;">{{ form_row(form.matieres) }}</div>
+
+    <div style="display: flex; gap: 10px; margin-top: 30px;">
+        <a href="{{ path('app_category_index') }}" style="padding: 12px 20px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #64748b; text-decoration: none; font-weight: 600;">Cancel</a>
+        
+        <button type="submit" style="flex: 1; padding: 12px; background: #6c5ce7; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            Save Category
+        </button>
+    </div>
+{{ form_end(form) }}
