@@ -43,10 +43,17 @@ class Matiere
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'matieres')]
     private Collection $categories;
 
+    /**
+     * @var Collection<int, FlashcardAttempt>
+     */
+    #[ORM\OneToMany(targetEntity: FlashcardAttempt::class, mappedBy: 'subject')]
+    private Collection $flashcardAttempts;
+
     public function __construct()
     {
         $this->chapters = new ArrayCollection();
         $this->categories = new ArrayCollection();
+        $this->flashcardAttempts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -175,6 +182,36 @@ class Matiere
     public function removeCategory(Category $category): static
     {
         $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FlashcardAttempt>
+     */
+    public function getFlashcardAttempts(): Collection
+    {
+        return $this->flashcardAttempts;
+    }
+
+    public function addFlashcardAttempt(FlashcardAttempt $flashcardAttempt): static
+    {
+        if (!$this->flashcardAttempts->contains($flashcardAttempt)) {
+            $this->flashcardAttempts->add($flashcardAttempt);
+            $flashcardAttempt->setSubject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFlashcardAttempt(FlashcardAttempt $flashcardAttempt): static
+    {
+        if ($this->flashcardAttempts->removeElement($flashcardAttempt)) {
+            // set the owning side to null (unless already changed)
+            if ($flashcardAttempt->getSubject() === $this) {
+                $flashcardAttempt->setSubject(null);
+            }
+        }
 
         return $this;
     }

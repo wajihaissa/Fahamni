@@ -3,10 +3,7 @@
 {% block title %}Manage Subjects - FAHIMNI Admin{% endblock %}
 
 {% block body %}
-    {# 
-       CRITICAL FIX: Injecting styles directly here because admin_base 
-       ignores the {% block stylesheets %}.
-    #}
+    
     <style>
         /* --- 1. VISUAL VARIABLES (Consistent with Edit Page) --- */
         :root {
@@ -66,6 +63,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2.5rem;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
+            gap: 20px;
         }
         .page-header h1 {
             font-size: 1.75rem;
@@ -74,6 +73,13 @@
             margin: 0 0 5px 0;
         }
         .page-header p { color: var(--muted); margin: 0; }
+
+        /* HEADER BUTTONS GROUP */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
 
         .btn-create {
             background: var(--primary-grad);
@@ -87,8 +93,29 @@
             gap: 8px;
             box-shadow: 0 4px 12px rgba(108, 92, 231, 0.25);
             transition: transform 0.2s;
+            border: none;
         }
         .btn-create:hover { transform: translateY(-2px); }
+
+        /* NEW: Secondary Action Button (White with Purple Border) */
+        .btn-secondary-action {
+            background: white;
+            color: var(--primary) !important;
+            border: 1px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-secondary-action:hover {
+            background: #f5f3ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+        }
 
         /* Grid Layout for Subjects */
         .subjects-grid {
@@ -125,6 +152,7 @@
             border-radius: 10px;
             object-fit: cover;
             background: #f1f5f9;
+            border: 1px solid #e2e8f0;
         }
 
         .subject-info h3 {
@@ -176,6 +204,22 @@
         }
         .btn-edit:hover { background: rgba(108, 92, 231, 0.2); }
 
+        /* Search Input Styles */
+        .admin-search-input {
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 25px;
+            border: 1px solid var(--border);
+            width: 250px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .admin-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+            width: 300px; /* Expand on focus */
+        }
+
     </style>
 
     <div class="page-header">
@@ -183,26 +227,43 @@
             <h1><i class="fas fa-book" style="color: var(--primary); margin-right: 10px;"></i> Subjects</h1>
             <p>Manage your learning subjects and materials</p>
         </div>
-        <a href="{{ path('app_matiere_new') }}" class="btn-create">
-            <i class="fas fa-plus"></i> New Subject
-        </a>
+        
+        {# BUTTON GROUP #}
+        <div class="header-actions">
+            
+            {# --- SEARCH FORM ADDED HERE --- #}
+            <form method="get" action="{{ path('app_matiere_index') }}" style="position: relative; margin-right: 15px;">
+                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted);"></i>
+                <input type="text" 
+                       name="q" 
+                       class="admin-search-input"
+                       placeholder="Search subjects..." 
+                       value="{{ searchTerm|default('') }}">
+            </form>
+
+            <a href="{{ path('app_category_index') }}" class="btn-secondary-action">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+            
+            <a href="{{ path('app_matiere_new') }}" class="btn-create">
+                <i class="fas fa-plus"></i> New Subject
+            </a>
+        </div>
+
     </div>
 
     <div class="subjects-grid">
         {% for matiere in matieres %}
             <div class="subject-card">
                 <div class="card-header">
-                    {% if matiere.coverImage %}
-                        <img src="{{ asset(matiere.coverImage) }}" alt="{{ matiere.titre }}" class="subject-img">
-                    {% else %}
-                        <div class="subject-img" style="display:flex;align-items:center;justify-content:center;color:#cbd5e1;">
-                            <i class="fas fa-image fa-lg"></i>
-                        </div>
-                    {% endif %}
+                    {# --- UPDATED IMAGE LOGIC: Default vs Uploaded --- #}
+                    <img src="{{ matiere.coverImage ? asset(matiere.coverImage) : asset('uploads/matiere/default-subject.jpg') }}" 
+                         alt="{{ matiere.titre }}" 
+                         class="subject-img">
                     
                     <div class="subject-info">
                         <h3>{{ matiere.titre }}</h3>
-                        <p>{{ matiere.description }}</p>
+                        <p>{{ matiere.description|striptags }}</p>
                     </div>
                 </div>
 
@@ -212,7 +273,7 @@
                         <i class="fas fa-eye"></i>
                     </a>
 
-                    {# 2. NEW: Manage Content Button #}
+                    {# 2. Manage Content Button #}
                     <a href="{{ path('app_course_manage', {'id': matiere.id}) }}" class="action-btn" style="background: #eef2ff; color: #4f46e5; flex: 2; border: 1px solid #c7d2fe;">
                         <i class="fas fa-layer-group"></i> <strong>Content</strong>
                     </a>
@@ -225,8 +286,9 @@
             </div>
         {% else %}
             <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--muted);">
-                <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                <p>No subjects found. <a href="{{ path('app_matiere_new') }}" style="color: var(--primary);">Create one now?</a></p>
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>No subjects found matching your search.</p>
+                <a href="{{ path('app_matiere_index') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Clear Search</a>
             </div>
         {% endfor %}
     </div>

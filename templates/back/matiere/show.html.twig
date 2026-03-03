@@ -75,6 +75,7 @@
             object-fit: cover;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             background: #f1f5f9;
+            border: 1px solid #e2e8f0;
         }
 
         .hero-content h1 {
@@ -172,13 +173,10 @@
             <div class="hero-banner"></div>
             
             <div class="hero-body">
-                {% if matiere.coverImage %}
-                    <img src="{{ asset(matiere.coverImage) }}" alt="{{ matiere.titre }}" class="hero-img">
-                {% else %}
-                    <div class="hero-img" style="display:flex;align-items:center;justify-content:center;color:#cbd5e1;background:#f8fafc; border: 2px dashed #e2e8f0;">
-                        <i class="fas fa-image fa-3x"></i>
-                    </div>
-                {% endif %}
+                {# --- CHANGED: Use the same default image logic here --- #}
+                <img src="{{ matiere.coverImage ? asset(matiere.coverImage) : asset('uploads/matiere/default-subject.jpg') }}" 
+                     alt="{{ matiere.titre }}" 
+                     class="hero-img">
 
                 <div class="hero-content">
                     <span class="subject-id">ID: #{{ matiere.id }}</span>
@@ -206,7 +204,7 @@
                     </a>
                     <a href="{{ path('app_matiere_edit', {'id': matiere.id}) }}" class="btn-main btn-edit-main">
                         <i class="fas fa-pen"></i> Edit Subject
-                    </a>
+                    </a>    
                 </div>
             </div>
         </div>

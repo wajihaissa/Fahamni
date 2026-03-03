@@ -5,78 +5,149 @@
 {% block current_page %}subjects{% endblock %}
 
 {% block stylesheets %}
-<style>
-    /* Hero Header: Matching the purple gradient from your "Excellence in Education" image */
-    .subject-hero {
-        background: linear-gradient(135deg, #4361ee 0%, #7209b3 100%);
-        padding: 60px 0;
-        color: white;
-        margin-bottom: 40px;
-        border-radius: 0 0 30px 30px;
-    }
+    {{ parent() }}
 
-    .hero-content { display: flex; align-items: center; gap: 40px; }
-    
-    .hero-img {
-        width: 200px;
-        height: 200px;
-        border-radius: 20px;
-        object-fit: cover;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        border: 4px solid rgba(255,255,255,0.2);
-    }
+    <style>
+        /* =========================================
+           1. HERO SECTION
+           ========================================= */
+        .subject-hero {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b3 100%);
+            padding: 60px 0;
+            color: white;
+            margin-bottom: 40px;
+            border-radius: 0 0 30px 30px;
+        }
 
-    .subject-title { font-size: 42px; font-weight: 800; margin-bottom: 10px; }
-    .subject-meta { display: flex; gap: 20px; opacity: 0.9; font-weight: 500; }
+        .hero-content { display: flex; align-items: center; gap: 40px; }
+        
+        .hero-img {
+            width: 200px; height: 200px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 4px solid rgba(255,255,255,0.2);
+        }
 
-    /* Layout Structure: Reusing your 30px gap and Sidebar logic */
-    .details-layout { display: flex; gap: 30px; align-items: flex-start; }
-    .main-content { flex: 1; }
-    
-    /* Syllabus Style: Reusing the .session-item style from your Calendar */
-    .syllabus-card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 30px;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow);
-    }
+        .subject-title { font-size: 42px; font-weight: 800; margin-bottom: 10px; }
+        .subject-meta { display: flex; gap: 20px; opacity: 0.9; font-weight: 500; }
 
-    .chapter-item {
-        margin-bottom: 25px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--border-color);
-    }
+        /* =========================================
+           2. MAIN LAYOUT
+           ========================================= */
+        .details-layout { display: flex; gap: 30px; align-items: flex-start; }
+        .main-content { flex: 1; min-width: 0; }
+        
+        /* Syllabus Card */
+        .syllabus-card {
+            background: var(--card-bg, #ffffff);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border-color, #e0e0e0);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
 
-    .chapter-item:last-child { border-bottom: none; }
+        .chapter-item {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color, #eee);
+        }
+        .chapter-item:last-child { border-bottom: none; }
 
-    .chapter-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text-color);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 15px;
-    }
+        /* Lesson Links */
+        .lesson-link {
+            display: flex; align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            color: var(--text-color, #333);
+            text-decoration: none;
+            transition: background 0.2s;
+            gap: 10px;
+        }
+        .lesson-link:hover { background-color: #f8f9fa; color: #4361ee; }
+        .lesson-icon { color: #4361ee; width: 20px; text-align: center; }
 
-    .lesson-link {
-        display: flex;
-        align-items: center;
-        padding: 12px 15px;
-        border-radius: 10px;
-        color: var(--text-color);
-        text-decoration: none;
-        transition: background 0.2s;
-        gap: 10px;
-    }
+        /* =========================================
+           3. SIDEBAR STATS
+           ========================================= */
+        .stats-sidebar { width: 320px; flex-shrink: 0; }
+        
+        .sidebar-section {
+            background: var(--card-bg, #ffffff);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color, #eee);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .btn-learn {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b3 100%);
+            color: white; font-weight: 700; cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-learn:hover { transform: translateY(-2px); color: white; }
 
-    .lesson-link:hover { background-color: var(--bg-secondary); color: var(--primary-color); }
-    .lesson-icon { color: var(--primary-color); width: 20px; text-align: center; }
+        /* =========================================
+           4. NOTES MODAL STYLES (UPDATED)
+           ========================================= */
+        .btn-notes {
+            background-color: #eff6ff; color: #3b82f6;
+            padding: 6px 14px; border-radius: 20px; 
+            font-size: 12px; font-weight: 700;
+            border: 1px solid #dbeafe;
+            cursor: pointer; margin-left: 10px;
+            display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-notes:hover { background-color: #dbeafe; transform: scale(1.05); }
 
-    /* Right Sidebar for Stats */
-    .stats-sidebar { width: 320px; }
-</style>
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 9999;
+            backdrop-filter: blur(4px);
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
+
+        .modal-content {
+            background: white; padding: 0; border-radius: 16px;
+            width: 90%; max-width: 600px; max-height: 85vh; 
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; }
+        .modal-body { padding: 25px; overflow-y: auto; background-color: #fdfdfd; }
+        .modal-footer { padding: 15px; border-top: 1px solid #eee; text-align: right; background: white; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* =========================================
+           5. DARK THEME OVERRIDES
+           ========================================= */
+        body.dark-theme .syllabus-card,
+        body.dark-theme .sidebar-section,
+        body.dark-theme .modal-content,
+        body.dark-theme .modal-header,
+        body.dark-theme .modal-footer {
+            background-color: #1e1e1e !important;
+            border-color: #333 !important;
+        }
+
+        body.dark-theme .lesson-link { color: #d0d0d0; }
+        body.dark-theme .lesson-link:hover { background-color: #2d2d2d; color: #4361ee; }
+        body.dark-theme .text-muted { color: #b0b0b0 !important; }
+        
+        /* Mobile Adjustments */
+        @media (max-width: 992px) {
+            .details-layout { flex-direction: column; }
+            .stats-sidebar { width: 100%; }
+            .hero-content { flex-direction: column; text-align: center; }
+            .subject-meta { justify-content: center; flex-wrap: wrap; }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -88,7 +159,7 @@
                 <h1 class="subject-title">{{ matiere.titre }}</h1>
                 <div class="subject-meta">
                     <span><i class="fas fa-layer-group"></i> {{ matiere.chapters|length }} Chapter(s)</span>
-                    <span><i class="fas fa-clock"></i> {{ matiere.totalLessonsCount }} Lesson(s)</span>
+                    <span><i class="fas fa-clock"></i> {{ matiere.totalLessonsCount|default('0') }} Lesson(s)</span>
                     <span><i class="fas fa-user-graduate"></i> 150 Student(s)</span>
                 </div>
             </div>
@@ -98,61 +169,158 @@
 
 <div class="container">
     <div class="details-layout">
+        
         <div class="main-content">
-            <div class="syllabus-card">
-    <h2 class="sidebar-title" style="margin-bottom: 30px;">
-        <i class="fas fa-book-reader"></i> Course Curriculum
-    </h2>
-    
-    {# 1. Loop through Chapters #}
-    {% for chapter in matiere.chapters %}
-        <div class="chapter-container" style="margin-bottom: 30px;">
-            <h3 class="chapter-title" style="color: var(--primary-color); border-left: 4px solid var(--secondary-color); padding-left: 15px;">
-                {{ chapter.titre }}
-            </h3>
+            <div class="syllabus-card" id="curriculum">
+                <h2 class="sidebar-title" style="margin-bottom: 30px;">
+                    <i class="fas fa-book-reader"></i> Course Curriculum
+                </h2>
+                
+                {# START: Chapter Loop #}
+                {% for chapter in matiere.chapters %}
+                    <div class="chapter-container" style="margin-bottom: 30px;">
+                        <h3 class="chapter-title" style="color: #4361ee; border-left: 4px solid #7209b3; padding-left: 15px; font-size: 20px; font-weight: 700; margin-bottom: 15px;">
+                            {{ chapter.titre }}
+                        </h3>
 
-            {# 2. Loop through Sections inside each Chapter #}
-            {% for section in chapter.sections %}
-                <div class="section-item" style="margin-left: 20px; margin-top: 15px;">
-                    <h4 style="font-size: 16px; font-weight: 600; color: var(--text-color); margin-bottom: 10px;">
-                        <i class="fas fa-folder-open" style="font-size: 14px; opacity: 0.7;"></i> {{ section.titre }}
-                    </h4>
+                        {# START: Section Loop #}
+                        {% for section in chapter.sections %}
+                            <div class="section-item" style="margin-left: 20px; margin-top: 15px;">
+                                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <h4 style="font-size: 16px; font-weight: 600; margin: 0;">
+                                        <i class="fas fa-folder-open" style="font-size: 14px; opacity: 0.7; margin-right: 8px;"></i> {{ section.titre }}
+                                    </h4>
 
-                    <div class="lesson-list" style="margin-left: 15px;">
-                        {# 3. Loop through Resources inside each Section #}
-                        {% for resource in section.resources %}
-                            {# Determine the URL: Use 'link' for websites/videos, or 'filepath' for uploaded files #}
-                            {% set targetUrl = resource.link ? resource.link : asset('uploads/resources/' ~ resource.filepath) %}
-                            
-                            <a href="{{ targetUrl }}" class="lesson-link" target="_blank">
-                                {% if resource.type|lower == 'video' %}
-                                    <i class="far fa-play-circle lesson-icon"></i>
-                                {% elseif resource.type|lower == 'pdf' %}
-                                    <i class="far fa-file-pdf lesson-icon"></i>
-                                {% else %}
-                                    <i class="fas fa-globe lesson-icon"></i> {# This covers your website links #}
-                                {% endif %}
-                                <span>{{ resource.titre }}</span>
-                            </a>
+                                    {# === NOTES BUTTON === #}
+                                    {% if section.flashcardAttempts|length > 0 %}
+                                        <button onclick="toggleModal('modal-{{ section.id }}')" class="btn-notes">
+                                            <i class="fas fa-lightbulb"></i> NOTES ({{ section.flashcardAttempts|length }})
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="lesson-list" style="margin-left: 15px;">
+                                    {% for resource in section.resources %}
+                                        {% set targetUrl = resource.link ? resource.link : asset('uploads/course_content/' ~ resource.filepath) %}
+                                        
+                                        <a href="{{ targetUrl }}" class="lesson-link" target="_blank">
+                                            {% if resource.type|lower == 'video' %}
+                                                <i class="far fa-play-circle lesson-icon"></i>
+                                            {% elseif resource.type|lower == 'pdf' %}
+                                                <i class="far fa-file-pdf lesson-icon"></i>
+                                            {% else %}
+                                                <i class="fas fa-globe lesson-icon"></i>
+                                            {% endif %}
+                                            <span>{{ resource.titre }}</span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            {# === MODAL WITH BLUE STUDY NOTES === #}
+                            {% if section.flashcardAttempts|length > 0 %}
+                                <div id="modal-{{ section.id }}" class="modal-overlay" onclick="toggleModal('modal-{{ section.id }}')">
+                                    <div class="modal-content" onclick="event.stopPropagation()">
+                                        <div class="modal-header">
+                                            <h3 style="margin:0; font-size: 18px; font-weight:bold; color: #1e3a8a;">
+                                                <i class="fas fa-robot text-primary me-2"></i> Your Study Notes
+                                            </h3>
+                                            <button onclick="toggleModal('modal-{{ section.id }}')" style="background:none; border:none; font-size:20px; cursor:pointer; color: #64748b;">&times;</button>
+                                        </div>
+                                        
+                                        <div class="modal-body">
+                                            <p style="margin-bottom: 20px; font-size: 0.95em; color: #64748b;">
+                                                Key takeaways generated from your quiz answers for <strong>{{ section.titre }}</strong>:
+                                            </p>
+                                            
+                                            {% for note in section.flashcardAttempts %}
+                                                {# --- BLUE CARD DESIGN --- #}
+                                                <div style="background: #f0f9ff; border: 1px solid #bee3f8; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                                    
+                                                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                                                        <span style="text-transform: uppercase; font-size: 0.7rem; color: #2563eb; font-weight: 800; letter-spacing: 0.5px;">
+                                                            <i class="fas fa-star me-1"></i> Key Insight
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {# AI Feedback #}
+                                                    <div style="color: #1e3a8a; line-height: 1.6; font-size: 0.95rem; font-weight: 500;">
+                                                        {{ note.aiFeedback|nl2br }}
+                                                    </div>
+
+                                                    {# Context #}
+                                                    <div style="border-top: 1px dashed #bfdbfe; padding-top: 12px; margin-top: 15px; display: flex; flex-direction: column; gap: 4px;">
+                                                        <small style="color: #64748b; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">Topic</small>
+                                                        <div style="color: #475569; font-size: 0.9rem;">{{ note.question }}</div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button onclick="toggleModal('modal-{{ section.id }}')" style="padding: 10px 20px; background: #f1f5f9; color: #475569; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {# === END MODAL === #}
+
                         {% endfor %}
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="text-muted">No content available for this subject yet.</p>
-    {% endfor %}
-</div>
+                {% else %}
+                    <p class="text-muted">No content available for this subject yet.</p>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="stats-sidebar">
             <div class="sidebar-section">
-                <h3 class="sidebar-title"><i class="fas fa-info-circle"></i> About Subject</h3>
+                <h3 class="sidebar-title" style="font-size: 20px; font-weight: 700; margin-bottom: 15px;">
+                    <i class="fas fa-info-circle"></i> About Subject
+                </h3>
                 <p class="text-muted" style="line-height: 1.6;">{{ matiere.description }}</p>
-                <hr style="border-top: 1px solid var(--border-color); margin: 20px 0;">
-                <button class="btn-learn" style="width: 100%; border: none; padding: 15px;">Enroll for Free</button>
+                <hr style="border-top: 1px solid #eee; margin: 20px 0;">
+                <a href="#curriculum" class="btn-learn" style="width: 100%; display:block; text-align:center; padding: 15px; border-radius: 12px; text-decoration: none;">
+                    Start Learning
+                </a>
+                <a href="{{ path('app_student_flashcards', {'id': matiere.id}) }}"
+   class="btn-learn"
+   style="
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px;
+        border-radius: 12px;
+        text-decoration: none;
+        margin: 10px 0;
+        background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+   ">
+    <i class="fas fa-brain"></i> Practice with AI
+</a>
+                <a href="{{ path('app_certificate_download', {'id': matiere.id}) }}" 
+                    style="width: 100%; display:block; text-align:center; padding: 15px; border-radius: 12px; text-decoration: none; margin-top: 10px; background: #fff; border: 2px solid #7209b3; color: #7209b3; font-weight: bold;">
+                    <i class="fas fa-certificate"></i> Download Certificate
+                </a>
             </div>
         </div>
+
     </div>
 </div>
+
+<script>
+    function toggleModal(modalId) {
+        var modal = document.getElementById(modalId);
+        if (modal) {
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto'; 
+            } else {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            }
+        }
+    }
+</script>
 {% endblock %}

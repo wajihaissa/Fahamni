@@ -28,9 +28,16 @@ class Section
     #[ORM\OneToMany(targetEntity: Resource::class, mappedBy: 'section', orphanRemoval: true)]
     private Collection $resources;
 
+    /**
+     * @var Collection<int, FlashcardAttempt>
+     */
+    #[ORM\OneToMany(targetEntity: FlashcardAttempt::class, mappedBy: 'section')]
+    private Collection $flashcardAttempts;
+
     public function __construct()
     {
         $this->resources = new ArrayCollection();
+        $this->flashcardAttempts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,6 +93,36 @@ class Section
             // set the owning side to null (unless already changed)
             if ($resource->getSection() === $this) {
                 $resource->setSection(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FlashcardAttempt>
+     */
+    public function getFlashcardAttempts(): Collection
+    {
+        return $this->flashcardAttempts;
+    }
+
+    public function addFlashcardAttempt(FlashcardAttempt $flashcardAttempt): static
+    {
+        if (!$this->flashcardAttempts->contains($flashcardAttempt)) {
+            $this->flashcardAttempts->add($flashcardAttempt);
+            $flashcardAttempt->setSection($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFlashcardAttempt(FlashcardAttempt $flashcardAttempt): static
+    {
+        if ($this->flashcardAttempts->removeElement($flashcardAttempt)) {
+            // set the owning side to null (unless already changed)
+            if ($flashcardAttempt->getSection() === $this) {
+                $flashcardAttempt->setSection(null);
             }
         }
 

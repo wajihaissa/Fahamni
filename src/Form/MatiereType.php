@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Category;
 use App\Entity\Matiere;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -9,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Validator\Constraints\File;
 
 class MatiereType extends AbstractType
@@ -43,6 +45,15 @@ class MatiereType extends AbstractType
                     ])
                 ],
             ])
+
+            ->add('categories', EntityType::class, [
+            'class' => Category::class,
+            'choice_label' => 'name', // Shows the category name in the list
+            'multiple' => true,       // Allows selecting more than one
+            'expanded' => true,       // Renders as CHECKBOXES (easier to use)
+            'by_reference' => false,  // Critical for ManyToMany relationships
+            'label' => 'Assign Categories',
+        ])
         ;
     }
 
