@@ -1,0 +1,564 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Login - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your FAHIMNI account</p>
+                </div>
+                
+                <form class="auth-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="{{ path('app_forgot_password') }}" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+
+                    <button type="button" class="btn btn-secondary btn-full" id="passkeyLoginBtn" style="margin-top: 10px;">
+                        Sign In with Face ID
+                    </button>
+                    <span class="error-message" id="passkeyError"></span>
+
+                    <button type="button" class="btn btn-secondary btn-full" id="faceCameraLoginBtn" style="margin-top: 10px;">
+                        📷 Face ID
+                    </button>
+                    <div class="form-hint" id="faceEngineStatus" style="margin-top:6px;"></div>
+                    <span class="error-message" id="faceScanError"></span>
+
+                    <div class="form-group" id="twoFactorGroup" style="display:none; margin-top: 12px;">
+                        <label for="twoFactorCode">2FA Code</label>
+                        <input type="text" id="twoFactorCode" name="twoFactorCode" placeholder="Enter 6-digit code" autocomplete="one-time-code" inputmode="numeric">
+                        <span class="error-message" id="twoFactorError"></span>
+                        <button type="button" class="btn btn-primary btn-full" id="twoFactorVerifyBtn" style="margin-top: 10px;">
+                            Verify 2FA
+                        </button>
+                    </div>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="/register">Create one here</a></p>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Join Our Learning Community</h2>
+                    <p>Access thousands of expert tutors and premium educational resources</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Expert Tutors</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Flexible Scheduling</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">✓</span>
+                            <span>Progress Tracking</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="faceCameraModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.78);z-index:1200;align-items:center;justify-content:center;padding:18px;">
+        <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:16px;box-shadow:0 25px 70px rgba(2,8,23,.35);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3 style="margin:0;font-size:18px;">📷 Face ID Camera</h3>
+                <button type="button" id="faceCameraCloseBtn" style="border:none;background:#e2e8f0;border-radius:8px;padding:6px 10px;cursor:pointer;">Close</button>
+            </div>
+            <video id="faceCameraVideo" autoplay playsinline style="width:100%;height:280px;object-fit:cover;border-radius:12px;background:#0f172a;"></video>
+            <canvas id="faceCameraCanvas" style="display:none;"></canvas>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button type="button" id="faceCameraCaptureBtn" class="btn btn-primary" style="flex:1;">Capture & Login</button>
+                <button type="button" id="faceCameraCancelBtn" class="btn btn-secondary" style="flex:1;">Cancel</button>
+            </div>
+            <div id="faceCameraModalMsg" style="font-size:13px;color:#475569;margin-top:10px;"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var loginForm = document.getElementById('loginForm');
+            var emailInput = document.getElementById('email');
+            var passwordInput = document.getElementById('password');
+            var emailError = document.getElementById('emailError');
+            var passwordError = document.getElementById('passwordError');
+            var passkeyLoginBtn = document.getElementById('passkeyLoginBtn');
+            var passkeyError = document.getElementById('passkeyError');
+            var faceCameraLoginBtn = document.getElementById('faceCameraLoginBtn');
+            var faceScanError = document.getElementById('faceScanError');
+            var faceCameraModal = document.getElementById('faceCameraModal');
+            var faceCameraVideo = document.getElementById('faceCameraVideo');
+            var faceCameraCanvas = document.getElementById('faceCameraCanvas');
+            var faceCameraCaptureBtn = document.getElementById('faceCameraCaptureBtn');
+            var faceCameraCloseBtn = document.getElementById('faceCameraCloseBtn');
+            var faceCameraCancelBtn = document.getElementById('faceCameraCancelBtn');
+            var faceCameraModalMsg = document.getElementById('faceCameraModalMsg');
+            var faceEngineStatus = document.getElementById('faceEngineStatus');
+            var twoFactorGroup = document.getElementById('twoFactorGroup');
+            var twoFactorCode = document.getElementById('twoFactorCode');
+            var twoFactorError = document.getElementById('twoFactorError');
+            var twoFactorVerifyBtn = document.getElementById('twoFactorVerifyBtn');
+            var twoFactorPending = false;
+            var faceCameraStream = null;
+
+            async function refreshFaceEngineStatus() {
+                if (!faceEngineStatus) return;
+                try {
+                    var res = await fetch('{{ path('app_face_provider_status') }}', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    var data = await res.json();
+                    if (res.ok && data.success && data.configured) {
+                        faceEngineStatus.textContent = 'Face engine: Connected';
+                        faceEngineStatus.style.color = '#166534';
+                    } else {
+                        faceEngineStatus.textContent = 'Face engine: Not configured (add FACEPP keys in .env.local)';
+                        faceEngineStatus.style.color = '#991b1b';
+                    }
+                } catch (e) {
+                    faceEngineStatus.textContent = 'Face engine: Unreachable';
+                    faceEngineStatus.style.color = '#991b1b';
+                }
+            }
+
+            function enterTwoFactorMode(message) {
+                twoFactorPending = true;
+                twoFactorGroup.style.display = 'block';
+                if (message) twoFactorError.textContent = message;
+                emailInput.disabled = true;
+                passwordInput.disabled = true;
+                if (passkeyLoginBtn) passkeyLoginBtn.disabled = true;
+                if (faceCameraLoginBtn) faceCameraLoginBtn.disabled = true;
+                var submitBtn = loginForm.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                twoFactorCode.focus();
+            }
+
+            function verifyTwoFactor() {
+                if (!twoFactorPending) return;
+
+                twoFactorError.textContent = '';
+                var code = (twoFactorCode.value || '').trim();
+                if (!code) {
+                    twoFactorError.textContent = '2FA code is required';
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('code', code);
+
+                twoFactorVerifyBtn.disabled = true;
+                var originalText = twoFactorVerifyBtn.textContent;
+                twoFactorVerifyBtn.textContent = 'Verifying...';
+
+                fetch('{{ path('app_login_2fa') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json().then(data => ({ status: response.status, data: data })))
+                .then(result => {
+                    if (result.status === 200 && result.data.success) {
+                        window.location.href = result.data.redirect || '/';
+                        return;
+                    }
+                    twoFactorError.textContent = result.data.message || '2FA verification failed';
+                })
+                .catch(error => {
+                    twoFactorError.textContent = 'Network error: ' + error.message;
+                })
+                .finally(() => {
+                    twoFactorVerifyBtn.disabled = false;
+                    twoFactorVerifyBtn.textContent = originalText;
+                });
+            }
+
+            function isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (twoFactorPending) {
+                        verifyTwoFactor();
+                        return;
+                    }
+                    var isValid = true;
+                    emailError.textContent = '';
+                    passwordError.textContent = '';
+
+                    var email = emailInput.value.trim();
+                    if (!email) {
+                        emailError.textContent = 'Email is required';
+                        isValid = false;
+                    } else if (!isValidEmail(email)) {
+                        emailError.textContent = 'Please enter a valid email address';
+                        isValid = false;
+                    }
+
+                    var password = passwordInput.value.trim();
+                    if (!password) {
+                        passwordError.textContent = 'Password is required';
+                        isValid = false;
+                    } else if (password.length < 6) {
+                        passwordError.textContent = 'Password must be at least 6 characters';
+                        isValid = false;
+                    }
+
+                    if (isValid) {
+                        // Show loading state
+                        const submitBtn = loginForm.querySelector('button[type="submit"]');
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = 'Signing in...';
+                        submitBtn.disabled = true;
+                        
+                        // Send actual login request
+                        const formData = new FormData();
+                        const emailValue = emailInput.value.trim();
+                        const passwordValue = passwordInput.value;
+                        
+                        console.log('Submitting login with:', { email: emailValue, password: passwordValue });
+                        
+                        formData.append('email', emailValue);
+                        formData.append('password', passwordValue);
+                        
+                        fetch('/login', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json().then(data => ({status: response.status, data: data}));
+                        })
+                        .then(result => {
+                            console.log('Response:', result);
+                            console.log('User data from JSON:', result.data.user);
+                            var data = result.data;
+                            if (result.status === 200 && data.success) {
+                                if (data.requires2fa) {
+                                    submitBtn.textContent = originalText;
+                                    submitBtn.disabled = false;
+                                    enterTwoFactorMode(data.message || '2FA required');
+                                    return;
+                                }
+                                // Show user data before redirect
+                                
+                                // Redirect to home on succes
+                                window.location.href = data.redirect || '/';
+                            } else {
+                                // Show error message
+                                emailError.textContent = data.message || 'Login failed';
+                                submitBtn.textContent = originalText;
+                                submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            emailError.textContent = 'Network error: ' + error.message;
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                            console.error('Login error:', error);
+                        });
+                    }
+                });
+            }
+
+            if (twoFactorVerifyBtn) {
+                twoFactorVerifyBtn.addEventListener('click', verifyTwoFactor);
+            }
+
+            if (twoFactorCode) {
+                twoFactorCode.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyTwoFactor();
+                    }
+                });
+            }
+
+            function base64UrlToArrayBuffer(base64url) {
+                var base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+                var pad = '='.repeat((4 - (base64.length % 4)) % 4);
+                var raw = atob(base64 + pad);
+                var out = new Uint8Array(raw.length);
+                for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+                return out.buffer;
+            }
+
+            function arrayBufferToBase64Url(buffer) {
+                var bytes = new Uint8Array(buffer);
+                var raw = '';
+                for (var i = 0; i < bytes.length; i++) raw += String.fromCharCode(bytes[i]);
+                return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+            }
+
+            if (passkeyLoginBtn) {
+                passkeyLoginBtn.addEventListener('click', async function() {
+                    if (!window.PublicKeyCredential || !navigator.credentials) {
+                        passkeyError.textContent = 'Passkeys are not supported on this browser/device.';
+                        return;
+                    }
+
+                    var email = emailInput.value.trim();
+                    if (!email) {
+                        passkeyError.textContent = 'Enter your email first, then use Face ID login.';
+                        emailInput.focus();
+                        return;
+                    }
+
+                    passkeyError.textContent = '';
+                    var originalText = passkeyLoginBtn.textContent;
+                    passkeyLoginBtn.textContent = 'Preparing Face ID...';
+                    passkeyLoginBtn.disabled = true;
+
+                    try {
+                        var optionsRes = await fetch('{{ path('app_passkey_login_options') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ email: email })
+                        });
+
+                        var optionsData = await optionsRes.json();
+                        if (!optionsRes.ok || !optionsData.success) {
+                            throw new Error(optionsData.message || 'Unable to start passkey login');
+                        }
+
+                        var publicKey = optionsData.publicKey;
+                        publicKey.challenge = base64UrlToArrayBuffer(publicKey.challenge);
+                        if (publicKey.allowCredentials && publicKey.allowCredentials.length) {
+                            publicKey.allowCredentials = publicKey.allowCredentials.map(function(item) {
+                                return {
+                                    type: item.type,
+                                    id: base64UrlToArrayBuffer(item.id)
+                                };
+                            });
+                        }
+
+                        passkeyLoginBtn.textContent = 'Waiting for Face ID...';
+                        var assertion = await navigator.credentials.get({ publicKey: publicKey });
+                        if (!assertion) {
+                            throw new Error('No passkey assertion returned');
+                        }
+
+                        var verifyPayload = {
+                            id: assertion.id,
+                            clientDataJSON: arrayBufferToBase64Url(assertion.response.clientDataJSON),
+                            authenticatorData: arrayBufferToBase64Url(assertion.response.authenticatorData),
+                            signature: arrayBufferToBase64Url(assertion.response.signature)
+                        };
+
+                        var verifyRes = await fetch('{{ path('app_passkey_login_verify') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(verifyPayload)
+                        });
+
+                        var verifyData = await verifyRes.json();
+                        if (!verifyRes.ok || !verifyData.success) {
+                            throw new Error(verifyData.message || 'Passkey login failed');
+                        }
+
+                        if (verifyData.requires2fa) {
+                            enterTwoFactorMode(verifyData.message || '2FA required');
+                            return;
+                        }
+
+                        window.location.href = verifyData.redirect || '/home';
+                    } catch (err) {
+                        passkeyError.textContent = err.message || 'Passkey login failed.';
+                    } finally {
+                        passkeyLoginBtn.textContent = originalText;
+                        passkeyLoginBtn.disabled = false;
+                    }
+                });
+            }
+
+            function resetFaceModalState() {
+                if (faceCameraModalMsg) {
+                    faceCameraModalMsg.textContent = '';
+                    faceCameraModalMsg.style.color = '#475569';
+                }
+            }
+
+            async function stopFaceCamera() {
+                if (faceCameraStream) {
+                    faceCameraStream.getTracks().forEach(function(track) { track.stop(); });
+                    faceCameraStream = null;
+                }
+            }
+
+            async function openFaceCamera() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera is not supported on this browser.');
+                }
+                await stopFaceCamera();
+                faceCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                faceCameraVideo.srcObject = faceCameraStream;
+                faceCameraModal.style.display = 'flex';
+            }
+
+            async function closeFaceCamera() {
+                await stopFaceCamera();
+                faceCameraModal.style.display = 'none';
+                resetFaceModalState();
+            }
+
+            function captureFaceBlob() {
+                if (!faceCameraVideo || faceCameraVideo.videoWidth <= 0 || faceCameraVideo.videoHeight <= 0) {
+                    return null;
+                }
+                faceCameraCanvas.width = faceCameraVideo.videoWidth;
+                faceCameraCanvas.height = faceCameraVideo.videoHeight;
+                var ctx = faceCameraCanvas.getContext('2d');
+                ctx.drawImage(faceCameraVideo, 0, 0, faceCameraCanvas.width, faceCameraCanvas.height);
+                var dataUrl = faceCameraCanvas.toDataURL('image/jpeg', 0.92);
+                var base64 = dataUrl.split(',')[1] || '';
+                var binary = atob(base64);
+                var len = binary.length;
+                var bytes = new Uint8Array(len);
+                for (var i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+                return new Blob([bytes], { type: 'image/jpeg' });
+            }
+
+            async function uploadFaceLoginImage(selfieBlob) {
+                var email = emailInput.value.trim();
+                if (!email) {
+                    throw new Error('Enter your email first.');
+                }
+                if (!selfieBlob) {
+                    throw new Error('Please capture a selfie image.');
+                }
+
+                var formData = new FormData();
+                formData.append('email', email);
+                formData.append('selfie', selfieBlob, 'face-login.jpg');
+
+                var response = await fetch('{{ path('app_face_login') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                });
+                var data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Face Scan request failed.');
+                }
+                return data;
+            }
+
+            if (faceCameraLoginBtn && faceCameraModal) {
+                faceCameraLoginBtn.addEventListener('click', async function() {
+                    faceScanError.textContent = '';
+                    try {
+                        await openFaceCamera();
+                    } catch (err) {
+                        faceScanError.textContent = err.message || 'Cannot open camera.';
+                    }
+                });
+            }
+
+            if (faceCameraCaptureBtn) {
+                faceCameraCaptureBtn.addEventListener('click', async function() {
+                    var selfieBlob = captureFaceBlob();
+                    if (!selfieBlob) {
+                        if (faceCameraModalMsg) {
+                            faceCameraModalMsg.textContent = 'Camera is not ready yet. Wait 1 second and retry.';
+                            faceCameraModalMsg.style.color = '#991b1b';
+                        }
+                        return;
+                    }
+                    faceCameraCaptureBtn.disabled = true;
+                    faceCameraCaptureBtn.textContent = 'Verifying...';
+                    try {
+                        var data = await uploadFaceLoginImage(selfieBlob);
+                        await closeFaceCamera();
+                        if (data.requires2fa) {
+                            enterTwoFactorMode(data.message || '2FA required');
+                            return;
+                        }
+                        window.location.href = data.redirect || '/home';
+                    } catch (err) {
+                        if (faceCameraModalMsg) {
+                            faceCameraModalMsg.textContent = err.message || 'Face ID login failed.';
+                            faceCameraModalMsg.style.color = '#991b1b';
+                        }
+                    } finally {
+                        faceCameraCaptureBtn.disabled = false;
+                        faceCameraCaptureBtn.textContent = 'Capture & Login';
+                    }
+                });
+            }
+
+            if (faceCameraCloseBtn) {
+                faceCameraCloseBtn.addEventListener('click', closeFaceCamera);
+            }
+
+            if (faceCameraCancelBtn) {
+                faceCameraCancelBtn.addEventListener('click', closeFaceCamera);
+            }
+
+            refreshFaceEngineStatus();
+
+            var rememberMe = document.getElementById('rememberMe');
+            if (rememberMe) {
+                var savedEmail = localStorage.getItem('fahimni_remember_email');
+                var savedPassword = localStorage.getItem('fahimni_remember_password');
+                if (savedEmail && savedPassword) {
+                    emailInput.value = savedEmail;
+                    passwordInput.value = savedPassword;
+                    rememberMe.checked = true;
+                }
+                rememberMe.addEventListener('change', function() {
+                    if (this.checked) {
+                        localStorage.setItem('fahimni_remember_email', emailInput.value);
+                        localStorage.setItem('fahimni_remember_password', passwordInput.value);
+                    } else {
+                        localStorage.removeItem('fahimni_remember_email');
+                        localStorage.removeItem('fahimni_remember_password');
+                    }
+                });
+            }
+
+        });
+    </script>
+{% endblock %}

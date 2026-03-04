@@ -1,0 +1,87 @@
+FAHAMNI - Fix Summary (Admin Charts + Messenger UI)
+Date: 2026-02-26
+
+1) Admin Messenger Statistics Charts (blank white chart blocks)
+---------------------------------------------------------------
+Files changed:
+- assets/bootstrap.js
+- assets/controllers.json
+- importmap.php
+
+What was fixed:
+- Fixed broken Stimulus bootstrap setup.
+  - Removed mixed/conflicting Stimulus bootstrap patterns.
+  - Kept a single valid startup using @symfony/stimulus-bundle.
+- Registered Symfony UX Chart.js controller.
+  - Added @symfony/ux-chartjs controller entry in assets/controllers.json.
+  - Added explicit app.register('symfony--ux-chartjs--chart', ChartController) in bootstrap.
+- Fixed import map resolution for browser module loading.
+  - Added @symfony/ux-chartjs/controller.js mapping.
+  - Added chart.js mapping.
+
+Result:
+- Charts in admin messenger statistics now initialize and render instead of blank white blocks.
+
+
+2) Front Messenger - Conversation Scroll + Composer Input
+----------------------------------------------------------
+Files changed:
+- templates/front/messenger/messages.html.twig
+- templates/front/messenger/_messenger_styles.html.twig
+- templates/front/messenger/_messenger_scripts.html.twig
+- templates/front/messenger/_message_input.html.twig
+
+What was fixed:
+- Removed inline hardcoded chat area sizing from messages.html.twig.
+- Made chat panel structurally scrollable with CSS.
+  - chat-view/chat-view-inner/chat-main sizing and overflow constraints.
+  - chat-messages set as the real scroll container (overflow-y auto).
+  - Added max-height fallback for chat-messages.
+- Added JS fallback (in case stale CSS is cached):
+  - Forces chatMessages overflowY=auto, overflowX=hidden, and maxHeight.
+  - Keeps initial scroll-to-bottom behavior.
+- Removed conflicting scrollIntoView() on input that could disrupt internal chat scrolling.
+- Hid native file input controls robustly:
+  - CSS hard-hide for file inputs.
+  - Added hidden attribute on attachments inputs in _message_input.html.twig.
+- Normalized paperclip button shape/layout:
+  - fixed width/min-width/flex basis/padding/box-sizing for circular button rendering.
+
+Result:
+- Conversation panel can scroll to older messages.
+- Native file input no longer breaks composer layout.
+
+
+3) Front Messenger - Text + Image Side Alignment
+-------------------------------------------------
+Files changed:
+- templates/front/messenger/_message_item.html.twig
+- templates/front/messenger/_messenger_styles.html.twig
+
+What was fixed:
+- Grouped message text + attachments under one wrapper in markup:
+  - Added .message-body in _message_item.html.twig.
+- Enforced sender-side pinning rules in CSS:
+  - Sent (.you) content/media blocks pinned to the right.
+  - Received (.other) content/media blocks pinned to the left.
+- Removed/overrode conflicting row direction behavior.
+- Added explicit margins and alignment rules for:
+  - .message-content
+  - .message-attachments
+  - .message-attachment-image
+  - .message-attachment-file
+- Adjusted image sizing constraints to reduce layout drift:
+  - max-width/max-height limits and controlled width behavior.
+
+Result:
+- Text and images are consistently pinned by sender side (right for own messages, left for others).
+
+
+4) Quick verification points
+----------------------------
+- Symfony cache clear recommended after these changes:
+  php bin/console cache:clear
+- Browser hard refresh recommended:
+  Ctrl+Shift+R
+- If stale behavior appears, check browser console for JS module resolution errors.
+

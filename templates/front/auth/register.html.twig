@@ -1,0 +1,263 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Register - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Join FAHIMNI</h1>
+                    <p>Create your account and start learning</p>
+                </div>
+
+                <form class="auth-form" id="registerForm">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        <span class="error-message" id="nameError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        <span class="error-message" id="emailError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                        <div class="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText">Password strength: None</div>
+                        </div>
+                        <span class="error-message" id="passwordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+                        <span class="error-message" id="confirmPasswordError"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Join as</label>
+                        <div class="role-selection">
+                            <label class="role-option">
+                                <input type="radio" name="role" value="student" checked>
+                                <div class="role-card">
+                                    <div class="role-icon">🎓</div>
+                                    <h3>Student</h3>
+                                    <p>Find tutors and improve your grades</p>
+                                </div>
+                            </label>
+                            <label class="role-option">
+                                <input type="radio" name="role" value="tutor">
+                                <div class="role-card">
+                                    <div class="role-icon">👨‍🏫</div>
+                                    <h3>Tutor</h3>
+                                    <p>Share knowledge and earn income</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="terms" required>
+                            <span class="checkmark"></span>
+                            I agree to the <a href="#terms" class="terms-link">Terms of Service</a> and <a href="#privacy" class="privacy-link">Privacy Policy</a>
+                        </label>
+                        <span class="error-message" id="termsError"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="/login">Sign in here</a></p>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Start Your Journey</h2>
+                    <p>Join thousands of students and tutors in our academic community</p>
+                    <div class="auth-stats">
+                        <div class="stat"><h3>1000+</h3><p>Active Tutors</p></div>
+                        <div class="stat"><h3>50+</h3><p>Subjects</p></div>
+                        <div class="stat"><h3>95%</h3><p>Success Rate</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var registerForm = document.getElementById('registerForm');
+            var fullNameInput = document.getElementById('fullName');
+            var emailInput = document.getElementById('email');
+            var passwordInput = document.getElementById('password');
+            var confirmPasswordInput = document.getElementById('confirmPassword');
+            var strengthFill = document.getElementById('strengthFill');
+            var strengthText = document.getElementById('strengthText');
+            var nameError = document.getElementById('nameError');
+            var emailError = document.getElementById('emailError');
+            var passwordError = document.getElementById('passwordError');
+            var confirmPasswordError = document.getElementById('confirmPasswordError');
+            var termsError = document.getElementById('termsError');
+
+            function isValidEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+
+            function checkPasswordStrength(password) {
+                var score = 0;
+                if (password.length >= 8) score += 1;
+                if (password.length >= 12) score += 1;
+                if (/[A-Z]/.test(password)) score += 1;
+                if (/[a-z]/.test(password)) score += 1;
+                if (/[0-9]/.test(password)) score += 1;
+                if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                switch(score) {
+                    case 0: case 1: return { percent: 20, color: '#f44336', text: 'Weak' };
+                    case 2: case 3: return { percent: 40, color: '#ff9800', text: 'Fair' };
+                    case 4: return { percent: 60, color: '#ffc107', text: 'Good' };
+                    case 5: return { percent: 80, color: '#4caf50', text: 'Strong' };
+                    case 6: return { percent: 100, color: '#2e7d32', text: 'Very Strong' };
+                    default: return { percent: 0, color: '#999', text: 'None' };
+                }
+            }
+
+            if (passwordInput && strengthFill && strengthText) {
+                passwordInput.addEventListener('input', function() {
+                    var s = checkPasswordStrength(this.value);
+                    strengthFill.style.width = s.percent + '%';
+                    strengthFill.style.backgroundColor = s.color;
+                    strengthText.textContent = 'Password strength: ' + s.text;
+                    strengthText.style.color = s.color;
+                });
+            }
+
+            function showModal(title, bodyHtml, onClose) {
+                var modal = document.createElement('div');
+                modal.className = 'modal active';
+                modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>' + title + '</h2><button class="modal-close">&times;</button></div><div class="modal-body">' + bodyHtml + '</div></div>';
+                document.body.appendChild(modal);
+                modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); if (onClose) onClose(); });
+                modal.addEventListener('click', function(e) { if (e.target === modal) { modal.remove(); if (onClose) onClose(); } });
+                return modal;
+            }
+
+            if (registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var isValid = true;
+                    nameError.textContent = '';
+                    emailError.textContent = '';
+                    passwordError.textContent = '';
+                    confirmPasswordError.textContent = '';
+                    termsError.textContent = '';
+
+                    var fullName = fullNameInput.value.trim();
+                    if (!fullName) { nameError.textContent = 'Full name is required'; isValid = false; }
+                    else if (fullName.length < 2) { nameError.textContent = 'Name must be at least 2 characters'; isValid = false; }
+                    else if (!/^[a-zA-Z\s]+$/.test(fullName)) { nameError.textContent = 'Name can only contain letters and spaces'; isValid = false; }
+
+                    var email = emailInput.value.trim();
+                    if (!email) { emailError.textContent = 'Email is required'; isValid = false; }
+                    else if (!isValidEmail(email)) { emailError.textContent = 'Please enter a valid email address'; isValid = false; }
+
+                    var password = passwordInput.value;
+                    var pStrength = checkPasswordStrength(password);
+                    if (!password) { passwordError.textContent = 'Password is required'; isValid = false; }
+                    else if (password.length < 6) { passwordError.textContent = 'Password must be at least 6 characters'; isValid = false; }
+                    else if (pStrength.text === 'Weak' || pStrength.text === 'Fair') { passwordError.textContent = 'Please choose a stronger password'; isValid = false; }
+
+                    var confirmPassword = confirmPasswordInput.value;
+                    if (!confirmPassword) { confirmPasswordError.textContent = 'Please confirm your password'; isValid = false; }
+                    else if (password !== confirmPassword) { confirmPasswordError.textContent = 'Passwords do not match'; isValid = false; }
+
+                    if (!document.getElementById('terms').checked) { termsError.textContent = 'You must agree to the terms and conditions'; isValid = false; }
+
+                    if (isValid) {
+                        var role = document.querySelector('input[name="role"]:checked').value;
+                        var submitBtn = registerForm.querySelector('button[type="submit"]');
+                        submitBtn.textContent = 'Creating Account...';
+                        submitBtn.disabled = true;
+                        
+                        // Send actual registration request
+                        var formData = new FormData();
+                        formData.append('fullName', fullNameInput.value.trim());
+                        formData.append('email', emailInput.value.trim());
+                        formData.append('password', passwordInput.value);
+                        formData.append('confirmPassword', confirmPasswordInput.value);
+                        formData.append('role', role);
+                        
+                        fetch('/register', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json().then(data => ({status: response.status, data: data}));
+                        })
+                        .then(result => {
+                            console.log('Response:', result);
+                            var data = result.data;
+                            if (result.status === 200 && data.success) {
+                                var modal = document.createElement('div');
+                                modal.className = 'modal active';
+                                modal.innerHTML = '<div class="modal-content"><div class="modal-header"><h2>Welcome to FAHIMNI! 🎉</h2><button class="modal-close">&times;</button></div><div style="text-align:center;padding:20px 0;"><div style="font-size:60px;margin-bottom:20px;">🎓</div><h3 style="color:var(--primary-color);margin-bottom:15px;">Account Created Successfully!</h3><p style="color:var(--text-light);margin-bottom:25px;">Welcome, ' + fullName + '! Your ' + role + ' account has been created.</p><button id="continueBtn" class="btn btn-primary" style="width:100%;padding:15px;">Continue to Dashboard</button></div></div>';
+                                document.body.appendChild(modal);
+                                modal.querySelector('.modal-close').addEventListener('click', function() { window.location.href = data.redirect || '/login'; });
+                                modal.querySelector('#continueBtn').addEventListener('click', function() { window.location.href = data.redirect || '/login'; });
+                                modal.addEventListener('click', function(ev) { if (ev.target === modal) window.location.href = data.redirect || '/login'; });
+                            } else {
+                                // Handle validation errors
+                                if (data.errors) {
+                                    if (data.errors.fullName) nameError.textContent = data.errors.fullName;
+                                    if (data.errors.email) emailError.textContent = data.errors.email;
+                                    if (data.errors.password) passwordError.textContent = data.errors.password;
+                                    if (data.errors.confirmPassword) confirmPasswordError.textContent = data.errors.confirmPassword;
+                                    if (data.errors.general) emailError.textContent = data.errors.general;
+                                } else if (data.message) {
+                                    emailError.textContent = data.message;
+                                } else {
+                                    emailError.textContent = 'Registration failed';
+                                }
+                                submitBtn.textContent = 'Create Account';
+                                submitBtn.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            emailError.textContent = 'Network error: ' + error.message;
+                            submitBtn.textContent = 'Create Account';
+                            submitBtn.disabled = false;
+                            console.error('Registration error:', error);
+                        });
+                    }
+                });
+            }
+
+            if (document.querySelector('.terms-link')) {
+                document.querySelector('.terms-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showModal('Terms of Service', '<div style="max-height:400px;overflow-y:auto;"><h3>1. Acceptance of Terms</h3><p>By using FAHIMNI you agree to these Terms.</p><h3>2. User Accounts</h3><p>You are responsible for your account.</p><h3>3. Educational Content</h3><p>Materials are for personal use only.</p></div>');
+                });
+            }
+            if (document.querySelector('.privacy-link')) {
+                document.querySelector('.privacy-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showModal('Privacy Policy', '<div style="max-height:400px;overflow-y:auto;"><h3>1. Information We Collect</h3><p>We collect name, email, and educational background.</p><h3>2. Data Protection</h3><p>We use industry-standard security.</p></div>');
+                });
+            }
+        });
+    </script>
+{% endblock %}

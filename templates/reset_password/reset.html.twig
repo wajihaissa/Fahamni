@@ -1,0 +1,65 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Set New Password - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Set New Password</h1>
+                    <p>Enter your new password below</p>
+                </div>
+
+                {% for flash_error in app.flashes('reset_password_error') %}
+                    <div class="alert alert-danger" style="margin-bottom:1rem;padding:12px;border-radius:8px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">
+                        {{ flash_error }}
+                    </div>
+                {% endfor %}
+
+                {{ form_start(resetForm, {'attr': {'class': 'auth-form'}}) }}
+                    <div class="form-group">
+                        {{ form_label(resetForm.plainPassword.first, 'New Password') }}
+                        {{ form_widget(resetForm.plainPassword.first, {'attr': {'placeholder': 'Enter new password', 'class': 'form-control'}}) }}
+                        {{ form_errors(resetForm.plainPassword.first) }}
+                        <small style="color: var(--text-light);">Password must be at least 12 characters long</small>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form_label(resetForm.plainPassword.second, 'Confirm Password') }}
+                        {{ form_widget(resetForm.plainPassword.second, {'attr': {'placeholder': 'Confirm new password', 'class': 'form-control'}}) }}
+                        {{ form_errors(resetForm.plainPassword.second) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Reset Password</button>
+                {{ form_end(resetForm) }}
+
+                <div class="auth-footer">
+                    <p>Back to <a href="{{ path('app_login') }}">Login</a></p>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Create a Strong Password</h2>
+                    <p>Make sure your new password is strong and unique to keep your account secure.</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>At least 12 characters</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Include numbers & symbols</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Account Protection</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+

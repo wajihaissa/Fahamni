@@ -1,0 +1,253 @@
+{% extends 'base.html.twig' %}
+
+{% block current_page %}articles{% endblock %}
+
+{% block title %}{{ blog.titre }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    {# Breadcrumb #}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_blog_index') }}">Articles</a></li>
+            <li class="breadcrumb-item active">{{ blog.titre|slice(0, 30) }}...</li>
+        </ol>
+    </nav>
+
+    {# Bouton retour #}
+    <div class="mb-3">
+        <a href="{{ path('app_blog_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Retour aux articles
+        </a>
+    </div>
+
+    {# Article principal #}
+    <article class="card shadow-lg mb-4">
+        <div class="card-body p-4 p-md-5">
+            {# Titre #}
+            <h1 class="display-4 mb-4">{{ blog.titre }}</h1>
+
+            {# Métadonnées #}
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <div class="mb-2 mb-md-0">
+                    <i class="fas fa-user-circle text-primary"></i>
+                    <strong>{{ blog.publisher.email }}</strong>
+                </div>
+                <div class="mb-2 mb-md-0 text-muted">
+                    <i class="fas fa-calendar"></i>
+                    {{ blog.publishedAt ? blog.publishedAt|date('d/m/Y à H:i') : blog.createdAt|date('d/m/Y à H:i') }}
+                </div>
+                <div>
+                    <span class="badge bg-primary me-1">
+                        <i class="fas fa-thumbs-up"></i> 
+                        {{ blog.interactions|filter(i => i.reaction == 1)|length }}
+                    </span>
+                    <span class="badge bg-info">
+                        <i class="fas fa-comments"></i> 
+                        {{ blog.interactions|filter(i => i.comment is not null)|length }}
+                    </span>
+                </div>
+            </div>
+
+            {# Galerie d'images #}
+            {% if blog.images and blog.images|length > 0 %}
+                <div class="row mb-4">
+                    {% for image in blog.images %}
+                        <div class="col-md-{{ blog.images|length == 1 ? '12' : (blog.images|length == 2 ? '6' : '4') }} mb-3">
+                            <img src="/uploads/images/{{ image }}"
+                                 class="img-fluid rounded shadow-sm"
+                                 alt="Image {{ loop.index }}"
+                                 style="cursor: pointer; width: 100%; height: 250px; object-fit: cover;"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#imageModal{{ loop.index }}">
+                        </div>
+
+                        {# Modal image #}
+                        <div class="modal fade" id="imageModal{{ loop.index }}" tabindex="-1">
+                            <div class="modal-dialog modal-xl modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Image {{ loop.index }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-0 text-center">
+                                        <img src="/uploads/images/{{ image }}" class="img-fluid" alt="Image">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {# Contenu #}
+            <div class="content-text mb-4">
+                {{ blog.content|nl2br }}
+            </div>
+
+            {# Actions #}
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                {# Like #}
+                {% if app.user %}
+                    {% set userLiked = false %}
+                    {% for interaction in blog.interactions %}
+                        {% if interaction.innteractor.id == app.user.id and interaction.reaction == 1 %}
+                            {% set userLiked = true %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <form method="post" action="{{ path('app_interaction_like', {id: blog.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('like' ~ blog.id) }}">
+                        <button type="submit" class="btn btn-{{ userLiked ? 'primary' : 'outline-primary' }} like-button">
+                            <i class="fas fa-thumbs-up"></i>
+                            {{ userLiked ? 'Vous aimez' : 'J\'aime' }}
+                            <span class="badge bg-{{ userLiked ? 'light text-primary' : 'primary' }}">
+                                {{ blog.interactions|filter(i => i.reaction == 1)|length }}
+                            </span>
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-thumbs-up"></i>
+                        J'aime ({{ blog.interactions|filter(i => i.reaction == 1)|length }})
+                    </a>
+                {% endif %}
+
+                {# Partage #}
+                <button class="btn btn-outline-secondary" onclick="navigator.share ? navigator.share({title: '{{ blog.titre }}', url: window.location.href}) : alert('Lien copié!')">
+                    <i class="fas fa-share-alt"></i> Partager
+                </button>
+
+                {# Actions propriétaire #}
+                {% if app.user and app.user == blog.publisher %}
+                    <a href="{{ path('app_blog_edit', {id: blog.id}) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+
+    {# Section Commentaires #}
+    <div class="comment-section">
+        <h3 class="mb-4">
+            <i class="fas fa-comments"></i> 
+            Commentaires 
+            <span class="badge bg-primary">{{ blog.interactions|filter(i => i.comment is not null)|length }}</span>
+        </h3>
+
+        {# Formulaire commentaire #}
+        {% if app.user %}
+            <div class="card mb-4 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-pen"></i> Laisser un commentaire
+                    </h5>
+                    <form method="post" action="{{ path('app_interaction_comment', {id: blog.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('comment' ~ blog.id) }}">
+                        <div class="mb-3">
+                            <textarea name="comment" 
+                                      class="form-control" 
+                                      rows="4" 
+                                      placeholder="Partagez votre avis, posez une question..." 
+                                      required
+                                      maxlength="1000"></textarea>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> Maximum 1000 caractères
+                            </small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Publier le commentaire
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-lock"></i>
+                <a href="{{ path('app_login') }}" class="alert-link">Connectez-vous</a> pour commenter cet article.
+            </div>
+        {% endif %}
+
+        {# Liste commentaires #}
+        {% set comments = blog.interactions|filter(i => i.comment is not null)|sort((a, b) => b.createdAt <=> a.createdAt) %}
+        
+        {% if comments|length > 0 %}
+            {% for interaction in comments %}
+                <div class="card comment-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong class="text-primary">
+                                    <i class="fas fa-user-circle"></i>
+                                    {{ interaction.innteractor.email }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i>
+                                    {{ interaction.createdAt|date('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+                            
+                            {% if app.user and (app.user == interaction.innteractor or app.user == blog.publisher) %}
+                                <form method="post" 
+                                      action="{{ path('app_interaction_delete', {id: interaction.id}) }}" 
+                                      onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ interaction.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <p class="mb-0 content-text">{{ interaction.comment|nl2br }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-light text-center">
+                <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                <h5>Aucun commentaire pour le moment</h5>
+                <p class="text-muted mb-0">Soyez le premier à partager votre avis !</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Modal suppression #}
+{% if app.user and app.user == blog.publisher %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Êtes-vous sûr de vouloir supprimer cet article ?</p>
+                <p class="text-danger mb-0">
+                    <strong><i class="fas fa-exclamation-circle"></i> Cette action est irréversible !</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <form method="post" action="{{ path('app_blog_delete', {id: blog.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

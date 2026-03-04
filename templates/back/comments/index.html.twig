@@ -1,0 +1,675 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FAHIMNI - Moderation des Commentaires{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:#f5f6fa;color:#1e293b;line-height:1.5}
+        :root{--sidebar-width:280px}
+
+        .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:linear-gradient(180deg,#3b2f63,#2b2350);color:#fff;box-shadow:0 12px 40px rgba(19,24,44,0.25);z-index:1000;overflow-y:auto}
+        .sidebar-header{padding:1rem 0.5rem;border-bottom:1px solid rgba(255,255,255,0.04);margin-bottom:6px}
+        .logo h2{color:#fff;font-size:18px;font-weight:700;margin:0 0 4px 8px}
+        .logo .brand-sub{color:rgba(255,255,255,0.75);font-size:12px;margin-left:8px}
+        .admin-profile{padding:12px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+        .avatar{width:44px;height:44px;border-radius:10px;overflow:hidden;display:inline-block}
+        .admin-info{display:inline-block;vertical-align:middle;margin-left:10px}
+        .admin-info h4{color:#fff;margin:0;font-size:14px}
+        .admin-info p{color:rgba(255,255,255,0.65);margin:2px 0 0;font-size:12px}
+        .sidebar-nav ul{list-style:none;padding:6px;margin:6px 0}
+        .sidebar-nav li{margin:6px 0}
+        .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;color:rgba(255,255,255,0.86);text-decoration:none;border-radius:10px;position:relative;transition:background .18s,transform .12s}
+        .sidebar-nav a i{width:26px;text-align:center;font-size:14px}
+        .sidebar-nav a .label{font-size:14px}
+        .sidebar-nav a:hover{background:rgba(255,255,255,0.04);color:#fff;transform:translateX(3px)}
+        .sidebar-nav li.active a{background:transparent;color:#fff;font-weight:600}
+        .sidebar-nav li.active a::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:6px;border-radius:6px;background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+
+        .main-content{margin-left:var(--sidebar-width);min-height:100vh;transition:margin-left .3s}
+        .page-body{padding:1.5rem 2rem}
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes countUp{from{opacity:0;transform:translateY(10px) scale(.5)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.3)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes typing{0%,100%{opacity:.2}50%{opacity:1}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes borderGlow{0%,100%{border-color:rgba(239,68,68,.3)}50%{border-color:rgba(239,68,68,.7)}}
+        @keyframes toastIn{0%{opacity:0;transform:translateX(110%) scale(.85)}70%{transform:translateX(-6px) scale(1.02)}100%{opacity:1;transform:translateX(0) scale(1)}}
+        @keyframes toastOut{from{opacity:1;transform:translateX(0) scale(1)}to{opacity:0;transform:translateX(110%) scale(.85)}}
+        @keyframes iconPop{0%{transform:scale(0) rotate(-20deg)}70%{transform:scale(1.25) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+        @keyframes shimmer{from{left:-100%}to{left:160%}}
+        @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes modalScaleIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+        @keyframes progressShrink{from{width:100%}to{width:0}}
+
+        /* Page title row */
+        .page-title-row{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;animation:fadeInLeft .5s ease}
+        .page-title-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;transition:transform .3s,box-shadow .3s}
+        .page-title-icon:hover{transform:rotate(15deg) scale(1.1);box-shadow:0 4px 15px rgba(99,102,241,.4)}
+        .page-title-row h1{font-size:1.35rem;font-weight:700;color:#1e293b}
+
+        /* Stat cards */
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:1.75rem}
+        .s-card{background:#fff;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid #eef1f6;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;position:relative;overflow:hidden}
+        .s-card:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 8px 25px rgba(0,0,0,.1)}
+        .s-card::after{content:'';position:absolute;top:0;left:-200%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:left .6s}
+        .s-card:hover::after{left:200%}
+        .s-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:#fff;flex-shrink:0;transition:transform .3s}
+        .s-card:hover .s-icon{transform:scale(1.15) rotate(-5deg)}
+        .s-icon.red{background:linear-gradient(135deg,#fb7185,#ef4444)}
+        .s-icon.green{background:linear-gradient(135deg,#4ade80,#22c55e)}
+        .s-card h3{font-size:1.5rem;font-weight:800;color:#1e293b;line-height:1}
+        .s-card p{font-size:.75rem;color:#94a3b8;margin-top:3px;font-weight:500}
+
+        /* AI scan bars */
+        .ai-scan{display:flex;gap:3px;align-items:center;height:20px}
+        .ai-scan span{width:3px;height:12px;border-radius:2px;background:#22c55e;animation:typing .8s infinite}
+        .ai-scan span:nth-child(2){animation-delay:.15s}
+        .ai-scan span:nth-child(3){animation-delay:.3s}
+        .ai-scan span:nth-child(4){animation-delay:.45s}
+
+        /* Section title */
+        .sec-title{font-size:.95rem;font-weight:700;color:#1e293b;margin-bottom:.6rem;display:flex;align-items:center;gap:8px}
+        .sec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .sec-dot.red{background:#ef4444;animation:pulseGlow 2s infinite}
+
+        /* Card */
+        .card{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);border:1px solid #eef1f6;margin-bottom:1.5rem;overflow:hidden}
+
+        /* ===== TABLE ===== */
+        table.tbl{width:100%;border-collapse:collapse;table-layout:fixed;min-width:1060px}
+        /* height sur th/td = méthode fiable pour des lignes uniformes */
+        .tbl th{height:42px;padding:0 10px;text-align:left;font-size:.7rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #eef1f6;white-space:nowrap;overflow:hidden;background:#f8f9fb;vertical-align:middle}
+        .tbl td{height:58px;padding:0 10px;text-align:left;font-size:.82rem;vertical-align:middle;overflow:hidden}
+        .tbl td:last-child{overflow:visible}
+        /* Ligne de séparation */
+        .tbl tbody tr{border-bottom:1px solid #f1f5f9;transition:background .15s ease}
+        .tbl tbody tr:last-child{border-bottom:none}
+        /* Hover : fond + accent gauche via border-left sur td:first-child (fiable sur tous navigateurs) */
+        .tbl tbody tr:hover td{background:#fef2f2}
+        .tbl tbody tr:hover td:first-child{border-left:3px solid #ef4444;padding-left:7px}
+        /* Largeurs définies via colgroup dans chaque table */
+        .u-cell>div{min-width:0;overflow:hidden}
+
+        /* User cell */
+        .u-cell{display:flex;align-items:center;gap:6px;min-width:0}
+        .u-av{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:9px;flex-shrink:0;transition:transform .3s,box-shadow .3s}
+        .tbl tbody tr:hover .u-av{transform:scale(1.15);box-shadow:0 3px 10px rgba(99,102,241,.3)}
+        .u-name{font-weight:600;color:#1e293b;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+        .u-email{font-size:.65rem;color:#94a3b8;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        /* ===== 1. TOOLTIP on comment hover ===== */
+        .c-text-wrap{position:relative;cursor:default}
+        .c-text{font-size:.8rem;color:#334155;width:100%;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px;border-left:2px solid transparent;transition:border-color .25s;display:block}
+        .tbl tbody tr:hover .c-text{border-left-color:#ef4444}
+        .c-tooltip{position:absolute;bottom:calc(100% + 8px);left:0;background:#1e293b;color:#fff;padding:10px 14px;border-radius:10px;font-size:.78rem;line-height:1.5;max-width:350px;width:max-content;white-space:normal;word-wrap:break-word;box-shadow:0 8px 30px rgba(0,0,0,.2);opacity:0;visibility:hidden;transform:translateY(6px);transition:all .25s ease;z-index:50;pointer-events:none}
+        .c-tooltip::after{content:'';position:absolute;top:100%;left:20px;border:6px solid transparent;border-top-color:#1e293b}
+        .c-text-wrap:hover .c-tooltip{opacity:1;visibility:visible;transform:translateY(0)}
+
+        /* ===== 2. BAD WORDS highlighted in red ===== */
+        .bad-word{background:linear-gradient(135deg,#fecaca,#fee2e2);color:#dc2626;font-weight:700;padding:1px 4px;border-radius:4px;border-bottom:2px solid #ef4444}
+
+        /* Article link */
+        .a-link{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;color:#6366f1;text-decoration:none;font-weight:500;transition:all .2s;padding:3px 8px;border-radius:6px}
+        .a-link:hover{background:rgba(99,102,241,.08);transform:translateX(3px);text-decoration:none}
+        .a-link i{font-size:.6rem;transition:transform .3s}
+        .a-link:hover i{transform:rotate(-15deg)}
+
+        /* Badge */
+        .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;transition:all .2s}
+        .badge::before{content:'';width:6px;height:6px;border-radius:50%}
+        .badge.flagged{background:#fef2f2;color:#b91c1c;animation:borderGlow 2s infinite;border:1px solid rgba(239,68,68,.3)}
+        .badge.flagged::before{background:#ef4444;animation:blink 1.5s infinite}
+        .tbl tbody tr:hover .badge.flagged{background:#fee2e2;transform:scale(1.05)}
+
+        /* Date */
+        .d-date{font-size:.8rem;color:#475569}
+        .d-date small{display:block;font-size:.68rem;color:#94a3b8;margin-top:1px}
+
+        /* Action btns */
+        .acts{display:flex;gap:4px;justify-content:flex-end;flex-wrap:nowrap;align-items:center;width:100%}
+        .btn-a,.btn-r{display:inline-flex;align-items:center;gap:3px;padding:5px 8px;border-radius:7px;border:none;cursor:pointer;font-size:.7rem;font-weight:600;color:#fff;transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;white-space:nowrap;flex-shrink:0}
+        .btn-a::before,.btn-r::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:rgba(255,255,255,.2);transform:translate(-50%,-50%);transition:width .4s,height .4s}
+        .btn-a:hover::before,.btn-r:hover::before{width:200px;height:200px}
+        .btn-a{background:#22c55e;box-shadow:0 2px 6px rgba(34,197,94,.2)}
+        .btn-a:hover{background:#16a34a;box-shadow:0 6px 20px rgba(34,197,94,.35);transform:translateY(-2px) scale(1.05)}
+        .btn-a:active{transform:translateY(0) scale(.95)}
+        .btn-r{background:#ef4444;box-shadow:0 2px 6px rgba(239,68,68,.2)}
+        .btn-r:hover{background:#dc2626;box-shadow:0 6px 20px rgba(239,68,68,.35);transform:translateY(-2px) scale(1.05)}
+        .btn-r:active{transform:translateY(0) scale(.95)}
+        .btn-a i,.btn-r i{transition:transform .25s}
+        .btn-a:hover i{transform:scale(1.3)}
+        .btn-r:hover i{transform:rotate(-10deg) scale(1.2)}
+
+        /* ===== 4. CUSTOM MODAL ===== */
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;animation:modalFadeIn .25s ease}
+        .modal-overlay.show{display:flex}
+        .modal-box{background:#fff;border-radius:16px;padding:2rem;width:380px;max-width:90vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalScaleIn .35s cubic-bezier(.34,1.56,.64,1)}
+        .modal-icon{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#fef2f2,#fee2e2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.4rem;color:#ef4444}
+        .modal-box h3{font-size:1rem;font-weight:700;color:#1e293b;margin-bottom:6px}
+        .modal-box p{font-size:.82rem;color:#64748b;margin-bottom:1.25rem;line-height:1.5}
+        .modal-comment{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;font-size:.78rem;color:#991b1b;margin-bottom:1.25rem;max-height:60px;overflow:hidden;font-style:italic}
+        .modal-btns{display:flex;gap:10px;justify-content:center}
+        .modal-cancel{padding:8px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+        .modal-cancel:hover{background:#f8fafc;border-color:#cbd5e1}
+        .modal-confirm{padding:8px 22px;border-radius:8px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(239,68,68,.3)}
+        .modal-confirm:hover{box-shadow:0 4px 16px rgba(239,68,68,.4);transform:translateY(-1px)}
+        .modal-confirm.shaking{animation:shake .4s ease}
+
+        /* ===== 5. TOAST NOTIFICATIONS ===== */
+        .toast-container{position:fixed;top:24px;right:24px;z-index:10000;display:flex;flex-direction:column;gap:12px;pointer-events:none}
+        .toast{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 20px;border-radius:18px;background:rgba(255,255,255,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 24px 64px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);min-width:320px;max-width:480px;position:relative;overflow:hidden;animation:toastIn .5s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:all;border:1px solid rgba(255,255,255,.8)}
+        .toast.hiding{animation:toastOut .35s ease forwards}
+        .toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:18px 0 0 18px}
+        .toast::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:shimmer .9s ease .15s forwards;pointer-events:none}
+        .toast.success::before{background:linear-gradient(180deg,#22c55e,#4ade80,#86efac)}
+        .toast.error::before{background:linear-gradient(180deg,#ef4444,#f97316,#fb923c)}
+        .toast.warning::before{background:linear-gradient(180deg,#f59e0b,#fbbf24,#fcd34d)}
+        .toast-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;animation:iconPop .55s cubic-bezier(.34,1.56,.64,1) .1s both}
+        .toast.success .toast-icon{background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#16a34a;box-shadow:0 4px 12px rgba(34,197,94,.25)}
+        .toast.error .toast-icon{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#dc2626;box-shadow:0 4px 12px rgba(239,68,68,.25)}
+        .toast.warning .toast-icon{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#d97706;box-shadow:0 4px 12px rgba(245,158,11,.25)}
+        .toast-body{flex:1;min-width:0;padding-top:1px}
+        .toast-title{font-size:.82rem;font-weight:800;letter-spacing:.01em;margin-bottom:3px}
+        .toast.success .toast-title{color:#166534}
+        .toast.error .toast-title{color:#991b1b}
+        .toast.warning .toast-title{color:#92400e}
+        .toast-msg{font-size:.76rem;color:#475569;line-height:1.55;white-space:normal}
+        .toast-close{background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.78rem;flex-shrink:0;transition:all .2s;border-radius:7px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+        .toast-close:hover{color:#1e293b;background:rgba(0,0,0,.06);transform:scale(1.1)}
+        .toast-progress{position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 18px 18px}
+        .toast.success .toast-progress{background:linear-gradient(90deg,#22c55e,#4ade80);animation:progressShrink 4s linear forwards}
+        .toast.error .toast-progress{background:linear-gradient(90deg,#ef4444,#fb923c);animation:progressShrink 4s linear forwards}
+        .toast.warning .toast-progress{background:linear-gradient(90deg,#f59e0b,#fbbf24);animation:progressShrink 4s linear forwards}
+
+        /* ===== 3. LIVE COUNTER ===== */
+        .live-count{transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+        .live-count.bump{transform:scale(1.3);color:#ef4444}
+
+        /* Flash - hidden, replaced by toast */
+        .flash-data{display:none}
+
+        /* Archive section */
+        .sec-dot.amber{background:#f59e0b}
+        .card.archive-card{border-color:#fde68a;background:linear-gradient(135deg,rgba(254,243,199,.4),#fff)}
+        body.admin-dark .card.archive-card{background:rgba(245,158,11,.04);border-color:rgba(245,158,11,.2)}
+        .archive-card .tbl tbody tr:hover td{background:#fffbeb}
+        .archive-card .tbl tbody tr:hover td:first-child{border-left-color:#f59e0b}
+        .badge.archived{background:#fffbeb;color:#92400e;border:1px solid rgba(245,158,11,.3)}
+        .badge.archived::before{background:#f59e0b}
+        body.admin-dark .badge.archived{background:rgba(245,158,11,.1);color:#fcd34d;border-color:rgba(245,158,11,.2)}
+        .archive-note{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid rgba(245,158,11,.3)}
+        body.admin-dark .archive-note{background:rgba(245,158,11,.1);color:#fcd34d}
+
+        /* Empty state */
+        .empty{text-align:center;padding:2.5rem 1rem}
+        .empty-icon-wrap{position:relative;display:inline-block;margin-bottom:12px}
+        .empty-icon-wrap i{font-size:2.5rem;color:#22c55e;animation:float 3s ease-in-out infinite;position:relative;z-index:1}
+        .empty-icon-wrap::before{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:40px;height:8px;border-radius:50%;background:rgba(34,197,94,.15);animation:float 3s ease-in-out infinite reverse}
+        .empty h4{font-size:.9rem;font-weight:600;color:#475569;margin-bottom:2px}
+        .empty p{font-size:.78rem;color:#94a3b8}
+
+        /* ============ DARK MODE ============ */
+        body.admin-dark{background:#0f1117;color:#cbd5e1}
+        body.admin-dark .main-content,body.admin-dark .page-body{background:#0f1117}
+        body.admin-dark .page-title-row h1{color:#f1f5f9}
+        body.admin-dark .page-title-icon:hover{box-shadow:0 4px 15px rgba(99,102,241,.25)}
+
+        body.admin-dark .s-card{background:#1a1b26;border-color:#252636;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+        body.admin-dark .s-card:hover{box-shadow:0 8px 25px rgba(0,0,0,.3)}
+        body.admin-dark .s-card::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent)}
+        body.admin-dark .s-card h3{color:#f1f5f9}
+        body.admin-dark .s-card p{color:#64748b}
+        body.admin-dark .ai-scan span{background:#4ade80}
+
+        body.admin-dark .sec-title{color:#e2e8f0}
+        body.admin-dark .card{background:#1a1b26;border-color:#252636;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+        body.admin-dark .tbl th{background:#14151f;color:#64748b;border-bottom-color:#252636}
+        body.admin-dark .tbl tbody tr{border-bottom-color:#1e1f2e}
+        body.admin-dark .tbl td{color:#cbd5e1;background:#1a1b26}
+        body.admin-dark .tbl tbody tr:hover td{background:rgba(239,68,68,.07)}
+        body.admin-dark .tbl tbody tr:hover td:first-child{border-left-color:#f87171}
+        body.admin-dark .archive-card .tbl tbody tr:hover td{background:rgba(245,158,11,.07)}
+        body.admin-dark .archive-card .tbl tbody tr:hover td:first-child{border-left-color:#fbbf24}
+
+        body.admin-dark .u-name{color:#e2e8f0}
+        body.admin-dark .u-email{color:#64748b}
+        body.admin-dark .c-text{color:#cbd5e1}
+        body.admin-dark .tbl tbody tr:hover .c-text{border-left-color:#f87171}
+        body.admin-dark .c-tooltip{background:#252636;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+        body.admin-dark .c-tooltip::after{border-top-color:#252636}
+        body.admin-dark .bad-word{background:rgba(239,68,68,.15);color:#fca5a5;border-bottom-color:#f87171}
+        body.admin-dark .a-link{color:#a5b4fc}
+        body.admin-dark .a-link:hover{background:rgba(99,102,241,.1)}
+        body.admin-dark .d-date{color:#94a3b8}
+        body.admin-dark .d-date small{color:#64748b}
+        body.admin-dark .badge.flagged{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.2)}
+        body.admin-dark .tbl tbody tr:hover .badge.flagged{background:rgba(239,68,68,.15)}
+
+        body.admin-dark .btn-a{background:#16a34a;box-shadow:0 2px 6px rgba(22,163,74,.25)}
+        body.admin-dark .btn-a:hover{background:#22c55e;box-shadow:0 6px 20px rgba(34,197,94,.25)}
+        body.admin-dark .btn-r{background:#dc2626;box-shadow:0 2px 6px rgba(220,38,38,.25)}
+        body.admin-dark .btn-r:hover{background:#ef4444;box-shadow:0 6px 20px rgba(239,68,68,.25)}
+
+        body.admin-dark .modal-box{background:#1a1b26;border:1px solid #252636}
+        body.admin-dark .modal-box h3{color:#f1f5f9}
+        body.admin-dark .modal-box p{color:#94a3b8}
+        body.admin-dark .modal-icon{background:rgba(239,68,68,.1)}
+        body.admin-dark .modal-comment{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#fca5a5}
+        body.admin-dark .modal-cancel{background:#252636;border-color:#3a3a4a;color:#94a3b8}
+        body.admin-dark .modal-cancel:hover{background:#2a2b3a}
+
+        body.admin-dark .toast{background:rgba(26,27,38,.97);border-color:rgba(255,255,255,.06);box-shadow:0 24px 64px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.2)}
+        body.admin-dark .toast.success .toast-title{color:#86efac}
+        body.admin-dark .toast.error .toast-title{color:#fca5a5}
+        body.admin-dark .toast-msg{color:#94a3b8}
+        body.admin-dark .toast-close{color:#475569}
+        body.admin-dark .toast-close:hover{color:#e2e8f0;background:rgba(255,255,255,.06)}
+        body.admin-dark .toast.success .toast-icon{background:rgba(34,197,94,.12);box-shadow:0 4px 12px rgba(34,197,94,.15)}
+        body.admin-dark .toast.error .toast-icon{background:rgba(239,68,68,.12);box-shadow:0 4px 12px rgba(239,68,68,.15)}
+
+        body.admin-dark .empty-icon-wrap i{color:#4ade80}
+        body.admin-dark .empty-icon-wrap::before{background:rgba(34,197,94,.08)}
+        body.admin-dark .empty h4{color:#e2e8f0}
+        body.admin-dark .empty p{color:#64748b}
+
+        @media(max-width:1200px){.tbl th:nth-child(1){width:140px}.tbl th:nth-child(3){width:105px}.tbl th:nth-child(4){width:115px}.tbl th:nth-child(7){width:200px}}
+        @media(max-width:1024px){:root{--sidebar-width:250px}.stats-grid{grid-template-columns:1fr}.page-body{padding:1rem 1.2rem}.tbl th:nth-child(6){display:none}.tbl td:nth-child(6){display:none}.tbl th:nth-child(7){width:190px}}
+        @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.tbl th:nth-child(4){display:none}.tbl td:nth-child(4){display:none}.btn-a span,.btn-r span{display:none}.btn-a,.btn-r{padding:5px 8px}}
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'back/_sidebar.html.twig' %}
+
+    <div class="main-content">
+        {% include 'back/_admin_navbar.html.twig' %}
+
+        <main class="page-body">
+            {# Hidden flash data - will be shown as toast via JS #}
+            {% for message in app.flashes('success') %}
+                <div class="flash-data" data-type="success" data-message="{{ message }}"></div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="flash-data" data-type="error" data-message="{{ message }}"></div>
+            {% endfor %}
+
+            <!-- Title -->
+            <div class="page-title-row">
+                <div class="page-title-icon"><i class="fas fa-shield-alt"></i></div>
+                <h1>Moderation des Commentaires</h1>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="s-card">
+                    <div class="s-icon red"><i class="fas fa-flag"></i></div>
+                    <div>
+                        <h3 class="live-count" id="liveCount">{{ flaggedCount }}</h3>
+                        <p>Commentaires signales</p>
+                    </div>
+                </div>
+                <div class="s-card">
+                    <div class="s-icon green"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <div class="ai-scan">
+                            <span></span><span></span><span></span><span></span>
+                        </div>
+                        <p>Detection IA active</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flagged Comments -->
+            <h2 class="sec-title"><span class="sec-dot red"></span> Commentaires signales (<span id="liveCountTitle">{{ flaggedCount }}</span>)</h2>
+            <div class="card">
+                {% if flaggedComments|length > 0 %}
+                <div style="overflow-x:auto">
+                    <table class="tbl">
+                        <colgroup>
+                            <col style="width:155px">
+                            <col>
+                            <col style="width:115px">
+                            <col style="width:130px">
+                            <col style="width:88px">
+                            <col style="width:105px">
+                            <col style="width:220px">
+                        </colgroup>
+                        <thead><tr><th>Auteur</th><th>Commentaire</th><th>Article</th><th>Tuteur</th><th>Date</th><th>Statut</th><th style="text-align:right">Actions</th></tr></thead>
+                        <tbody>
+                        {% for comment in flaggedComments %}
+                            {% set words = badWordsMap[comment.id]|default([]) %}
+                            <tr>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av">
+                                            {%- set n = comment.innteractor.fullName|default(comment.innteractor.email|default('?')) -%}
+                                            {%- set p = n|split(' ') -%}
+                                            {%- if p|length >= 2 -%}{{ p[0][0:1]|upper }}{{ p[1][0:1]|upper }}{%- else -%}{{ n[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div>
+                                            <span class="u-name">{{ comment.innteractor.fullName|default('Inconnu') }}</span>
+                                            <span class="u-email">{{ comment.innteractor.email|default('') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="c-text-wrap">
+                                        <div class="c-text" data-fulltext="{{ comment.comment }}" data-badwords="{{ words|json_encode }}">{{ comment.comment }}</div>
+                                        <div class="c-tooltip">{{ comment.comment }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="/articles/{{ comment.blog.id }}" class="a-link" target="_blank">
+                                        <i class="fas fa-newspaper"></i>
+                                        {{ comment.blog.titre|length > 28 ? comment.blog.titre|slice(0, 28) ~ '...' : comment.blog.titre }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">
+                                            {%- set tn = comment.blog.publisher.fullName|default(comment.blog.publisher.email|default('?')) -%}
+                                            {%- set tp = tn|split(' ') -%}
+                                            {%- if tp|length >= 2 -%}{{ tp[0][0:1]|upper }}{{ tp[1][0:1]|upper }}{%- else -%}{{ tn[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div>
+                                            <span class="u-name">{{ comment.blog.publisher.fullName|default('Inconnu') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="d-date">{{ comment.createdAt|date('d/m/Y') }}<small>{{ comment.createdAt|date('H:i') }}</small></div></td>
+                                <td><span class="badge flagged">Signale</span></td>
+                                <td>
+                                    <div class="acts">
+                                        <form method="post" action="{{ path('admin_comment_approve', {id: comment.id}) }}" style="margin:0">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('approve_comment' ~ comment.id) }}">
+                                            <button type="submit" class="btn-a"><i class="fas fa-check"></i> Approuver</button>
+                                        </form>
+                                        <button type="button" class="btn-r delete-btn"
+                                            data-action="{{ path('admin_comment_delete', {id: comment.id}) }}"
+                                            data-token="{{ csrf_token('delete_comment' ~ comment.id) }}"
+                                            data-comment="{{ comment.comment|length > 80 ? comment.comment|slice(0,80) ~ '...' : comment.comment }}">
+                                            <i class="fas fa-archive"></i> Archiver
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon-wrap"><i class="fas fa-check-double"></i></div>
+                    <h4>Aucun commentaire signale</h4>
+                    <p>Tous les commentaires sont conformes</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {# ===== PREUVES ARCHIVEES ===== #}
+            <h2 class="sec-title" style="margin-top:2rem"><span class="sec-dot amber"></span> Preuves archivees ({{ archivedComments|length }}) <span class="archive-note"><i class="fas fa-lock"></i> Conserves comme preuve</span></h2>
+            <div class="card archive-card">
+                {% if archivedComments|length > 0 %}
+                <div style="overflow-x:auto">
+                    <table class="tbl">
+                        <colgroup>
+                            <col style="width:155px">
+                            <col>
+                            <col style="width:115px">
+                            <col style="width:130px">
+                            <col style="width:88px">
+                            <col style="width:105px">
+                            <col style="width:220px">
+                        </colgroup>
+                        <thead><tr><th>Auteur</th><th>Commentaire</th><th>Article</th><th>Tuteur</th><th>Date</th><th>Statut</th><th style="text-align:right">Info</th></tr></thead>
+                        <tbody>
+                        {% for comment in archivedComments %}
+                            <tr>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                                            {%- set n = comment.innteractor.fullName|default(comment.innteractor.email|default('?')) -%}
+                                            {%- set p = n|split(' ') -%}
+                                            {%- if p|length >= 2 -%}{{ p[0][0:1]|upper }}{{ p[1][0:1]|upper }}{%- else -%}{{ n[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div>
+                                            <span class="u-name">{{ comment.innteractor.fullName|default('Inconnu') }}</span>
+                                            <span class="u-email">{{ comment.innteractor.email|default('') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="c-text-wrap">
+                                        <div class="c-text" style="border-left-color:#f59e0b;opacity:.75">{{ comment.comment }}</div>
+                                        <div class="c-tooltip">{{ comment.comment }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="/articles/{{ comment.blog.id }}" class="a-link" target="_blank">
+                                        <i class="fas fa-newspaper"></i>
+                                        {{ comment.blog.titre|length > 28 ? comment.blog.titre|slice(0, 28) ~ '...' : comment.blog.titre }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <div class="u-cell">
+                                        <div class="u-av" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">
+                                            {%- set tn = comment.blog.publisher.fullName|default(comment.blog.publisher.email|default('?')) -%}
+                                            {%- set tp = tn|split(' ') -%}
+                                            {%- if tp|length >= 2 -%}{{ tp[0][0:1]|upper }}{{ tp[1][0:1]|upper }}{%- else -%}{{ tn[0:1]|upper }}{%- endif -%}
+                                        </div>
+                                        <div>
+                                            <span class="u-name">{{ comment.blog.publisher.fullName|default('Inconnu') }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><div class="d-date">{{ comment.createdAt|date('d/m/Y') }}<small>{{ comment.createdAt|date('H:i') }}</small></div></td>
+                                <td><span class="badge archived"><i class="fas fa-archive" style="font-size:.6rem"></i> Archive</span></td>
+                                <td style="text-align:right">
+                                    <span style="font-size:.68rem;color:#94a3b8;display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%"><i class="fas fa-lock" style="font-size:.6rem;color:#f59e0b;flex-shrink:0"></i> Preuve</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty">
+                    <div class="empty-icon-wrap"><i class="fas fa-folder-open" style="color:#f59e0b"></i></div>
+                    <h4>Aucune preuve archivee</h4>
+                    <p>Les commentaires archives apparaitront ici</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Custom archive modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon" style="background:linear-gradient(135deg,#fef3c7,#fde68a)"><i class="fas fa-archive" style="color:#d97706"></i></div>
+            <h3>Archiver ce commentaire comme preuve ?</h3>
+            <p>Le commentaire sera retire de la file de moderation et conserve comme preuve dans les archives.</p>
+            <div class="modal-comment" id="modalCommentText"></div>
+            <form method="post" id="modalDeleteForm" action="" style="margin:0">
+                <input type="hidden" name="_token" id="modalDeleteToken" value="">
+                <div class="modal-btns">
+                    <button type="button" class="modal-cancel" id="modalCancel">Annuler</button>
+                    <button type="button" class="modal-confirm" id="modalConfirm" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 2px 8px rgba(245,158,11,.3)"><i class="fas fa-archive"></i> Archiver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // ===== 2. HIGHLIGHT BAD WORDS =====
+        document.querySelectorAll('.c-text[data-badwords]').forEach(function(el) {
+            var words = JSON.parse(el.dataset.badwords || '[]');
+            if (!words.length) return;
+            var html = el.textContent;
+            // Sort by length desc so longer matches are replaced first
+            words.sort(function(a, b) { return b.length - a.length; });
+            words.forEach(function(word) {
+                var escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                var regex = new RegExp('(' + escaped + ')', 'gi');
+                html = html.replace(regex, '<span class="bad-word">$1</span>');
+            });
+            el.innerHTML = html;
+
+            // Also highlight in tooltip
+            var tooltip = el.closest('.c-text-wrap').querySelector('.c-tooltip');
+            if (tooltip) {
+                var tooltipHtml = tooltip.textContent;
+                words.forEach(function(word) {
+                    var escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    var regex = new RegExp('(' + escaped + ')', 'gi');
+                    tooltipHtml = tooltipHtml.replace(regex, '<span class="bad-word">$1</span>');
+                });
+                tooltip.innerHTML = tooltipHtml;
+            }
+        });
+
+        // ===== 3. LIVE COUNTER (polling every 15s) =====
+        var liveCount = document.getElementById('liveCount');
+        var liveCountTitle = document.getElementById('liveCountTitle');
+        var lastCount = parseInt(liveCount ? liveCount.textContent : '0');
+        var lastShownCommentId = null;
+
+        function showDetailedFlagToast() {
+            fetch('{{ path("admin_comments_latest_flagged") }}', { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.comment) return;
+                    var c = data.comment;
+                    if (c.id === lastShownCommentId) return;
+                    lastShownCommentId = c.id;
+                    var words = c.badWords && c.badWords.length ? c.badWords.join(', ') : '?';
+                    var msg = c.user + ' a tente de publier un commentaire inapproprie sur &laquo;&nbsp;'
+                            + c.article + '&nbsp;&raquo; le ' + c.date
+                            + '.<br><small style="color:#fca5a5">Mots detectes : ' + words + '</small>';
+                    showToast('error', 'Commentaire signale !', msg);
+                    // Recharger la page apres 1.5s pour afficher le nouveau commentaire
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                })
+                .catch(function() {});
+        }
+
+        function updateLiveCount() {
+            fetch('{{ path("admin_comments_count") }}', { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var c = data.count || 0;
+                    if (c !== lastCount) {
+                        var wasIncreased = c > lastCount;
+                        lastCount = c;
+                        if (liveCount) {
+                            liveCount.textContent = c;
+                            liveCount.classList.add('bump');
+                            setTimeout(function() { liveCount.classList.remove('bump'); }, 400);
+                        }
+                        if (liveCountTitle) liveCountTitle.textContent = c;
+                        if (wasIncreased) {
+                            showDetailedFlagToast();
+                        }
+                    }
+                })
+                .catch(function() {});
+        }
+        setInterval(updateLiveCount, 15000);
+
+        // ===== 4. CUSTOM DELETE MODAL =====
+        var modal = document.getElementById('deleteModal');
+        var modalText = document.getElementById('modalCommentText');
+        var modalConfirm = document.getElementById('modalConfirm');
+        var modalCancel = document.getElementById('modalCancel');
+        var modalDeleteForm = document.getElementById('modalDeleteForm');
+        var modalDeleteToken = document.getElementById('modalDeleteToken');
+
+        document.querySelectorAll('.delete-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Peupler le formulaire du modal avec l'action et le token du commentaire cliqué
+                modalDeleteForm.action = this.dataset.action;
+                modalDeleteToken.value = this.dataset.token;
+                modalText.textContent = this.dataset.comment || '';
+                modal.classList.add('show');
+            });
+        });
+
+        function closeModal() {
+            modal.classList.remove('show');
+            modalDeleteForm.action = '';
+            modalDeleteToken.value = '';
+        }
+
+        modalCancel.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) { closeModal(); }
+        });
+
+        modalConfirm.addEventListener('click', function() {
+            if (!modalDeleteForm.action) return;
+            this.classList.add('shaking');
+            var form = modalDeleteForm;
+            setTimeout(function() {
+                form.submit();
+            }, 350);
+        });
+
+        // ESC to close modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('show')) { closeModal(); }
+        });
+
+        // ===== 5. TOAST NOTIFICATIONS =====
+        var icons = { success: 'check-circle', error: 'times-circle', warning: 'exclamation-triangle' };
+        var labels = { success: 'Succès', error: 'Alerte sécurité', warning: 'Attention' };
+
+        function showToast(type, title, msg, duration) {
+            duration = duration || 4000;
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML =
+                '<div class="toast-icon"><i class="fas fa-' + (icons[type] || 'info-circle') + '"></i></div>' +
+                '<div class="toast-body">' +
+                    '<div class="toast-title">' + (title || labels[type] || '') + '</div>' +
+                    '<div class="toast-msg">' + msg + '</div>' +
+                '</div>' +
+                '<button class="toast-close" title="Fermer"><i class="fas fa-times"></i></button>' +
+                '<div class="toast-progress"></div>';
+            container.appendChild(toast);
+
+            function dismiss() {
+                if (!toast.parentNode) return;
+                toast.classList.add('hiding');
+                setTimeout(function() { if (toast.parentNode) toast.remove(); }, 380);
+            }
+            toast.querySelector('.toast-close').addEventListener('click', dismiss);
+            setTimeout(dismiss, duration);
+        }
+
+        // Show flash messages as toasts
+        document.querySelectorAll('.flash-data').forEach(function(el) {
+            var type = el.dataset.type === 'error' ? 'error' : 'success';
+            var title = type === 'success' ? 'Succes' : 'Erreur';
+            showToast(type, title, el.dataset.message);
+        });
+    });
+    </script>
+{% endblock %}

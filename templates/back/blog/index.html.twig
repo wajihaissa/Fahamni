@@ -1,0 +1,144 @@
+{% extends 'base.html.twig' %}
+
+{% block current_page %}articles{% endblock %}
+
+{% block title %}Articles du Blog{% endblock %}
+
+{% block body %}
+<div class="container">
+    {# En-tête avec breadcrumb #}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+            <li class="breadcrumb-item active">Articles</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-4">
+                <i class="fas fa-newspaper text-primary"></i> Articles du Blog
+            </h1>
+            <p class="lead text-muted">Découvrez nos dernières publications</p>
+        </div>
+        {% if app.user %}
+            <a href="{{ path('app_blog_new') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Nouvel Article
+            </a>
+        {% endif %}
+    </div>
+
+    {# Filtres et recherche #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher un article..." value="{{ app.request.query.get('search') }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="{{ path('app_blog_index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-redo"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Liste des articles #}
+    {% if blogs|length > 0 %}
+        <div class="row">
+            {% for blog in blogs %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        {# Image principale #}
+                        {% if blog.images and blog.images|length > 0 %}
+                            <img src="{{ asset('uploads/images/' ~ blog.images[0]) }}" 
+                                 class="card-img-top blog-image" 
+                                 alt="{{ blog.titre }}">
+                        {% else %}
+                            <div class="card-img-top blog-image bg-gradient d-flex align-items-center justify-content-center" 
+                                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-newspaper fa-4x text-white opacity-50"></i>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            {# Titre #}
+                            <h5 class="card-title">
+                                <a href="{{ path('app_blog_show', {id: blog.id}) }}" class="text-decoration-none text-dark">
+                                    {{ blog.titre }}
+                                </a>
+                            </h5>
+                            
+                            {# Extrait #}
+                            <p class="card-text text-muted flex-grow-1">
+                                {{ blog.content|length > 120 ? blog.content|slice(0, 120) ~ '...' : blog.content }}
+                            </p>
+
+                            {# Métadonnées #}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> 
+                                        {{ blog.publisher.email|split('@')[0] }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> 
+                                        {{ blog.publishedAt|date('d/m/Y') }}
+                                    </small>
+                                </div>
+
+                                {# Statistiques #}
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-thumbs-up"></i> 
+                                        {{ blog.interactions|filter(i => i.reaction == 1)|length }}
+                                    </span>
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-comments"></i> 
+                                        {{ blog.interactions|filter(i => i.comment is not null)|length }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {# Bouton #}
+                            <a href="{{ path('app_blog_show', {id: blog.id}) }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-eye"></i> Lire la suite
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Pagination (si vous l'implémentez) #}
+        {# {% if blogs.haveToPaginate %}
+            <div class="d-flex justify-content-center mt-4">
+                {{ knp_pagination_render(blogs) }}
+            </div>
+        {% endif %} #}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-5x text-muted mb-4"></i>
+            <h3 class="text-muted">Aucun article trouvé</h3>
+            <p class="text-muted">
+                {% if app.request.query.get('search') %}
+                    Aucun article ne correspond à votre recherche.
+                {% else %}
+                    Il n'y a pas encore d'articles publiés.
+                {% endif %}
+            </p>
+            {% if app.user %}
+                <a href="{{ path('app_blog_new') }}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus-circle"></i> Créer le premier article
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

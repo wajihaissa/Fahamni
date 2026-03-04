@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fahimni Admin{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- 1. GLOBAL ADMIN THEME --- */
+        :root {
+            --admin-purple: #2e2854;
+            --admin-purple-dark: #1e1a3a;
+            --primary-violet: #6c5ce7;
+            --bg-gray: #f8f9fa;
+        }
+
+        body { 
+            min-height: 100vh; 
+            display: flex; 
+            background-color: var(--bg-gray); 
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .admin-wrapper { display: flex; width: 100%; }
+        
+        /* --- 2. THE PERMANENT SIDEBAR FIX --- */
+        .sidebar-container { 
+            width: 260px; 
+            min-height: 100vh; 
+            background: var(--admin-purple) !important; 
+            color: white !important; 
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+        }
+
+        /* This removes the bullet points globally */
+        .sidebar-container ul { 
+            list-style: none !important; 
+            padding: 0 !important; 
+            margin: 0 !important; 
+        }
+
+        /* This fixes the blue links and text decoration globally */
+        .sidebar-container a {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 12px 20px !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        /* Hover & Active States */
+        .sidebar-container li.active a,
+        .sidebar-container a:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+
+        .sidebar-container i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* --- 3. CONTENT AREA --- */
+        .content-container { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-x: hidden;
+            background: var(--bg-gray);
+        }
+        
+        .admin-content { padding: 30px; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <aside class="sidebar-container">
+        {% include 'back/_sidebar.html.twig' %}
+    </aside>
+
+    <div class="content-container">
+        {% include 'back/_admin_navbar.html.twig' %}
+
+        <main class="admin-content">
+            {% block body %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

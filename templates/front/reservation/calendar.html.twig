@@ -1,0 +1,2500 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}FAHIMNI Calendar{% endblock %}
+{% block current_page %}calendar{% endblock %}
+{% block body_class %}page-calendar{% endblock %}
+
+{% block stylesheets %}
+<style>
+.page-calendar .auth-buttons a[href="/login"],
+.page-calendar .auth-buttons a[href="/register"] {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.page-calendar .main-content {
+    background:
+        radial-gradient(circle at 10% -12%, rgba(67, 97, 238, 0.13), transparent 34%),
+        radial-gradient(circle at 92% 4%, rgba(46, 204, 113, 0.10), transparent 28%);
+}
+
+.page-calendar .container {
+    max-width: 1380px;
+}
+
+.calendar-layout {
+    display: flex;
+    min-height: calc(100vh - 170px);
+    gap: 22px;
+    padding: 18px;
+    border-radius: 28px;
+    border: 1px solid rgba(67, 97, 238, 0.16);
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(244, 248, 255, 0.95));
+    box-shadow: 0 18px 42px rgba(16, 42, 86, 0.12);
+}
+
+.sidebar {
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.sidebar-section {
+    background: var(--card-bg);
+    border-radius: 22px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 24px rgba(16, 37, 74, 0.10);
+    border: 1px solid #dce6f5;
+}
+
+.sidebar-title {
+    font-size: 19px;
+    margin-bottom: 14px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-title i {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    background: rgba(67, 97, 238, 0.11);
+}
+
+.session-list {
+    display: grid;
+    gap: 14px;
+}
+
+.session-group {
+    border-top: none;
+    padding-top: 0;
+}
+
+.session-group-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7b95;
+    margin-bottom: 10px;
+    padding-left: 2px;
+}
+
+.session-item {
+    padding: 11px 12px;
+    border: 1px solid #e1e8f5;
+    border-radius: 14px;
+    margin-bottom: 9px;
+    background: linear-gradient(180deg, #ffffff, #f8fbff);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.session-item:last-child {
+    margin-bottom: 0;
+}
+
+.session-item:hover {
+    transform: translateY(-1px);
+    border-color: #cbd9ee;
+    box-shadow: 0 8px 16px rgba(16, 42, 80, 0.08);
+}
+
+.session-date {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.session-time {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 5px;
+}
+
+.session-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 6px;
+    line-height: 1.35;
+}
+
+.session-kind {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.session-kind.reservation {
+    background: rgba(46, 204, 113, 0.14);
+    color: #0a7a45;
+}
+
+.session-kind.session {
+    background: rgba(67, 97, 238, 0.12);
+    color: var(--primary-color);
+}
+
+.session-type {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.session-type.planned {
+    background: rgba(67, 97, 238, 0.12);
+    color: var(--primary-color);
+}
+
+.session-type.pending {
+    background: rgba(243, 156, 18, 0.16);
+    color: #8a5a00;
+}
+
+.session-type.accepted {
+    background: rgba(46, 204, 113, 0.16);
+    color: #0a7a45;
+}
+
+.session-type.paid {
+    background: rgba(16, 145, 90, 0.16);
+    color: #0d6a42;
+}
+
+.session-link {
+    color: #35588e;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.calendar-area {
+    flex: 1;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    background: var(--card-bg);
+    border: 1px solid #dbe4f3;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(14, 38, 75, 0.08);
+}
+
+.calendar-title {
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #1f2d44;
+    margin: 0;
+}
+
+.calendar-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f2f6fe;
+    border: 1px solid #d8e2f2;
+    border-radius: 999px;
+    padding: 4px;
+}
+
+.calendar-nav-btn {
+    background: #ffffff;
+    border: 1px solid transparent;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #2f3f5a;
+    transition: transform 0.16s ease, background-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.calendar-nav-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(67, 97, 238, 0.26);
+}
+
+.current-month {
+    font-size: 15px;
+    font-weight: 800;
+    color: #263754;
+    min-width: 170px;
+    text-align: center;
+    padding: 0 6px;
+}
+
+.view-options {
+    display: flex;
+    background: #eef3fc;
+    border: 1px solid #d8e2f2;
+    border-radius: 999px;
+    padding: 4px;
+}
+
+.view-btn {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: #7183a0;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.view-btn.active {
+    background: linear-gradient(135deg, var(--primary-color), #355fd7);
+    color: #fff;
+    box-shadow: 0 7px 14px rgba(67, 97, 238, 0.28);
+}
+
+.calendar-grid {
+    background: var(--card-bg);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(15, 36, 72, 0.10);
+    border: 1px solid #dbe4f3;
+    padding: 10px;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    background: transparent;
+    padding: 0;
+    border-bottom: none;
+    margin-bottom: 8px;
+}
+
+.weekday {
+    text-align: center;
+    font-weight: 700;
+    color: #60718c;
+    text-transform: none;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    padding: 9px 2px;
+    background: #f4f8ff;
+    border: 1px solid #dfe8f7;
+    border-radius: 11px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-auto-rows: minmax(108px, 1fr);
+    min-height: 560px;
+    gap: 8px;
+}
+
+.day {
+    padding: 8px;
+    border: none;
+    position: relative;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff, #f9fbff);
+    box-shadow: inset 0 0 0 1px #e3ebf8;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.day:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px #d2def2, 0 10px 18px rgba(16, 42, 80, 0.08);
+}
+
+.day:nth-child(7n) {
+    border-right: none;
+}
+
+.day:nth-child(n+29) {
+    border-bottom: none;
+}
+
+.day-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: #edf2fc;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #2b3b57;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.day-event {
+    position: relative;
+    background: #edf3ff;
+    border-left: none;
+    box-shadow: inset 0 0 0 1px rgba(67, 97, 238, 0.18);
+    padding: 7px 8px 7px 10px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    overflow: hidden;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.day-event:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--primary-color);
+}
+
+.day-event:hover {
+    transform: translateY(-1px);
+    box-shadow: inset 0 0 0 1px rgba(67, 97, 238, 0.26), 0 8px 14px rgba(34, 66, 120, 0.10);
+}
+
+.day-event.day-event-accepted {
+    background: #eaf8f1;
+    box-shadow: inset 0 0 0 1px rgba(29, 154, 96, 0.25);
+}
+
+.day-event.day-event-accepted:before {
+    background: #1d9a60;
+}
+
+.day-event.day-event-paid {
+    background: #e5f6ec;
+    box-shadow: inset 0 0 0 1px rgba(17, 127, 79, 0.24);
+}
+
+.day-event.day-event-paid:before {
+    background: #0f7b49;
+}
+
+.day-event.day-event-pending {
+    background: #fff6e9;
+    box-shadow: inset 0 0 0 1px rgba(226, 150, 33, 0.28);
+}
+
+.day-event.day-event-pending:before {
+    background: #c7861a;
+}
+
+.day-event.day-event-planned {
+    background: #edf3ff;
+    box-shadow: inset 0 0 0 1px rgba(67, 97, 238, 0.18);
+}
+
+.day-event.day-event-planned:before {
+    background: var(--primary-color);
+}
+
+.day-event-title {
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 2px;
+    line-height: 1.35;
+}
+
+.day-event-time {
+    color: #355b98;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.day-event-kind {
+    display: inline-block;
+    margin-top: 3px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #60708c;
+    background: rgba(255, 255, 255, 0.65);
+}
+
+.day-event-status {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.day-event-status.accepted {
+    color: #0a7a45;
+}
+
+.day-event-status.paid {
+    color: #0d6a42;
+}
+
+.day-event-status.pending {
+    color: #8a5a00;
+}
+
+.day-event-status.planned {
+    color: #2d4fa4;
+}
+
+.day-event-draggable {
+    cursor: grab;
+}
+
+.day-event-draggable:active {
+    cursor: grabbing;
+    opacity: 0.85;
+}
+
+.day-event-rateable {
+    cursor: pointer;
+    user-select: none;
+    outline: 1px dashed rgba(44, 79, 146, 0.35);
+    outline-offset: -2px;
+}
+
+.day-event-hint {
+    margin-top: 2px;
+    font-size: 9px;
+    color: #2f5f9b;
+    font-weight: 700;
+}
+
+.day-drop-target {
+    box-shadow: inset 0 0 0 2px rgba(67, 97, 238, 0.44), 0 10px 20px rgba(67, 97, 238, 0.20);
+    background: rgba(67, 97, 238, 0.08);
+}
+
+.day.today .day-number {
+    background: linear-gradient(135deg, var(--primary-color), #355fd7);
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(67, 97, 238, 0.28);
+}
+
+.day.other-month {
+    background: #f2f5fb;
+    color: #96a2b6;
+    opacity: 0.74;
+}
+
+.day.other-month .day-number {
+    color: #96a2b6;
+    background: #e8edf7;
+}
+
+body.dark-theme .calendar-layout {
+    border-color: rgba(90, 125, 245, 0.34);
+    background: linear-gradient(155deg, rgba(32, 40, 58, 0.96), rgba(25, 32, 47, 0.95));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-theme .sidebar-section,
+body.dark-theme .calendar-header,
+body.dark-theme .calendar-grid {
+    border-color: #3c4a63;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+body.dark-theme .session-item {
+    background: linear-gradient(180deg, #2a3347, #252d3f);
+    border-color: #3d4c67;
+}
+
+body.dark-theme .session-item:hover {
+    border-color: #5a7df5;
+}
+
+body.dark-theme .calendar-title {
+    color: #e8edf7;
+}
+
+body.dark-theme .calendar-nav {
+    background: #2b364c;
+    border-color: #3a4963;
+}
+
+body.dark-theme .calendar-nav-btn {
+    background: #222c3d;
+    color: #d9e2f3;
+}
+
+body.dark-theme .view-options {
+    background: #2b364c;
+    border-color: #3a4963;
+}
+
+body.dark-theme .view-btn {
+    color: #b8c5dc;
+}
+
+body.dark-theme .weekday {
+    background: #2a3347;
+    border-color: #3a4a64;
+    color: #c7d3e8;
+}
+
+body.dark-theme .day {
+    background: linear-gradient(180deg, #293246, #242d3f);
+    box-shadow: inset 0 0 0 1px #3a4a65;
+}
+
+body.dark-theme .day:hover {
+    box-shadow: inset 0 0 0 1px #4d6284, 0 10px 20px rgba(0, 0, 0, 0.24);
+}
+
+body.dark-theme .day-number {
+    background: #35435c;
+    color: #e1e8f6;
+}
+
+body.dark-theme .day.other-month {
+    background: #232b3c;
+}
+
+body.dark-theme .day.other-month .day-number {
+    background: #2d3a50;
+    color: #99aac8;
+}
+
+.calendar-toast-stack {
+    position: fixed;
+    top: 92px;
+    right: 18px;
+    z-index: 2100;
+    display: grid;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.calendar-toast {
+    min-width: 260px;
+    max-width: 340px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 10px 24px rgba(16, 32, 68, 0.16);
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.calendar-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.calendar-toast.toast-success {
+    border-left: 4px solid #16a368;
+}
+
+.calendar-toast.toast-error {
+    border-left: 4px solid #d64545;
+}
+
+.calendar-toast.toast-info {
+    border-left: 4px solid #2b6cb0;
+}
+
+.rating-modal[hidden] {
+    display: none;
+}
+
+.rating-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2200;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+}
+
+.rating-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 24, 43, 0.5);
+}
+
+.rating-modal:not([hidden]) .rating-modal-dialog {
+    animation: rating-modal-in 0.2s ease-out;
+}
+
+@keyframes rating-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.rating-modal-dialog {
+    position: relative;
+    width: min(420px, calc(100vw - 14px));
+    max-height: calc(100vh - 20px);
+    overflow: auto;
+    background: #fff;
+    border: 1px solid rgba(67, 97, 238, 0.16);
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(8, 24, 59, 0.24);
+    padding: 0;
+}
+
+.rating-modal-head {
+    text-align: center;
+    padding: 0 14px 8px;
+}
+
+.rating-hero {
+    position: relative;
+    height: 76px;
+    border-radius: 18px 18px 12px 12px;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.22), rgba(67, 97, 238, 0.1));
+    margin: 0 -1px 30px;
+}
+
+.rating-badge {
+    position: absolute;
+    left: 50%;
+    bottom: -22px;
+    transform: translateX(-50%);
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    box-shadow: 0 8px 16px rgba(67, 97, 238, 0.24);
+    color: #f2b01e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    animation: rating-badge-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes rating-badge-pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.06); }
+}
+
+.rating-modal-title {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.rating-modal-subtitle {
+    margin: 4px 0 0;
+    color: var(--text-light);
+    font-size: 12px;
+}
+
+.rating-context-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 8px 14px 10px;
+}
+
+.rating-context-item {
+    padding: 8px 9px;
+    border-radius: 10px;
+    border: 1px solid #dce4f2;
+    background: #f8fbff;
+}
+
+.rating-context-label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.rating-context-value {
+    display: block;
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.rating-form {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+}
+
+.rating-field {
+    display: grid;
+    gap: 8px;
+}
+
+.rating-field-surface {
+    background: #fff;
+    border: 1px solid #e1e7f2;
+    border-radius: 12px;
+    padding: 10px;
+    transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.rating-field-surface:focus-within {
+    border-color: rgba(67, 97, 238, 0.4);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.12);
+}
+
+.rating-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.rating-input,
+.rating-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 9px 11px;
+    font-size: 14px;
+    color: var(--text-color);
+    background: #fff;
+}
+
+.rating-input:focus,
+.rating-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.16);
+}
+
+.rating-textarea {
+    min-height: 82px;
+    resize: vertical;
+    background: #fff;
+}
+
+.rating-textarea::placeholder {
+    color: #8a99b0;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+    background: #f7f9ff;
+    border: 1px solid #dee6f3;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+.rating-star {
+    border: none;
+    background: transparent;
+    color: #bac3d3;
+    font-size: 28px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.14s ease, transform 0.14s ease, opacity 0.14s ease;
+}
+
+.rating-star:hover,
+.rating-star:focus-visible {
+    color: #f2b01e;
+    transform: translateY(-1px) scale(1.03);
+    outline: none;
+}
+
+.rating-star.is-active,
+.rating-star.is-preview {
+    color: #f2b01e;
+    transform: translateY(-1px) scale(1.05);
+}
+
+.rating-note-preview {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 600;
+    min-height: 18px;
+}
+
+.rating-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.rating-btn {
+    border: 1px solid #d8e0ef;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.rating-btn-cancel {
+    background: #ffffff;
+    color: #243c5c;
+}
+
+.rating-btn-cancel:hover {
+    background: #f2f6ff;
+    border-color: #c9d6ef;
+}
+
+.rating-btn-submit {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(67, 97, 238, 0.26);
+}
+
+.rating-btn-submit:hover {
+    background: #3656cf;
+    border-color: #3656cf;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(67, 97, 238, 0.3);
+}
+
+.reviews-modal[hidden] {
+    display: none;
+}
+
+.reviews-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2260;
+    display: grid;
+    place-items: center;
+    padding: 9px;
+}
+
+.reviews-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 24, 43, 0.55);
+}
+
+.reviews-modal-dialog {
+    position: relative;
+    top: -12px;
+    width: min(700px, calc(100vw - 20px));
+    max-height: calc(100vh - 24px);
+    overflow: auto;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    box-shadow: 0 16px 32px rgba(9, 25, 58, 0.24);
+    padding: 11px;
+    animation: reviews-modal-in 0.2s ease-out;
+}
+
+@keyframes reviews-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.992);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.reviews-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 9px;
+    margin-bottom: 11px;
+}
+
+.reviews-modal-title {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 27px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+.reviews-modal-subtitle {
+    margin: 4px 0 0;
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.reviews-close-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fff;
+    color: #42516a;
+    cursor: pointer;
+    transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.reviews-close-icon:hover {
+    background: #f4f7fd;
+    border-color: #cdd8ec;
+    transform: translateY(-1px);
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: 1.08fr 1fr;
+    gap: 9px;
+}
+
+.reviews-card {
+    border: 1px solid #dee5f2;
+    border-radius: 12px;
+    background: #fff;
+    padding: 9px;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.reviews-card:hover {
+    transform: translateY(-1px);
+    border-color: #cfd9ec;
+    box-shadow: 0 8px 18px rgba(23, 44, 80, 0.1);
+}
+
+.reviews-average {
+    text-align: center;
+    font-size: 46px;
+    line-height: 1;
+    font-weight: 900;
+    color: #20252e;
+    margin: 2px 0 7px;
+}
+
+.reviews-stars {
+    text-align: center;
+    color: #f2b01e;
+    font-size: 22px;
+    letter-spacing: 0.08em;
+    line-height: 1;
+}
+
+.reviews-count {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.reviews-section-title {
+    margin: 12px 0 9px;
+    font-size: 19px;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.reviews-comments-list {
+    display: grid;
+    gap: 10px;
+    max-height: 220px;
+    overflow: auto;
+    padding-right: 4px;
+}
+
+.reviews-comment {
+    border: 1px solid #e5ebf5;
+    border-radius: 10px;
+    background: #fbfcff;
+    padding: 10px;
+}
+
+.reviews-comment-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.reviews-comment-user {
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.reviews-comment-date {
+    color: var(--text-light);
+    font-size: 11px;
+}
+
+.reviews-comment-rating {
+    color: #f2b01e;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.reviews-comment-body {
+    color: #4d5b72;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.reviews-empty {
+    border: 1px dashed #d9e1ef;
+    border-radius: 10px;
+    padding: 10px;
+    color: #6b7890;
+    background: #f7faff;
+    font-size: 13px;
+}
+
+.reviews-eval-list {
+    display: grid;
+    gap: 12px;
+}
+
+.reviews-eval-row {
+    border: 1px solid #e3eaf5;
+    border-radius: 10px;
+    background: #fafcff;
+    padding: 10px;
+}
+
+.reviews-eval-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.reviews-eval-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2c3a50;
+}
+
+.reviews-eval-percent {
+    font-size: 13px;
+    font-weight: 800;
+    color: #42526f;
+}
+
+.reviews-progress-track {
+    width: 100%;
+    height: 9px;
+    border-radius: 999px;
+    background: #e8edf6;
+    overflow: hidden;
+}
+
+.reviews-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.25s ease;
+    background-size: 160% 100%;
+    animation: reviews-progress-shimmer 2.4s linear infinite;
+}
+
+.reviews-progress-fill.stars-5 { background: linear-gradient(90deg, #4f7df4, #355fd7); }
+.reviews-progress-fill.stars-4 { background: linear-gradient(90deg, #44b57a, #1f9a62); }
+.reviews-progress-fill.stars-3 { background: linear-gradient(90deg, #f2ca4a, #e5b12a); }
+.reviews-progress-fill.stars-2 { background: linear-gradient(90deg, #f2a33f, #ea7a2c); }
+.reviews-progress-fill.stars-1 { background: linear-gradient(90deg, #eb6a6a, #da4343); }
+
+@keyframes reviews-progress-shimmer {
+    from { background-position: 0% 50%; }
+    to { background-position: 100% 50%; }
+}
+
+.reviews-eval-meta {
+    margin-top: 5px;
+    color: #6f7d95;
+    font-size: 11px;
+}
+
+.reviews-actions {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.reviews-close-btn {
+    border: 1px solid #d0dbef;
+    border-radius: 10px;
+    background: #f2f6ff;
+    color: #2d4367;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.reviews-close-btn:hover {
+    background: #e7eefc;
+    border-color: #bdcbe5;
+    transform: translateY(-1px);
+}
+
+@media (min-width: 1101px) {
+    .reviews-modal-dialog {
+        top: -14px;
+        width: min(650px, calc(100vw - 24px));
+        padding: 10px;
+    }
+
+    .reviews-modal-title { font-size: 25px; }
+    .reviews-grid { gap: 8px; }
+    .reviews-card { padding: 8px; }
+    .reviews-average { font-size: 42px; }
+    .reviews-stars { font-size: 20px; }
+    .reviews-section-title { margin: 10px 0 8px; font-size: 18px; }
+    .reviews-comments-list { max-height: 200px; }
+}
+
+@media (max-width: 1100px) {
+    .calendar-layout {
+        flex-direction: column;
+        padding: 14px;
+        border-radius: 22px;
+        gap: 16px;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .calendar-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-days {
+        grid-auto-rows: minmax(96px, 1fr);
+    }
+
+    .reviews-grid { grid-template-columns: 1fr; }
+    .reviews-modal-title { font-size: 26px; }
+}
+
+@media (max-width: 576px) {
+    .calendar-layout {
+        padding: 10px;
+        border-radius: 18px;
+    }
+
+    .sidebar-section,
+    .calendar-header,
+    .calendar-grid {
+        border-radius: 16px;
+    }
+
+    .calendar-header {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .calendar-title {
+        font-size: 24px;
+    }
+
+    .calendar-nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .current-month {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .view-options {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .view-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .calendar-grid {
+        padding: 8px;
+    }
+
+    .calendar-weekdays {
+        gap: 6px;
+    }
+
+    .weekday {
+        font-size: 10px;
+        padding: 7px 2px;
+    }
+
+    .calendar-days {
+        min-height: 380px;
+        gap: 6px;
+    }
+
+    .day {
+        min-height: 50px;
+        padding: 6px;
+        border-radius: 10px;
+    }
+
+    .day-number {
+        width: 24px;
+        height: 24px;
+        border-radius: 8px;
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .day-event { display: none; }
+    .day.has-event:after { content: ''; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; }
+    .day.has-accepted-event:after { background: #1d9a60; }
+    .rating-modal { padding: 12px; }
+    .rating-modal-dialog { width: calc(100vw - 12px); border-radius: 14px; }
+    .rating-context-grid { grid-template-columns: 1fr; }
+    .rating-modal-title { font-size: 22px; }
+    .rating-star { font-size: 26px; }
+    .rating-actions { grid-template-columns: 1fr; }
+
+    .reviews-modal { padding: 7px; }
+    .reviews-modal-dialog { top: -4px; width: calc(100vw - 8px); padding: 10px; border-radius: 12px; }
+    .reviews-modal-title { font-size: 22px; }
+    .reviews-average { font-size: 44px; }
+    .reviews-stars { font-size: 22px; }
+    .reviews-section-title { font-size: 18px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="calendar-layout">
+        <aside class="sidebar">
+            <section class="sidebar-section">
+                <h2 class="sidebar-title"><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                <div class="session-list">
+                    {% set reservationItems = upcomingReservations|default([]) %}
+                    {% set publishedItems = upcomingPublishedSessions|default([]) %}
+
+                    {% if reservationItems is empty and publishedItems is empty %}
+                        <div class="session-group">
+                            <div class="session-item">
+                                <div class="session-date">A venir</div>
+                                <div class="session-title">Aucune seance planifiee.</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="session-group">
+                            <div class="session-group-title">Mes reservations</div>
+                            {% if reservationItems is empty %}
+                                <div class="session-item">
+                                    <div class="session-title">Aucune reservation a venir.</div>
+                                </div>
+                            {% else %}
+                                {% for event in reservationItems %}
+                                    <div class="session-item">
+                                        <div class="session-kind reservation">{{ event.kindLabel|default('Reservation') }}</div>
+                                        <div class="session-date">{{ event.date|date('d/m/Y') }}</div>
+                                        <div class="session-time">{{ event.time }}</div>
+                                        <div class="session-title">{{ event.title }}</div>
+                                        <div class="session-type {{ event.statusKey|default('pending') }}">{{ event.status }}</div>
+                                        <div class="session-link"><i class="fas fa-user"></i> {{ event.subtitle }}</div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="session-group">
+                            <div class="session-group-title">Mes seances publiees</div>
+                            {% if publishedItems is empty %}
+                                <div class="session-item">
+                                    <div class="session-title">Aucune seance publiee a venir.</div>
+                                </div>
+                            {% else %}
+                                {% for event in publishedItems %}
+                                    <div class="session-item">
+                                        <div class="session-kind session">{{ event.kindLabel|default('Seance publiee') }}</div>
+                                        <div class="session-date">{{ event.date|date('d/m/Y') }}</div>
+                                        <div class="session-time">{{ event.time }}</div>
+                                        <div class="session-title">{{ event.title }}</div>
+                                        <div class="session-type {{ event.statusKey|default('planned') }}">{{ event.status }}</div>
+                                        <div class="session-link"><i class="fas fa-user"></i> {{ event.subtitle }}</div>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </aside>
+
+        <section class="calendar-area">
+            <div class="calendar-header">
+                <h1 class="calendar-title">FAHIMNI Calendar</h1>
+                <div class="calendar-actions">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <div class="current-month" id="currentMonth"></div>
+                        <button class="calendar-nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="view-options">
+                        <button class="view-btn active" type="button">Month</button>
+                        <button class="view-btn" type="button">Week</button>
+                        <button class="view-btn" type="button">Day</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="ratingModal" class="rating-modal" hidden>
+    <div class="rating-modal-backdrop" id="ratingModalBackdrop"></div>
+    <div class="rating-modal-dialog">
+        <div class="rating-modal-head">
+            <div class="rating-hero">
+                <div class="rating-badge"><i class="fas fa-star"></i></div>
+            </div>
+            <h2 class="rating-modal-title">Noter un tuteur</h2>
+            <p class="rating-modal-subtitle">Partagez une note claire et un commentaire utile.</p>
+        </div>
+
+        <div class="rating-context-grid">
+            <div class="rating-context-item">
+                <span class="rating-context-label">Seance</span>
+                <strong id="ratingSessionName" class="rating-context-value">-</strong>
+            </div>
+            <div class="rating-context-item">
+                <span class="rating-context-label">Tuteur</span>
+                <strong id="ratingTutorName" class="rating-context-value">-</strong>
+            </div>
+        </div>
+
+        <form id="ratingForm" class="rating-form">
+            <input type="hidden" id="ratingTutorIdInput">
+
+            <div class="rating-field rating-field-surface">
+                <label for="ratingStars">Note</label>
+                <input type="hidden" id="ratingNoteInput" required>
+                <div id="ratingStars" class="rating-stars" role="radiogroup" aria-label="Note sur 5">
+                    <button type="button" class="rating-star" data-value="1" aria-label="1 etoile" aria-pressed="false">&#9733;</button>
+                    <button type="button" class="rating-star" data-value="2" aria-label="2 etoiles" aria-pressed="false">&#9733;</button>
+                    <button type="button" class="rating-star" data-value="3" aria-label="3 etoiles" aria-pressed="false">&#9733;</button>
+                    <button type="button" class="rating-star" data-value="4" aria-label="4 etoiles" aria-pressed="false">&#9733;</button>
+                    <button type="button" class="rating-star" data-value="5" aria-label="5 etoiles" aria-pressed="false">&#9733;</button>
+                </div>
+                <div id="ratingNotePreview" class="rating-note-preview">Selectionnez votre note en etoiles.</div>
+            </div>
+
+            <div class="rating-field rating-field-surface">
+                <label for="ratingCommentInput">Commentaire</label>
+                <textarea id="ratingCommentInput" class="rating-textarea" placeholder="Ajoutez un commentaire constructif..."></textarea>
+            </div>
+
+            <div class="rating-actions">
+                <button type="button" id="ratingCancelBtn" class="rating-btn rating-btn-cancel">Annuler</button>
+                <button type="submit" class="rating-btn rating-btn-submit">Enregistrer ma note</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="reviewsModal" class="reviews-modal" hidden>
+    <div class="reviews-modal-backdrop" id="reviewsModalBackdrop"></div>
+    <div class="reviews-modal-dialog">
+        <div class="reviews-modal-head">
+            <div>
+                <h2 class="reviews-modal-title">Review & Comments</h2>
+                <p class="reviews-modal-subtitle">Seance: <strong id="reviewsSessionName">-</strong></p>
+            </div>
+            <button type="button" class="reviews-close-icon" id="reviewsCloseTopBtn" aria-label="Fermer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="reviews-grid">
+            <section class="reviews-card">
+                <div id="reviewsAverageValue" class="reviews-average">0.00</div>
+                <div id="reviewsAverageStars" class="reviews-stars">☆☆☆☆☆</div>
+                <div id="reviewsCountLabel" class="reviews-count">(0 avis)</div>
+
+                <h3 class="reviews-section-title">Notes recues</h3>
+                <div id="reviewsCommentsList" class="reviews-comments-list">
+                    <div class="reviews-empty">Aucune note pour cette seance.</div>
+                </div>
+            </section>
+
+            <section class="reviews-card">
+                <h3 class="reviews-section-title">Element of Evaluation</h3>
+                <div id="reviewsDistributionList" class="reviews-eval-list"></div>
+            </section>
+        </div>
+
+        <div class="reviews-actions">
+            <button type="button" class="reviews-close-btn" id="reviewsCloseBtn">Fermer</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-about">
+                <div class="footer-logo">FAHIM<span>NI</span></div>
+                <p class="footer-description">Excellence in Education</p>
+                <p class="footer-description">Connecting students with premium tutors for academic success.</p>
+            </div>
+            <div class="footer-links-section">
+                <h3 class="footer-heading">Platform</h3>
+                <ul class="footer-links">
+                    <li><a href="/tutor">Find Tutors</a></li>
+                    <li><a href="/articles">Articles</a></li>
+                    <li><a href="/calendar">Calendar</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-section">
+                <h3 class="footer-heading">Account</h3>
+                <ul class="footer-links">
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/register">Register</a></li>
+                    <li><a href="#">Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-section">
+                <h3 class="footer-heading">Support</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright"><p>&copy; 2026 FAHIMNI. All rights reserved.</p></div>
+    </div>
+</footer>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var prevMonthBtn = document.getElementById('prevMonth');
+    var nextMonthBtn = document.getElementById('nextMonth');
+    var currentMonthElement = document.getElementById('currentMonth');
+    var calendarDays = document.getElementById('calendarDays');
+    var currentDate = new Date();
+    var toastStack = document.createElement('div');
+    toastStack.className = 'calendar-toast-stack';
+    document.body.appendChild(toastStack);
+    var ratingModal = document.getElementById('ratingModal');
+    var ratingModalBackdrop = document.getElementById('ratingModalBackdrop');
+    var ratingForm = document.getElementById('ratingForm');
+    var ratingTutorIdInput = document.getElementById('ratingTutorIdInput');
+    var ratingTutorName = document.getElementById('ratingTutorName');
+    var ratingSessionName = document.getElementById('ratingSessionName');
+    var ratingNoteInput = document.getElementById('ratingNoteInput');
+    var ratingStars = document.getElementById('ratingStars');
+    var ratingStarButtons = ratingStars ? ratingStars.querySelectorAll('.rating-star') : [];
+    var ratingNotePreview = document.getElementById('ratingNotePreview');
+    var ratingCommentInput = document.getElementById('ratingCommentInput');
+    var ratingCancelBtn = document.getElementById('ratingCancelBtn');
+    var reviewsModal = document.getElementById('reviewsModal');
+    var reviewsModalBackdrop = document.getElementById('reviewsModalBackdrop');
+    var reviewsCloseBtn = document.getElementById('reviewsCloseBtn');
+    var reviewsCloseTopBtn = document.getElementById('reviewsCloseTopBtn');
+    var reviewsSessionName = document.getElementById('reviewsSessionName');
+    var reviewsAverageValue = document.getElementById('reviewsAverageValue');
+    var reviewsAverageStars = document.getElementById('reviewsAverageStars');
+    var reviewsCountLabel = document.getElementById('reviewsCountLabel');
+    var reviewsCommentsList = document.getElementById('reviewsCommentsList');
+    var reviewsDistributionList = document.getElementById('reviewsDistributionList');
+    var canMovePublishedSessions = {{ (is_granted('ROLE_TUTOR') or is_granted('ROLE_TUTEUR')) ? 'true' : 'false' }};
+    var canRateTutor = {{ is_granted('ROLE_ETUDIANT') ? 'true' : 'false' }};
+    var moveSeanceToken = '{{ csrf_token('calendar_move_seance') }}';
+    var moveSeanceUrlTemplate = '{{ path('app_calendar_move_seance', {id: 'SEANCE_ID'}) }}';
+    var rateTutorToken = '{{ csrf_token('calendar_rate_tutor') }}';
+    var rateTutorUrlTemplate = '{{ path('app_calendar_rate_tutor', {id: 'TUTOR_ID'}) }}';
+    var ratingHandlersBound = false;
+
+    function pad2(value) {
+        return String(value).padStart(2, '0');
+    }
+
+    function formatIsoDate(year, month, day) {
+        return year + '-' + pad2(month) + '-' + pad2(day);
+    }
+
+    function findMovableEntry(seanceId) {
+        for (var i = 0; i < calendarData.length; i++) {
+            if (Number(calendarData[i].seanceId || 0) === Number(seanceId) && (calendarData[i].kindKey || '') === 'session') {
+                return calendarData[i];
+            }
+        }
+        return null;
+    }
+
+    function findRatingContextForTutor(tutorId) {
+        var fallback = { note: '', commentaire: '' };
+
+        for (var i = 0; i < calendarData.length; i++) {
+            var entry = calendarData[i];
+            if (Number(entry.tutorId || 0) !== Number(tutorId)) {
+                continue;
+            }
+
+            if (entry.ratingNote !== null && entry.ratingNote !== undefined) {
+                return {
+                    note: String(entry.ratingNote),
+                    commentaire: entry.ratingComment || ''
+                };
+            }
+        }
+
+        return fallback;
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function parseApiResponse(response) {
+        return response.text().then(function(rawBody) {
+            var payload = {};
+            if (rawBody) {
+                try {
+                    payload = JSON.parse(rawBody);
+                } catch (e) {
+                    payload = { message: '' };
+                }
+            }
+
+            return { ok: response.ok, status: response.status, payload: payload };
+        });
+    }
+
+    function getRatingLabel(value) {
+        var numericValue = Number(value || 0);
+        if (numericValue <= 1) {
+            return 'A ameliorer';
+        }
+        if (numericValue === 2) {
+            return 'Moyen';
+        }
+        if (numericValue === 3) {
+            return 'Bien';
+        }
+        if (numericValue === 4) {
+            return 'Tres bien';
+        }
+        if (numericValue >= 5) {
+            return 'Excellent';
+        }
+
+        return '';
+    }
+
+    function setRatingPreviewText(value) {
+        if (!ratingNotePreview) {
+            return;
+        }
+
+        var numericValue = Number(value || 0);
+        if (numericValue >= 1 && numericValue <= 5) {
+            ratingNotePreview.textContent = numericValue + ' / 5 - ' + getRatingLabel(numericValue);
+            return;
+        }
+
+        ratingNotePreview.textContent = 'Selectionnez votre note en etoiles.';
+    }
+
+    function setRatingValue(value) {
+        var numericValue = Number(value || 0);
+        var isValidValue = numericValue >= 1 && numericValue <= 5;
+        var normalizedValue = isValidValue ? numericValue : 0;
+
+        if (ratingNoteInput) {
+            ratingNoteInput.value = normalizedValue > 0 ? String(normalizedValue) : '';
+        }
+
+        if (ratingStarButtons && ratingStarButtons.length) {
+            ratingStarButtons.forEach(function(starButton) {
+                var starValue = Number(starButton.getAttribute('data-value') || 0);
+                var isActive = normalizedValue > 0 && starValue <= normalizedValue;
+                starButton.classList.remove('is-preview');
+                starButton.classList.toggle('is-active', isActive);
+                starButton.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
+
+        setRatingPreviewText(normalizedValue);
+    }
+
+    function bindStarRatingHandlers() {
+        if (!ratingStarButtons || !ratingStarButtons.length) {
+            return;
+        }
+
+        function previewRatingValue(value) {
+            var numericValue = Number(value || 0);
+            var isValidValue = numericValue >= 1 && numericValue <= 5;
+            var normalizedValue = isValidValue ? numericValue : 0;
+
+            ratingStarButtons.forEach(function(starButton) {
+                var starValue = Number(starButton.getAttribute('data-value') || 0);
+                starButton.classList.toggle('is-preview', normalizedValue > 0 && starValue <= normalizedValue);
+            });
+            setRatingPreviewText(normalizedValue);
+        }
+
+        ratingStarButtons.forEach(function(starButton) {
+            starButton.addEventListener('mouseenter', function() {
+                var starValue = Number(starButton.getAttribute('data-value') || 0);
+                previewRatingValue(starValue);
+            });
+
+            starButton.addEventListener('focus', function() {
+                var starValue = Number(starButton.getAttribute('data-value') || 0);
+                previewRatingValue(starValue);
+            });
+
+            starButton.addEventListener('click', function() {
+                var starValue = Number(starButton.getAttribute('data-value') || 0);
+                setRatingValue(starValue);
+            });
+        });
+
+        if (ratingStars) {
+            ratingStars.addEventListener('mouseleave', function() {
+                setRatingValue(ratingNoteInput ? ratingNoteInput.value : '');
+            });
+
+            ratingStars.addEventListener('focusout', function(event) {
+                if (!ratingStars.contains(event.relatedTarget)) {
+                    setRatingValue(ratingNoteInput ? ratingNoteInput.value : '');
+                }
+            });
+        }
+    }
+
+    function openRatingModal(context) {
+        if (!ratingModal) {
+            return;
+        }
+
+        if (reviewsModal && !reviewsModal.hidden) {
+            closeReviewsModal();
+        }
+
+        ratingTutorIdInput.value = String(context.tutorId || '');
+        ratingTutorName.textContent = context.tutorName || '-';
+        ratingSessionName.textContent = context.sessionTitle || '-';
+        setRatingValue(context.note || '');
+        ratingCommentInput.value = context.commentaire || '';
+        ratingModal.hidden = false;
+    }
+
+    function closeRatingModal() {
+        if (!ratingModal) {
+            return;
+        }
+
+        ratingModal.hidden = true;
+        ratingTutorIdInput.value = '';
+        setRatingValue('');
+        ratingCommentInput.value = '';
+    }
+
+    function buildStarsString(value) {
+        var numericValue = Number(value || 0);
+        var rounded = Math.round(numericValue);
+        var stars = '';
+
+        for (var i = 1; i <= 5; i++) {
+            stars += i <= rounded ? '\u2605' : '\u2606';
+        }
+
+        return stars;
+    }
+
+    function formatReviewDate(dateIso) {
+        if (!dateIso) {
+            return '-';
+        }
+
+        var date = new Date(dateIso);
+        if (isNaN(date.getTime())) {
+            return '-';
+        }
+
+        return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function getDistributionClassByStars(stars) {
+        var numericStars = Number(stars || 0);
+        if (numericStars < 1 || numericStars > 5) {
+            return 'stars-3';
+        }
+
+        return 'stars-' + String(numericStars);
+    }
+
+    function buildEmptyReviewSummary() {
+        var distribution = [];
+        [5, 4, 3, 2, 1].forEach(function(stars) {
+            distribution.push({
+                stars: stars,
+                label: stars + ' etoiles',
+                count: 0,
+                percentage: 0
+            });
+        });
+
+        return {
+            count: 0,
+            average: null,
+            distribution: distribution,
+            comments: [],
+            reviews: []
+        };
+    }
+
+    function normalizeReviewSummary(summary) {
+        var fallback = buildEmptyReviewSummary();
+        if (!summary || typeof summary !== 'object') {
+            return fallback;
+        }
+
+        var count = Number(summary.count || 0);
+        var averageRaw = summary.average;
+        var average = averageRaw === null || averageRaw === undefined
+            ? null
+            : Number(averageRaw);
+
+        var distribution = Array.isArray(summary.distribution) ? summary.distribution : fallback.distribution;
+        var comments = Array.isArray(summary.comments) ? summary.comments : [];
+        var reviews = Array.isArray(summary.reviews) ? summary.reviews : [];
+
+        return {
+            count: isNaN(count) ? 0 : count,
+            average: average !== null && !isNaN(average) ? average : null,
+            distribution: distribution,
+            comments: comments,
+            reviews: reviews
+        };
+    }
+
+    function renderReviewsModal(summary) {
+        if (!reviewsAverageValue || !reviewsAverageStars || !reviewsCountLabel || !reviewsCommentsList || !reviewsDistributionList) {
+            return;
+        }
+
+        var averageValue = summary.average !== null ? summary.average : 0;
+        reviewsAverageValue.textContent = Number(averageValue).toFixed(2);
+        reviewsAverageStars.textContent = buildStarsString(averageValue);
+        reviewsCountLabel.textContent = '(' + String(summary.count || 0) + ' avis)';
+
+        reviewsCommentsList.innerHTML = '';
+        if (!summary.reviews || summary.reviews.length === 0) {
+            reviewsCommentsList.innerHTML = '<div class="reviews-empty">Aucune note pour cette seance.</div>';
+        } else {
+            summary.reviews.forEach(function(reviewItem) {
+                var studentName = escapeHtml(reviewItem.studentName || 'Etudiant');
+                var commentText = escapeHtml(reviewItem.commentaire || '');
+                var reviewedAt = formatReviewDate(reviewItem.reviewedAt || '');
+                var note = Number(reviewItem.note || 0);
+
+                var commentHtml = '<article class="reviews-comment">' +
+                    '<div class="reviews-comment-head">' +
+                        '<div>' +
+                            '<div class="reviews-comment-user">' + studentName + '</div>' +
+                            '<div class="reviews-comment-date">' + reviewedAt + '</div>' +
+                        '</div>' +
+                        '<div class="reviews-comment-rating">' + buildStarsString(note) + '</div>' +
+                    '</div>' +
+                    '<div class="reviews-comment-body">' + (commentText !== '' ? commentText : 'Aucun commentaire.') + '</div>' +
+                '</article>';
+
+                reviewsCommentsList.insertAdjacentHTML('beforeend', commentHtml);
+            });
+        }
+
+        reviewsDistributionList.innerHTML = '';
+        (summary.distribution || []).forEach(function(item) {
+            var stars = Number(item.stars || 0);
+            var label = escapeHtml(item.label || (stars + ' etoiles'));
+            var percentage = Number(item.percentage || 0);
+            var count = Number(item.count || 0);
+            var fillClass = getDistributionClassByStars(stars);
+            var safeWidth = Math.max(0, Math.min(100, percentage));
+
+            var distributionHtml = '<div class="reviews-eval-row">' +
+                '<div class="reviews-eval-head">' +
+                    '<span class="reviews-eval-label">' + label + '</span>' +
+                    '<span class="reviews-eval-percent">' + safeWidth + '%</span>' +
+                '</div>' +
+                '<div class="reviews-progress-track">' +
+                    '<div class="reviews-progress-fill ' + fillClass + '" style="width:' + safeWidth + '%;"></div>' +
+                '</div>' +
+                '<div class="reviews-eval-meta">' + count + ' avis</div>' +
+            '</div>';
+
+            reviewsDistributionList.insertAdjacentHTML('beforeend', distributionHtml);
+        });
+    }
+
+    function openReviewsModal(context) {
+        if (!reviewsModal) {
+            return;
+        }
+
+        if (ratingModal && !ratingModal.hidden) {
+            closeRatingModal();
+        }
+
+        var summary = normalizeReviewSummary(context && context.summary ? context.summary : null);
+        if (reviewsSessionName) {
+            reviewsSessionName.textContent = context && context.sessionTitle ? context.sessionTitle : '-';
+        }
+
+        renderReviewsModal(summary);
+        reviewsModal.hidden = false;
+    }
+
+    function closeReviewsModal() {
+        if (!reviewsModal) {
+            return;
+        }
+
+        reviewsModal.hidden = true;
+    }
+
+    function showToast(message, type) {
+        if (!message) {
+            return;
+        }
+
+        var toast = document.createElement('div');
+        toast.className = 'calendar-toast toast-' + (type || 'success');
+        toast.textContent = message;
+        toastStack.appendChild(toast);
+
+        requestAnimationFrame(function() {
+            toast.classList.add('is-visible');
+        });
+
+        window.setTimeout(function() {
+            toast.classList.remove('is-visible');
+            window.setTimeout(function() {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 220);
+        }, 2600);
+    }
+
+    function moveSeanceDate(seanceId, targetDate) {
+        var endpoint = moveSeanceUrlTemplate.replace('SEANCE_ID', String(seanceId));
+        return fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                date: targetDate,
+                _token: moveSeanceToken
+            })
+        }).then(parseApiResponse);
+    }
+
+    function saveTutorRating(tutorId, note, commentaire) {
+        var endpoint = rateTutorUrlTemplate.replace('TUTOR_ID', String(tutorId));
+        return fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                note: note,
+                commentaire: commentaire,
+                _token: rateTutorToken
+            })
+        }).then(parseApiResponse);
+    }
+
+    function openRatingModalFromEventNode(eventNode) {
+        var tutorId = Number(eventNode.getAttribute('data-tutor-id') || 0);
+        if (!tutorId) {
+            return false;
+        }
+
+        var sessionTitle = eventNode.getAttribute('data-event-title') || 'Seance';
+        var tutorName = eventNode.getAttribute('data-tutor-name') || 'Tuteur';
+        var ratingContext = findRatingContextForTutor(tutorId);
+
+        openRatingModal({
+            tutorId: tutorId,
+            tutorName: tutorName,
+            sessionTitle: sessionTitle,
+            note: ratingContext.note,
+            commentaire: ratingContext.commentaire
+        });
+
+        return true;
+    }
+
+    function openReviewsModalFromEventNode(eventNode) {
+        var seanceId = Number(eventNode.getAttribute('data-seance-id') || 0);
+        if (!seanceId) {
+            return false;
+        }
+
+        var sessionEntry = findMovableEntry(seanceId);
+        var sessionTitle = eventNode.getAttribute('data-event-title')
+            || (sessionEntry && sessionEntry.title ? sessionEntry.title : 'Seance');
+
+        openReviewsModal({
+            sessionTitle: sessionTitle,
+            summary: sessionEntry && sessionEntry.reviewSummary ? sessionEntry.reviewSummary : null
+        });
+
+        return true;
+    }
+
+    function parseEventDateTime(eventNode) {
+        var raw = eventNode.getAttribute('data-event-datetime') || '';
+        if (raw !== '') {
+            var directDate = new Date(raw);
+            if (!isNaN(directDate.getTime())) {
+                return directDate;
+            }
+        }
+
+        var datePart = eventNode.getAttribute('data-event-date') || '';
+        var timePart = eventNode.getAttribute('data-event-time') || '';
+        if (datePart === '') {
+            return null;
+        }
+
+        var normalizedTime = timePart !== '' ? timePart : '00:00';
+        var fallbackDate = new Date(datePart + 'T' + normalizedTime + ':00');
+        return isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+    }
+
+    function getRatingEligibilityMessage(eventNode) {
+        if (!canRateTutor) {
+            return { message: 'Seul un etudiant peut noter un tuteur.', type: 'error' };
+        }
+
+        var kindKey = String(eventNode.getAttribute('data-kind-key') || '');
+        if (kindKey !== 'reservation') {
+            return { message: 'La note est disponible uniquement pour une reservation.', type: 'info' };
+        }
+
+        var statusKey = String(eventNode.getAttribute('data-status-key') || '');
+        if (statusKey !== 'accepted' && statusKey !== 'paid') {
+            return { message: 'La reservation doit etre acceptee/payee avant la notation.', type: 'info' };
+        }
+
+        var eventDateTime = parseEventDateTime(eventNode);
+        if (eventDateTime instanceof Date && eventDateTime >= new Date()) {
+            return { message: 'La notation sera disponible apres la date de la seance.', type: 'info' };
+        }
+
+        return { message: 'Cette seance ne peut pas etre notee.', type: 'error' };
+    }
+
+    function bindDragAndDropHandlers() {
+        if (!canMovePublishedSessions) {
+            return;
+        }
+
+        var draggedMeta = null;
+        var dayNodes = calendarDays.querySelectorAll('.day[data-date]');
+        var draggableEvents = calendarDays.querySelectorAll('.day-event-draggable');
+
+        dayNodes.forEach(function(dayNode) {
+            dayNode.addEventListener('dragover', function(event) {
+                event.preventDefault();
+                if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = 'move';
+                }
+                dayNode.classList.add('day-drop-target');
+            });
+
+            dayNode.addEventListener('dragleave', function() {
+                dayNode.classList.remove('day-drop-target');
+            });
+
+            dayNode.addEventListener('drop', function(event) {
+                event.preventDefault();
+                dayNode.classList.remove('day-drop-target');
+
+                if (!draggedMeta || !draggedMeta.seanceId) {
+                    return;
+                }
+
+                var movedSeanceId = draggedMeta.seanceId;
+                var sourceDate = draggedMeta.sourceDate;
+                var targetDate = dayNode.getAttribute('data-date');
+                if (!targetDate || targetDate === sourceDate) {
+                    return;
+                }
+
+                var shouldNavigateToTargetMonth = dayNode.classList.contains('other-month');
+                moveSeanceDate(movedSeanceId, targetDate).then(function(result) {
+                    var payload = result && result.payload && typeof result.payload === 'object' ? result.payload : {};
+                    if (!result.ok) {
+                        showToast(payload.message || ('Impossible de deplacer la seance (HTTP ' + (result.status || '?') + ').'), 'error');
+                        return;
+                    }
+
+                    var entry = findMovableEntry(movedSeanceId);
+                    if (!entry) {
+                        return;
+                    }
+
+                    entry.date = payload.date || targetDate;
+                    if (payload.time) {
+                        entry.time = payload.time;
+                    }
+                    if (payload.dateTime) {
+                        entry.dateTime = payload.dateTime;
+                    }
+
+                    if (shouldNavigateToTargetMonth) {
+                        var targetDateObj = new Date((payload.date || targetDate) + 'T00:00:00');
+                        if (!isNaN(targetDateObj.getTime())) {
+                            currentDate = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), 1);
+                        }
+                    }
+
+                    updateCalendar();
+                    showToast('Seance deplacee avec succes.', 'success');
+                }).catch(function(error) {
+                    console.error(error);
+                    showToast('Erreur pendant le deplacement de la seance.', 'error');
+                });
+            });
+        });
+
+        draggableEvents.forEach(function(eventNode) {
+            eventNode.addEventListener('dragstart', function(event) {
+                draggedMeta = {
+                    seanceId: eventNode.getAttribute('data-seance-id'),
+                    sourceDate: eventNode.getAttribute('data-source-date')
+                };
+                if (event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', String(draggedMeta.seanceId || ''));
+                }
+            });
+
+            eventNode.addEventListener('dragend', function() {
+                draggedMeta = null;
+                dayNodes.forEach(function(dayNode) { dayNode.classList.remove('day-drop-target'); });
+            });
+        });
+    }
+
+    function bindRatingHandlers() {
+        if (ratingHandlersBound || !ratingModal) {
+            return;
+        }
+
+        ratingHandlersBound = true;
+
+        calendarDays.addEventListener('dblclick', function(event) {
+            var eventNode = event.target instanceof Element
+                ? event.target.closest('.day-event')
+                : null;
+
+            if (!eventNode || !calendarDays.contains(eventNode)) {
+                return;
+            }
+
+            if (eventNode.classList.contains('day-event-rateable')) {
+                if (!openRatingModalFromEventNode(eventNode)) {
+                    showToast('Impossible d\'ouvrir la fiche de notation.', 'error');
+                }
+                return;
+            }
+
+            var kindKey = String(eventNode.getAttribute('data-kind-key') || '');
+            if (canMovePublishedSessions && kindKey === 'session') {
+                if (!openReviewsModalFromEventNode(eventNode)) {
+                    showToast('Impossible d\'ouvrir les notes de cette seance.', 'error');
+                }
+                return;
+            }
+
+            if (canMovePublishedSessions) {
+                showToast('Double-clic sur une seance publiee pour voir les notes recues.', 'info');
+                return;
+            }
+
+            var eligibility = getRatingEligibilityMessage(eventNode);
+            showToast(eligibility.message, eligibility.type);
+        });
+
+        var hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+        if (hasCoarsePointer) {
+            calendarDays.addEventListener('click', function(event) {
+                var eventNode = event.target instanceof Element
+                    ? event.target.closest('.day-event-rateable, .day-event-draggable')
+                    : null;
+
+                if (!eventNode || !calendarDays.contains(eventNode)) {
+                    return;
+                }
+
+                if (eventNode.classList.contains('day-event-rateable')) {
+                    if (!openRatingModalFromEventNode(eventNode)) {
+                        showToast('Impossible d\'ouvrir la fiche de notation.', 'error');
+                    }
+                    return;
+                }
+
+                var kindKey = String(eventNode.getAttribute('data-kind-key') || '');
+                if (canMovePublishedSessions && kindKey === 'session') {
+                    if (!openReviewsModalFromEventNode(eventNode)) {
+                        showToast('Impossible d\'ouvrir les notes de cette seance.', 'error');
+                    }
+                    return;
+                }
+
+                if (canMovePublishedSessions) {
+                    showToast('Touchez une seance publiee pour voir les notes recues.', 'info');
+                    return;
+                }
+
+                if (!openRatingModalFromEventNode(eventNode)) {
+                    showToast('Impossible d\'ouvrir la fiche de notation.', 'error');
+                }
+            });
+        }
+    }
+
+    var calendarData = {{ calendarEvents|default([])|json_encode|raw }};
+
+    function updateCalendar() {
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        currentMonthElement.textContent = monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+        calendarDays.innerHTML = '';
+
+        var firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        var lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        var totalDays = lastDay.getDate();
+        var startingDay = firstDay.getDay();
+        var prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+
+        for (var i = startingDay - 1; i >= 0; i--) {
+            var prevDay = document.createElement('div');
+            prevDay.className = 'day other-month';
+            var prevDayNumber = prevMonthLastDay - i;
+            var prevDayDateObj = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, prevDayNumber);
+            prevDay.setAttribute('data-date', formatIsoDate(prevDayDateObj.getFullYear(), prevDayDateObj.getMonth() + 1, prevDayDateObj.getDate()));
+            prevDay.innerHTML = '<div class="day-number">' + prevDayNumber + '</div>';
+            calendarDays.appendChild(prevDay);
+        }
+
+        var today = new Date();
+        var isCurrentMonth = today.getMonth() === currentDate.getMonth() && today.getFullYear() === currentDate.getFullYear();
+        var events = {};
+
+        calendarData.forEach(function(entry) {
+            var key = entry.date;
+            if (!events[key]) {
+                events[key] = [];
+            }
+            events[key].push({
+                seanceId: entry.seanceId || null,
+                title: entry.title,
+                time: entry.time,
+                status: entry.status || '',
+                statusKey: entry.statusKey || 'planned',
+                kindLabel: entry.kindLabel || '',
+                kindKey: entry.kindKey || '',
+                canMove: !!entry.canMove,
+                tutorId: entry.tutorId || null,
+                tutorName: entry.tutorName || '',
+                canRate: !!entry.canRate,
+                ratingNote: entry.ratingNote,
+                ratingComment: entry.ratingComment || '',
+                reviewSummary: entry.reviewSummary || null,
+                dateTime: entry.dateTime || ''
+            });
+        });
+
+        for (var day = 1; day <= totalDays; day++) {
+            var dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            var dayIso = formatIsoDate(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
+            dayElement.setAttribute('data-date', dayIso);
+            if (isCurrentMonth && day === today.getDate()) {
+                dayElement.classList.add('today');
+            }
+
+            var dayEventsHTML = '';
+            var dayKey = dayIso;
+            if (events[dayKey]) {
+                var hasAccepted = false;
+                dayElement.classList.add('has-event');
+
+                events[dayKey].forEach(function(event) {
+                    var statusKey = event.statusKey || 'planned';
+                    if (statusKey === 'accepted' || statusKey === 'paid') {
+                        hasAccepted = true;
+                    }
+
+                    var draggableClass = event.canMove ? ' day-event-draggable' : '';
+                    var rateableClass = event.canRate ? ' day-event-rateable' : '';
+                    var draggableAttributes = event.canMove
+                        ? ' draggable="true" data-seance-id="' + event.seanceId + '" data-source-date="' + dayIso + '"'
+                        : '';
+                    var rateableAttributes = event.canRate
+                        ? ' data-tutor-id="' + String(event.tutorId || '') + '"' +
+                          ' data-tutor-name="' + escapeHtml(event.tutorName || 'Tuteur') + '"'
+                        : '';
+                    var hintHtml = '';
+                    if (event.canRate) {
+                        hintHtml = '<div class="day-event-hint">Double-clic pour noter</div>';
+                    } else if (canMovePublishedSessions && (event.kindKey || '') === 'session') {
+                        hintHtml = '<div class="day-event-hint">Double-clic pour voir les avis</div>';
+                    }
+                    var safeTitle = escapeHtml(event.title || '');
+                    var safeTime = escapeHtml(event.time || '');
+                    var safeKind = escapeHtml(event.kindLabel || '');
+                    var safeStatus = escapeHtml(event.status || '');
+                    var safeDateTime = escapeHtml(event.dateTime || '');
+                    var commonAttributes = ' data-kind-key="' + escapeHtml(event.kindKey || '') + '"' +
+                        ' data-status-key="' + escapeHtml(statusKey) + '"' +
+                        ' data-event-title="' + safeTitle + '"' +
+                        ' data-event-date="' + dayIso + '"' +
+                        ' data-event-time="' + safeTime + '"' +
+                        ' data-event-datetime="' + safeDateTime + '"';
+
+                    dayEventsHTML += '<div class="day-event day-event-' + statusKey + draggableClass + rateableClass + '"' + commonAttributes + draggableAttributes + rateableAttributes + '>' +
+                        '<div class="day-event-title">' + safeTitle + '</div>' +
+                        '<div class="day-event-time">' + safeTime + '</div>' +
+                        '<div class="day-event-kind">' + safeKind + '</div>' +
+                        '<div class="day-event-status ' + statusKey + '">' + safeStatus + '</div>' +
+                        hintHtml +
+                    '</div>';
+                });
+
+                if (hasAccepted) {
+                    dayElement.classList.add('has-accepted-event');
+                }
+            }
+
+            dayElement.innerHTML = '<div class="day-number">' + day + '</div>' + dayEventsHTML;
+            calendarDays.appendChild(dayElement);
+        }
+
+        var totalCells = 42;
+        var daysSoFar = startingDay + totalDays;
+        var nextMonthDays = totalCells - daysSoFar;
+
+        for (var nextDay = 1; nextDay <= nextMonthDays; nextDay++) {
+            var nextMonthDay = document.createElement('div');
+            nextMonthDay.className = 'day other-month';
+            var nextDayDateObj = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, nextDay);
+            nextMonthDay.setAttribute('data-date', formatIsoDate(nextDayDateObj.getFullYear(), nextDayDateObj.getMonth() + 1, nextDayDateObj.getDate()));
+            nextMonthDay.innerHTML = '<div class="day-number">' + nextDay + '</div>';
+            calendarDays.appendChild(nextMonthDay);
+        }
+
+        bindDragAndDropHandlers();
+        bindRatingHandlers();
+    }
+
+    prevMonthBtn.addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateCalendar();
+    });
+
+    nextMonthBtn.addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateCalendar();
+    });
+
+    document.querySelectorAll('.view-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+        });
+    });
+
+    if (ratingModalBackdrop) {
+        ratingModalBackdrop.addEventListener('click', closeRatingModal);
+    }
+
+    if (ratingCancelBtn) {
+        ratingCancelBtn.addEventListener('click', closeRatingModal);
+    }
+
+    if (reviewsModalBackdrop) {
+        reviewsModalBackdrop.addEventListener('click', closeReviewsModal);
+    }
+
+    if (reviewsCloseBtn) {
+        reviewsCloseBtn.addEventListener('click', closeReviewsModal);
+    }
+
+    if (reviewsCloseTopBtn) {
+        reviewsCloseTopBtn.addEventListener('click', closeReviewsModal);
+    }
+
+    if (ratingForm) {
+        ratingForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var tutorId = Number(ratingTutorIdInput.value || 0);
+            var note = Number(ratingNoteInput.value || 0);
+            var commentaire = (ratingCommentInput.value || '').trim();
+
+            if (!tutorId || note < 1 || note > 5) {
+                showToast('Veuillez selectionner une note en etoiles (1 a 5).', 'error');
+                return;
+            }
+
+            saveTutorRating(tutorId, note, commentaire).then(function(result) {
+                var payload = result && result.payload && typeof result.payload === 'object' ? result.payload : {};
+
+                if (!result.ok) {
+                    showToast(payload.message || ('Impossible d\'enregistrer la note (HTTP ' + (result.status || '?') + ').'), 'error');
+                    return;
+                }
+
+                for (var i = 0; i < calendarData.length; i++) {
+                    if (Number(calendarData[i].tutorId || 0) === tutorId) {
+                        calendarData[i].ratingNote = payload.note || note;
+                        calendarData[i].ratingComment = payload.commentaire || commentaire;
+                    }
+                }
+
+                closeRatingModal();
+                showToast(payload.message || 'Note envoyee au tuteur avec succes.', 'success');
+                updateCalendar();
+            }).catch(function(error) {
+                console.error(error);
+                showToast('Erreur pendant l\'enregistrement de la note.', 'error');
+            });
+        });
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        if (ratingModal && !ratingModal.hidden) {
+            closeRatingModal();
+        }
+
+        if (reviewsModal && !reviewsModal.hidden) {
+            closeReviewsModal();
+        }
+    });
+
+    bindStarRatingHandlers();
+    setRatingValue('');
+    updateCalendar();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject_line|default('Notification Fahimni') }}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f2f6ff;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #1f2d44;
+        }
+
+        .mail-wrapper {
+            width: 100%;
+            padding: 24px 0;
+        }
+
+        .mail-card {
+            max-width: 620px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #dce6f5;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 26px rgba(16, 42, 80, 0.10);
+        }
+
+        .mail-header {
+            padding: 22px 24px;
+            background: linear-gradient(135deg, #4361ee, #355fd7);
+            color: #ffffff;
+        }
+
+        .mail-brand {
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin: 0 0 8px;
+            font-weight: 700;
+        }
+
+        .mail-title {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 800;
+        }
+
+        .mail-subtitle {
+            margin: 8px 0 0;
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.92;
+        }
+
+        .mail-body {
+            padding: 20px 24px;
+        }
+
+        .mail-chip {
+            display: inline-block;
+            margin: 0 0 12px;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .mail-chip--info {
+            background: #e8efff;
+            color: #2a4da1;
+        }
+
+        .mail-chip--success {
+            background: #e7f8ef;
+            color: #1d7f4f;
+        }
+
+        .mail-chip--warning {
+            background: #fff5e6;
+            color: #9b5f00;
+        }
+
+        .mail-paragraph {
+            margin: 0 0 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #334766;
+        }
+
+        .mail-details {
+            margin: 16px 0 18px;
+            border: 1px solid #dce6f5;
+            border-radius: 12px;
+            background: #f7faff;
+            overflow: hidden;
+        }
+
+        .mail-details-row {
+            display: block;
+            border-top: 1px solid #e5edf9;
+            padding: 10px 12px;
+        }
+
+        .mail-details-row:first-child {
+            border-top: none;
+        }
+
+        .mail-details-label {
+            display: block;
+            font-size: 12px;
+            color: #6a7f9d;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 3px;
+            font-weight: 700;
+        }
+
+        .mail-details-value {
+            display: block;
+            font-size: 15px;
+            color: #223652;
+            font-weight: 700;
+        }
+
+        .mail-note {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #4f627e;
+        }
+
+        .mail-list {
+            margin: 0 0 14px;
+            padding: 0 0 0 18px;
+            color: #334766;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .mail-list li {
+            margin: 0 0 6px;
+        }
+
+        .mail-footer {
+            border-top: 1px solid #e6edf8;
+            padding: 14px 24px 18px;
+            font-size: 12px;
+            color: #7083a1;
+        }
+
+        .mail-hidden-preheader {
+            display: none !important;
+            max-height: 0;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            mso-hide: all;
+        }
+
+        @media (max-width: 640px) {
+            .mail-wrapper {
+                padding: 12px;
+            }
+
+            .mail-header,
+            .mail-body,
+            .mail-footer {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <span class="mail-hidden-preheader">{{ preheader_text|default('Notification relative a votre reservation Fahimni') }}</span>
+
+    <div class="mail-wrapper">
+        <div class="mail-card">
+            <div class="mail-header">
+                <p class="mail-brand">Fahimni</p>
+                <h1 class="mail-title">{{ title|default('Notification de reservation') }}</h1>
+                <p class="mail-subtitle">
+                    {{ subtitle|default('Suivi de votre demande de seance avec votre tuteur.') }}
+                </p>
+            </div>
+
+            <div class="mail-body">
+                <span class="mail-chip mail-chip--{{ status_tone|default('info') }}">
+                    {{ status_label|default('Information') }}
+                </span>
+
+                <p class="mail-paragraph">Bonjour {{ etudiantName }},</p>
+                {% block intro %}{% endblock %}
+
+                <div class="mail-details">
+                    {% if reservation.id is not null %}
+                        <span class="mail-details-row">
+                            <span class="mail-details-label">Reference</span>
+                            <span class="mail-details-value">#{{ reservation.id }}</span>
+                        </span>
+                    {% endif %}
+                    <span class="mail-details-row">
+                        <span class="mail-details-label">Matiere</span>
+                        <span class="mail-details-value">{{ matiere }}</span>
+                    </span>
+                    <span class="mail-details-row">
+                        <span class="mail-details-label">Date</span>
+                        <span class="mail-details-value">{{ seanceDate }}</span>
+                    </span>
+                    <span class="mail-details-row">
+                        <span class="mail-details-label">Heure</span>
+                        <span class="mail-details-value">{{ seanceTime }}</span>
+                    </span>
+                    <span class="mail-details-row">
+                        <span class="mail-details-label">Tuteur</span>
+                        <span class="mail-details-value">{{ tuteurName }}</span>
+                    </span>
+                </div>
+
+                {% block actions %}{% endblock %}
+                {% block outro %}{% endblock %}
+            </div>
+
+            <div class="mail-footer">
+                Cet email est envoye automatiquement par Fahimni. Pour toute question, contactez notre support: {{ supportEmail }}.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

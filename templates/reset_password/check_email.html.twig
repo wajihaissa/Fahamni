@@ -1,0 +1,56 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Check Your Email - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Check Your Email</h1>
+                    <p>We've sent you a password reset link</p>
+                </div>
+
+                <div class="auth-form" style="text-align: center;">
+                    <div style="background: #d1fae5; color: #065f46; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #a7f3d0;">
+                        <i class="fas fa-envelope" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                        <p style="margin: 0; font-size: 16px; line-height: 1.6;">
+                            If an account matching your email exists, then an email was just sent that contains a link that you can use to reset your password.
+                            This link will expire in {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
+                        </p>
+                    </div>
+
+                    <p style="color: var(--text-light); margin-bottom: 30px;">
+                        If you don't receive an email please check your spam folder or <a href="{{ path('app_forgot_password_request') }}" style="color: var(--primary-color);">try again</a>.
+                    </p>
+
+                    <div class="auth-footer">
+                        <p><a href="{{ path('app_login') }}" class="btn btn-primary">Back to Login</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Email Sent</h2>
+                    <p>The password reset link has been sent to your email address. Please check your inbox and click the link to reset your password.</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Check Your Inbox</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Check Spam Folder</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Link Expires Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+

@@ -1,0 +1,217 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}FAHIMNI - Excellence in Education{% endblock %}
+
+{% block current_page %}home{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        /* Styles spécifiques à la page d’accueil (variables et navbar dans app.css) */
+        .hero {
+            padding: 160px 0 100px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            text-align: center;
+            border-radius: 0 0 40px 40px;
+        }
+        .hero h1 { font-size: 48px; margin-bottom: 20px; line-height: 1.2; }
+        .hero p { font-size: 20px; max-width: 700px; margin: 0 auto 40px; opacity: 0.9; }
+        .hero-buttons { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+        .stats { display: flex; justify-content: center; gap: 60px; margin-top: 80px; flex-wrap: wrap; }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 42px; font-weight: 700; margin-bottom: 5px; }
+        .stat-label { font-size: 18px; opacity: 0.9; }
+
+        .features { padding: 100px 0; }
+        .section-title { text-align: center; font-size: 36px; margin-bottom: 20px; color: var(--text-color); }
+        .section-subtitle { text-align: center; font-size: 18px; color: var(--text-light); max-width: 700px; margin: 0 auto 60px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .feature-card {
+            background-color: var(--card-bg); border-radius: 20px; padding: 30px;
+            box-shadow: var(--shadow); transition: transform 0.3s ease; border: 1px solid var(--border-color);
+        }
+        .feature-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-hover); }
+        .feature-icon { font-size: 40px; color: var(--primary-color); margin-bottom: 20px; }
+        .feature-title { font-size: 22px; margin-bottom: 15px; color: var(--text-color); }
+        .feature-description { color: var(--text-light); line-height: 1.7; }
+
+        .testimonials { padding: 100px 0; background-color: var(--bg-secondary); border-radius: 40px; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
+        .testimonial-card {
+            background-color: var(--card-bg); border-radius: 20px; padding: 30px;
+            box-shadow: var(--shadow); border: 1px solid var(--border-color);
+        }
+        .testimonial-text { font-style: italic; color: var(--text-light); margin-bottom: 25px; line-height: 1.8; }
+        .testimonial-author { font-weight: 700; color: var(--text-color); margin-bottom: 5px; }
+        .testimonial-role { color: var(--primary-color); font-size: 14px; }
+
+        .cta { padding: 100px 0; text-align: center; }
+        .cta h2 { font-size: 36px; margin-bottom: 20px; color: var(--text-color); }
+        .cta p { font-size: 18px; color: var(--text-light); max-width: 700px; margin: 0 auto 40px; }
+        .cta-buttons { display: flex; gap: 20px; justify-content: center; }
+
+        @media (max-width: 992px) { .hero h1 { font-size: 40px; } .stats { gap: 40px; } }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 34px; } .hero p { font-size: 18px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .stats { gap: 30px; } .stat-number { font-size: 36px; }
+            .section-title { font-size: 30px; }
+            .cta h2 { font-size: 30px; } .cta-buttons { flex-direction: column; align-items: center; }
+        }
+        @media (max-width: 576px) {
+            .hero { padding: 140px 0 80px; } .hero h1 { font-size: 28px; }
+            .stat-number { font-size: 32px; } .section-title { font-size: 26px; }
+            .feature-card, .testimonial-card { padding: 25px; }
+        }
+        @media (max-width: 480px) {
+            .hero { padding: 120px 0 60px; } .hero h1 { font-size: 24px; }
+            .hero p { font-size: 16px; } .hero-buttons { gap: 12px; }
+            .hero-buttons .btn { min-height: 48px; padding: 14px 24px; width: 100%; max-width: 280px; }
+            .stats { gap: 24px; margin-top: 50px; } .stat-number { font-size: 28px; }
+            .stat-label { font-size: 16px; }
+            .features, .testimonials, .cta { padding: 60px 0; }
+            .section-title { font-size: 22px; } .section-subtitle { font-size: 16px; }
+            .features-grid, .testimonial-grid { gap: 20px; }
+            .feature-card, .testimonial-card { padding: 20px; }
+            .feature-title { font-size: 18px; } .cta h2 { font-size: 24px; }
+            .cta p { font-size: 16px; } .cta-buttons { flex-direction: column; gap: 12px; }
+            .cta-buttons .btn { width: 100%; max-width: 280px; min-height: 48px; }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    
+
+    <section class="hero">
+        <div class="container">
+            <h1>Excellence in Education</h1>
+            <p>Connect with premium tutors and unlock your academic potential on FAHIMNI</p>
+            <div class="hero-buttons">
+                <a href="#" class="btn btn-primary">Start Learning</a>
+                <a href="#" class="btn btn-secondary">Find Tutors</a>
+            </div>
+            <div class="stats">
+                <div class="stat-item"><div class="stat-number">1000+</div><div class="stat-label">Expert Tutors</div></div>
+                <div class="stat-item"><div class="stat-number">50+</div><div class="stat-label">Subjects</div></div>
+                <div class="stat-item"><div class="stat-number">95%</div><div class="stat-label">Success Rate</div></div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose FAHIMNI?</h2>
+            <p class="section-subtitle">Experience premium educational services designed for academic excellence</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-user-graduate"></i></div>
+                    <h3 class="feature-title">Expert Tutors</h3>
+                    <p class="feature-description">Connect with verified tutors who are passionate about education and committed to your success.</p>
+                </div>
+                
+   
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3 class="feature-title">Personalized Learning</h3>
+                    <p class="feature-description">Tailored learning experiences that adapt to your unique learning style and academic goals.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-laptop-code"></i></div>
+                    <h3 class="feature-title">Interactive Platform</h3>
+                    <p class="feature-description">Engage in real-time discussions, share resources, and collaborate on academic projects.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3 class="feature-title">Progress Tracking</h3>
+                    <p class="feature-description">Monitor your academic progress with detailed analytics and personalized feedback.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <h3 class="feature-title">Flexible Scheduling</h3>
+                    <p class="feature-description">Book sessions that fit your schedule with our intelligent calendar system.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-trophy"></i></div>
+                    <h3 class="feature-title">Proven Results</h3>
+                    <p class="feature-description">Join thousands of students who have achieved academic excellence through FAHIMNI.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Success Stories</h2>
+            <p class="section-subtitle">Hear from our community of successful learners</p>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The flexibility and quality of education on FAHIMNI is unmatched. I improved my grades significantly within just one semester."</p>
+                    <div class="testimonial-author">Mohamed Hassan</div>
+                    <div class="testimonial-role">Medical Student</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The tutors on FAHIMNI are exceptional. They helped me understand complex concepts that I struggled with for years."</p>
+                    <div class="testimonial-author">Sarah Johnson</div>
+                    <div class="testimonial-role">Engineering Student</div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"I went from failing my math class to getting an A+ thanks to my tutor on FAHIMNI. The personalized approach made all the difference."</p>
+                    <div class="testimonial-author">David Chen</div>
+                    <div class="testimonial-role">High School Student</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Begin Your Journey?</h2>
+            <p>Join thousands of students and tutors who trust FAHIMNI for academic excellence.</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary">Get Started Today</a>
+                <a href="#" class="btn btn-secondary">Explore Resources</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block footer %}
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">FAHIM<span>NI</span></div>
+                    <p class="footer-description">Excellence in Education</p>
+                    <p class="footer-description">Connecting students with premium tutors for academic success.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Platform</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Find Tutors</a></li>
+                        <li><a href="#">Articles</a></li>
+                        <li><a href="#">Calendar</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Account</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Login</a></li>
+                        <li><a href="#">Register</a></li>
+                        <li><a href="#">Profile</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links-section">
+                    <h3 class="footer-heading">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright"><p>&copy; 2026 FAHIMNI. All rights reserved.</p></div>
+        </div>
+    </footer>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Quiz Leaderboard - FAHIMNI{% endblock %}
+
+{% block content %}
+<style>
+    .leaderboard-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .leaderboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+
+    .leaderboard-header h1 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 32px;
+    }
+
+    .leaderboard-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .leaderboard-link {
+        text-decoration: none;
+        background: var(--primary-color);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .leaderboard-card {
+        background: var(--card-bg);
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 18px;
+        overflow-x: auto;
+    }
+
+    body.dark-theme .leaderboard-card {
+        border-color: #333;
+    }
+
+    .leaderboard-filters {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .leaderboard-filters select,
+    .leaderboard-filters input {
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+
+    .leaderboard-filters button {
+        border: none;
+        border-radius: 10px;
+        padding: 8px 12px;
+        background: var(--primary-color);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .leaderboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 780px;
+    }
+
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        color: var(--text-primary);
+    }
+
+    body.dark-theme .leaderboard-table th,
+    body.dark-theme .leaderboard-table td {
+        border-color: #333;
+    }
+
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 30px 10px;
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+        .leaderboard-header h1 {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="leaderboard-container">
+    <div class="leaderboard-header">
+        <h1>Quiz Leaderboard</h1>
+        <div class="leaderboard-actions">
+            <a class="leaderboard-link" href="{{ path('app_quiz_list') }}">Back to quizzes</a>
+        </div>
+    </div>
+
+    <div class="leaderboard-card">
+        <form method="get" class="leaderboard-filters">
+            <select name="quizId">
+                <option value="">All quizzes</option>
+                {% for quiz in quizzes %}
+                    <option value="{{ quiz.id }}" {% if selectedQuizId == quiz.id %}selected{% endif %}>
+                        {{ quiz.titre }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <input
+                type="number"
+                name="limit"
+                min="1"
+                max="100"
+                value="{{ limit }}"
+                placeholder="Limit"
+            />
+
+            <button type="submit">Apply</button>
+        </form>
+
+        {% if entries is not empty %}
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Student</th>
+                        <th>Total Score</th>
+                        <th>Average %</th>
+                        <th>Attempts</th>
+                        <th>Passed</th>
+                        <th>Last Completion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                        <tr>
+                            <td>
+                                <span class="rank-badge">
+                                    {% if loop.index == 1 %}🥇{% elseif loop.index == 2 %}🥈{% elseif loop.index == 3 %}🥉{% endif %}
+                                    #{{ loop.index }}
+                                </span>
+                            </td>
+                            <td>{{ entry.fullName }}</td>
+                            <td>{{ entry.totalScore }}</td>
+                            <td>{{ entry.averagePercentage|number_format(2, '.', ',') }}%</td>
+                            <td>{{ entry.attempts }}</td>
+                            <td>{{ entry.passedCount }}</td>
+                            <td>
+                                {% if entry.lastCompletedAt %}
+                                    {{ entry.lastCompletedAt|date('Y-m-d H:i') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                No results yet for this filter.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

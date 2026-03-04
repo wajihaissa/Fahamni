@@ -1,0 +1,96 @@
+{# Thread Item Modernisé - Un élément de la liste des conversations avec avatar #}
+{% set other = conv.participants|filter(p => p.id != actor.id)|first %}
+{% set lastMsg = conv.messages|filter(m => m.deletedAt is null)|last %}
+{% set is_active = current_conversation and current_conversation.id == conv.id %}
+
+<div class="thread-item{{ is_active ? ' active' : '' }}" data-conv-id="{{ conv.id }}">
+    <a href="{{ path('app_messenger_show', { id: conv.id }) }}" class="thread-item-link">
+        {# Avatar avec badge de statut en ligne #}
+        <div class="thread-avatar-wrap">
+            <div class="thread-avatar">
+                {# Si vous avez des images d'avatar, utilisez : <img src="{{ other.avatarUrl }}" alt=""> #}
+                {{ conv.title ? (conv.title|slice(0,2)|upper) : (other ? (other.FullName|slice(0,2)|upper) : '?') }}
+            </div>
+            {# Badge de statut - affiché si l'utilisateur a Status = true (User.status) #}
+            {% if other and other.isStatus %}
+                <div class="thread-status-badge" title="En ligne"></div>
+            {% endif %}
+        </div>
+        
+        {# Contenu du thread #}
+        <div class="thread-content">
+            <div class="thread-header">
+                <div style="flex: 1; min-width: 0;">
+                    <div class="thread-user">
+                        {{ conv.title ?? (other ? other.FullName : 'Conversation') }}
+                        {% if conv.isArchived %}
+                            <i class="fas fa-archive thread-archived-icon" title="Archivée" aria-label="Archivée"></i>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="thread-time">
+                    {% if conv.lastMessageAt %}
+                        {{ conv.lastMessageAt|date('H:i') }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="thread-preview-row">
+                <div class="thread-preview">
+                    {% if lastMsg %}
+                        {% if lastMsg.sender.id == actor.id %}
+                            <strong>Vous :</strong> 
+                        {% endif %}
+                        {{ lastMsg.content|slice(0, 50) }}{{ lastMsg.content|length > 50 ? '…' : '' }}
+                    {% else %}
+                        Aucun message
+                    {% endif %}
+                </div>
+                {# Badge de messages non lus - exemple : vous devez implémenter la logique côté serveur #}
+                {# {% if conv.unreadCount > 0 %}
+                    <span class="unread-count">{{ conv.unreadCount }}</span>
+                {% endif %} #}
+            </div>
+        </div>
+    </a>
+    
+    {# Menu kebab #}
+    <div class="thread-kebab-wrap">
+        <button type="button" class="message-action-btn thread-kebab-btn" title="Menu" aria-haspopup="true">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="thread-kebab-dropdown">
+            <form method="post" action="{{ path('app_messenger_mark_conversation_read', { id: conv.id }) }}" class="d-inline" style="display:block !important;">
+                <input type="hidden" name="_token" value="{{ csrf_token('mark_read_' ~ conv.id) }}">
+                <button type="submit" class="dropdown-item" style="width:100%;">
+                    <i class="fas fa-check-double" style="margin-right:8px;width:16px;"></i>Marquer comme lu
+                </button>
+            </form>
+            
+            {% if conv.isArchived %}
+                <form method="post" action="{{ path('app_messenger_unarchive_conversation', { id: conv.id }) }}" class="d-inline" style="display:block !important;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('unarchive_' ~ conv.id) }}">
+                    <button type="submit" class="dropdown-item" style="width:100%;">
+                        <i class="fas fa-inbox" style="margin-right:8px;width:16px;"></i>Désarchiver
+                    </button>
+                </form>
+            {% else %}
+                <form method="post" action="{{ path('app_messenger_archive_conversation', { id: conv.id }) }}" class="d-inline" style="display:block !important;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('archive_' ~ conv.id) }}">
+                    <button type="submit" class="dropdown-item" style="width:100%;">
+                        <i class="fas fa-archive" style="margin-right:8px;width:16px;"></i>Archiver
+                    </button>
+                </form>
+            {% endif %}
+            
+            <form method="post" action="{{ path('app_messenger_delete_conversation', { id: conv.id }) }}" onsubmit="return confirm('Supprimer cette conversation ?');" class="d-inline" style="display:block !important;">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_conv_' ~ conv.id) }}">
+                <button type="submit" class="dropdown-item danger" style="width:100%;">
+                    <i class="fas fa-trash-alt" style="margin-right:8px;width:16px;"></i>Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

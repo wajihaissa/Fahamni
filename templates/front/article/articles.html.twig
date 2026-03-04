@@ -1,0 +1,2156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles - FAHIMNI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables Globales */
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #eef0ff;
+            --secondary-color: #7209b7;
+            --accent-color: #f72585;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-color: #1a1a2e;
+            --text-light: #64748b;
+            --bg-color: #ffffff;
+            --bg-secondary: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --header-bg: rgba(255, 255, 255, 0.97);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 12px 32px rgba(67, 97, 238, 0.15);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark-theme {
+            --primary-color: #6d83f2;
+            --primary-dark: #4361ee;
+            --primary-light: #1e2040;
+            --secondary-color: #9d4edd;
+            --accent-color: #f72585;
+            --text-color: #e8eaf6;
+            --text-light: #94a3b8;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --header-bg: rgba(15, 23, 42, 0.97);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 12px 32px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .flash-msg {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            animation: slideInRight 0.4s ease, fadeOutFlash 0.4s ease 3s forwards;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .flash-msg.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .flash-msg.error   { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .flash-msg.warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOutFlash {
+            to { transform: translateX(100px); opacity: 0; }
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navbar Styles */
+        header {
+            background-color: var(--header-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 1px 0 var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            /* inherits gradient from parent */
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 4px;
+        }
+
+        nav a {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-light);
+            position: relative;
+            padding: 6px 14px;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+
+        nav a.active {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        nav a:hover {
+            color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            font-size: 16px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 8px;
+            padding: 8px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 2px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Articles Main Content */
+        .articles-main {
+            padding: 70px 0 0;
+            min-height: 100vh;
+            background-color: var(--bg-secondary);
+        }
+
+        /* Hero Banner - Compact */
+        .hero-banner {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b7 50%, #f72585 100%);
+            padding: 18px 20px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 60%);
+        }
+
+        /* Articles Header */
+        .articles-header {
+            text-align: center;
+            margin-bottom: 0;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-left { display: flex; align-items: center; gap: 10px; }
+
+        .articles-header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0;
+            -webkit-text-fill-color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .articles-header h1 i {
+            margin-right: 6px;
+            font-size: 18px;
+        }
+
+        .hero-subtitle {
+            display: none;
+        }
+
+        .articles-header p {
+            display: none;
+        }
+
+        /* Hero Stats */
+        .hero-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 12px;
+            padding: 6px 16px;
+            animation: fadeInUp 0.5s ease 0.3s both;
+        }
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+        .hero-stat-number {
+            font-size: 16px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.1;
+        }
+        .hero-stat-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .hero-stat-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .articles-header .btn {
+            padding: 7px 18px;
+            font-size: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .articles-header .btn-primary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .articles-header .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Article Badges */
+        .article-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 3;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(8px);
+        }
+        .article-badge.new-badge {
+            background: rgba(16,185,129,0.9);
+            color: #fff;
+            animation: pulse 2s ease infinite;
+        }
+        .article-badge.popular-badge {
+            background: rgba(245,158,11,0.9);
+            color: #fff;
+        }
+
+        /* Reading time */
+        .reading-time {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text-light);
+            opacity: 0.8;
+        }
+        .reading-time i {
+            font-size: 10px;
+        }
+
+        /* Status badge for pending/rejected */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .status-badge.pending {
+            background: rgba(245,158,11,0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245,158,11,0.2);
+        }
+        .status-badge.published {
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+        .status-badge.rejected {
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+
+        /* Like animation */
+        .like-btn:active i {
+            animation: heartBeat 0.6s ease;
+        }
+
+        /* Articles Content Area */
+        .articles-content {
+            padding: 24px 0 40px;
+        }
+
+        /* Articles Filters */
+        .articles-filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 14px 18px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 7px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-light);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .filter-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 280px;
+        }
+
+        .filter-search input {
+            flex: 1;
+            padding: 9px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 13px;
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+
+        .filter-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: var(--bg-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .search-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+        }
+
+        /* Articles Grid */
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 22px;
+            margin-bottom: 40px;
+        }
+
+        .article-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            animation: cardFadeIn 0.5s ease forwards;
+        }
+        .article-card:nth-child(1) { animation-delay: 0s; }
+        .article-card:nth-child(2) { animation-delay: 0.05s; }
+        .article-card:nth-child(3) { animation-delay: 0.05s; }
+        .article-card:nth-child(4) { animation-delay: 0.1s; }
+        .article-card:nth-child(5) { animation-delay: 0.15s; }
+        .article-card:nth-child(6) { animation-delay: 0.2s; }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .article-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(67, 97, 238, 0.2);
+        }
+
+        .article-card.featured {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .article-image {
+            position: relative;
+            overflow: hidden;
+            height: 180px;
+        }
+
+        .article-image::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.04));
+            pointer-events: none;
+        }
+
+        .article-card.featured .article-image {
+            height: 100%;
+            min-height: 220px;
+        }
+
+        .article-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .article-card:hover .article-image img {
+            transform: scale(1.05);
+        }
+
+        .article-content {
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .article-category {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+        }
+        /* Category color coding */
+        .article-category { background: rgba(67, 97, 238, 0.1); color: var(--primary-color); }
+        [data-category="mathematics"] .article-category { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        [data-category="science"] .article-category { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        [data-category="computer-science"] .article-category { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        [data-category="study-tips"] .article-category { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .article-date {
+            color: var(--text-light);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .article-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 6px;
+            line-height: 1.35;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .article-title:hover {
+            color: var(--primary-color);
+        }
+
+        .article-card.featured .article-title {
+            font-size: 20px;
+        }
+
+        .article-excerpt {
+            color: var(--text-light);
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-size: 13px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .author-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 12px;
+        }
+
+        .article-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Edit/Delete action buttons */
+        .edit-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .edit-action-btn.edit {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        .edit-action-btn.edit:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.3);
+        }
+        .edit-action-btn.delete {
+            background: rgba(239, 68, 68, 0.08);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .edit-action-btn.delete:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Interaction buttons */
+        .interactions-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .interaction-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: nowrap;
+            align-items: center;
+        }
+
+        .interaction-buttons form {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .interaction-btn {
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+
+        .interaction-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .interaction-btn:active {
+            transform: translateY(0);
+        }
+
+        .interaction-btn .count {
+            background: rgba(255,255,255,0.25);
+            padding: 1px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Badge proprietaire */
+        .owner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        .owner-badge.article-owner {
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(114, 9, 183, 0.1));
+            color: var(--primary-color);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+        }
+        .owner-badge.comment-owner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* Commentaire propre */
+        .comment-item {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .comment-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .comment-item.my-comment {
+            border-left: 3px solid var(--primary-color);
+            background: var(--primary-light);
+        }
+
+        /* Bouton supprimer commentaire */
+        .delete-comment-btn {
+            background: none;
+            border: 1px solid transparent;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            opacity: 0.5;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .delete-comment-btn:hover {
+            opacity: 1;
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        /* ===== ANIMATIONS EXTRAORDINAIRES ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes fadeInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes scaleIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+        @keyframes shimmer{0%{left:-200%}100%{left:200%}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(67,97,238,.4)}70%{box-shadow:0 0 0 12px rgba(67,97,238,0)}100%{box-shadow:0 0 0 0 rgba(67,97,238,0)}}
+        @keyframes gradientFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+        @keyframes borderGlow{0%,100%{border-color:rgba(67,97,238,.15)}50%{border-color:rgba(67,97,238,.4)}}
+        @keyframes heartBeat{0%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}60%{transform:scale(1)}}
+        @keyframes typewriter{from{width:0}to{width:100%}}
+        @keyframes slideUp{from{opacity:0;transform:translateY(40px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes ripple{to{transform:translate(-50%,-50%) scale(3);opacity:0}}
+
+        /* Hero Banner - Animated gradient */
+        .hero-banner {
+            background: linear-gradient(135deg, #4361ee 0%, #7209b7 30%, #f72585 60%, #4361ee 100%);
+            background-size: 300% 300%;
+            animation: gradientFlow 8s ease infinite;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .articles-header h1 {
+            animation: fadeInLeft .6s ease .1s forwards;
+        }
+        .articles-header h1 i {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        .articles-header .btn {
+            animation: fadeInRight .6s ease .2s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .articles-header .btn::after {
+            content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.3);border-radius:50%;transform:translate(-50%,-50%);transition:width .5s,height .5s;
+        }
+        .articles-header .btn:active::after {width:300px;height:300px}
+
+        /* Filter bar animated entrance */
+        .articles-filters {
+            animation: slideUp .5s ease .15s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .articles-filters::after{content:'';position:absolute;top:0;left:-200%;width:200%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:left .6s}
+        .articles-filters:hover::after{left:200%}
+
+        .filter-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        }
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+        .filter-btn.active {
+            animation: scaleIn .3s ease;
+        }
+        .filter-btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.2);border-radius:50%;transform:translate(-50%,-50%);transition:width .4s,height .4s}
+        .filter-btn:active::after{width:200px;height:200px}
+
+        .search-btn {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        }
+        .search-btn:hover {
+            transform: translateY(-2px) rotate(5deg);
+        }
+        .search-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Article cards - enhanced animations */
+        .article-card {
+            transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+            position: relative;
+        }
+        .article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary-color),var(--secondary-color),var(--accent-color));transform:scaleX(0);transition:transform .35s ease;transform-origin:left;z-index:2;border-radius:16px 16px 0 0}
+        .article-card:hover::before{transform:scaleX(1)}
+        .article-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(67, 97, 238, 0.15);
+        }
+
+        .article-card:hover .article-image img {
+            transform: scale(1.08);
+        }
+
+        .article-image::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            z-index: 1;
+            transition: left 0.6s ease;
+        }
+        .article-card:hover .article-image::before {
+            left: 200%;
+        }
+
+        /* Author avatar hover */
+        .author-avatar {
+            transition: all .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .article-card:hover .author-avatar {
+            transform: scale(1.15) rotate(-5deg);
+            box-shadow: 0 4px 12px rgba(67,97,238,.3);
+        }
+
+        /* Category badge animation */
+        .article-category {
+            transition: all .25s ease;
+        }
+        .article-card:hover .article-category {
+            transform: scale(1.05);
+        }
+
+        /* Interaction buttons - enhanced */
+        .interaction-btn {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .interaction-btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.25);border-radius:50%;transform:translate(-50%,-50%);transition:width .4s,height .4s}
+        .interaction-btn:active::after{width:200px;height:200px}
+
+        .like-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .like-btn:hover i {
+            animation: heartBeat .8s ease;
+        }
+
+        .comment-toggle-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .interaction-btn .count {
+            transition: transform .2s ease;
+        }
+        .interaction-btn:hover .count {
+            transform: scale(1.1);
+        }
+
+        /* Edit/Delete buttons enhanced */
+        .edit-action-btn {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .edit-action-btn::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.2);border-radius:50%;transform:translate(-50%,-50%);transition:width .3s,height .3s}
+        .edit-action-btn:active::after{width:150px;height:150px}
+        .edit-action-btn.edit:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .edit-action-btn.edit:hover i { transform: rotate(15deg); }
+        .edit-action-btn.delete:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+        .edit-action-btn.delete:hover i { transform: rotate(-10deg); }
+        .edit-action-btn i {
+            transition: transform .2s ease;
+        }
+
+        /* Comment section slide animation */
+        .comments-section {
+            animation: slideUp .35s ease;
+        }
+
+        /* Comment items stagger */
+        .comment-item {
+            transition: all .25s cubic-bezier(.34,1.56,.64,1);
+            animation: fadeInUp .3s ease forwards;
+        }
+        .comment-item:nth-child(1){animation-delay:.05s}
+        .comment-item:nth-child(2){animation-delay:.1s}
+        .comment-item:nth-child(3){animation-delay:.15s}
+        .comment-item:nth-child(4){animation-delay:.2s}
+        .comment-item:hover {
+            transform: translateX(4px);
+        }
+
+        /* Empty state floating icon */
+        .empty-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Owner badge pulse */
+        .owner-badge {
+            transition: all .2s ease;
+        }
+        .owner-badge:hover {
+            transform: scale(1.08);
+        }
+
+        /* Logo animation */
+        .logo {
+            transition: all .3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* Nav links */
+        nav a {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        }
+        nav a:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Theme toggle spin */
+        .theme-toggle {
+            transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .theme-toggle:hover {
+            transform: rotate(30deg) scale(1.1);
+        }
+
+        /* Auth buttons */
+        .auth-buttons .btn {
+            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+        }
+        .auth-buttons .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Scrollbar personnalise */
+        .comments-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .comments-list::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+        .comments-list::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        .comments-list::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Footer */
+        .site-footer {
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 24px 0;
+            text-align: center;
+        }
+        .site-footer p {
+            color: var(--text-light);
+            font-size: 13px;
+        }
+        .site-footer a {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .article-card.featured {
+                grid-template-columns: 1fr;
+            }
+            .article-card.featured .article-image {
+                min-height: 220px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 12px 0;
+            }
+
+            nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--header-bg);
+                padding: 16px;
+                box-shadow: var(--shadow);
+                border-top: 1px solid var(--border-color);
+            }
+
+            nav.active {
+                display: block;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .articles-main {
+                padding: 60px 0 0;
+            }
+
+            .hero-banner {
+                padding: 14px 16px 12px;
+            }
+
+            .articles-header h1 {
+                font-size: 18px;
+            }
+
+            .articles-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-tabs {
+                justify-content: center;
+            }
+
+            .filter-search {
+                min-width: 100%;
+            }
+
+            .articles-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+
+            .article-card.featured {
+                grid-column: 1 / -1;
+                grid-template-columns: 1fr;
+            }
+
+            .article-image {
+                height: 140px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .auth-buttons .btn-secondary { display: none; }
+
+            .articles-header h1 { font-size: 16px; }
+
+            .articles-header {
+                gap: 10px;
+            }
+
+            .filter-btn {
+                padding: 5px 12px;
+                font-size: 11px;
+            }
+
+            .article-content {
+                padding: 12px 14px;
+            }
+
+            .article-title { font-size: 14px; }
+
+            .article-excerpt {
+                font-size: 12px;
+                -webkit-line-clamp: 2;
+            }
+
+            .interaction-btn {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            .interaction-btn span:not(.count) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo { font-size: 22px; }
+
+            .articles-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .article-image { height: 160px; }
+            .article-title { font-size: 15px; }
+            .article-card.featured .article-title { font-size: 17px; }
+        }
+
+        /* === TUTOR NOTIFICATION BELL + SIDEBAR === */
+        .tutor-notif-bell {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 1.15rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .tutor-notif-bell:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.1);
+        }
+        .tutor-notif-bell:hover .fa-bell {
+            animation: bellShake 0.6s ease;
+        }
+        @keyframes bellShake {
+            0%, 100% { transform: rotate(0); }
+            15% { transform: rotate(14deg); }
+            30% { transform: rotate(-12deg); }
+            45% { transform: rotate(10deg); }
+            60% { transform: rotate(-6deg); }
+            75% { transform: rotate(3deg); }
+        }
+        .tutor-notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+            animation: badgePulse 2s ease infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .tutor-notif-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .tutor-notif-overlay.is-open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .tutor-notif-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 380px;
+            max-width: 90vw;
+            height: 100vh;
+            background: var(--card-bg, #fff);
+            box-shadow: -8px 0 32px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+            overflow: hidden;
+            visibility: hidden;
+        }
+        .tutor-notif-sidebar.is-open {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .tutor-notif-sidebar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color, #4361ee), var(--secondary-color, #7209b7));
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .tutor-notif-sidebar-top h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tutor-notif-sidebar-top h2 i {
+            font-size: 1rem;
+        }
+        .tutor-notif-sidebar-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background: rgba(255,255,255,0.15);
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 1rem;
+        }
+        .tutor-notif-sidebar-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tutor-notif-sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .tutor-notif-item:hover {
+            background: rgba(99, 102, 241, 0.08) !important;
+        }
+    </style>
+</head>
+<body class="light-theme">
+    <!-- Navbar -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">FAHIMNI</div>
+                <nav>
+                    <ul>
+                        <li><a href="#" class="nav-link">Home</a></li>
+                        <li><a href="#" class="nav-link active">Articles</a></li>
+                        <li><a href="#" class="nav-link">Courses</a></li>
+                        <li><a href="#" class="nav-link">About</a></li>
+                    </ul>
+                </nav>
+                <div class="auth-buttons">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a href="#" class="btn btn-secondary">Login</a>
+                    <a href="#" class="btn btn-primary">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    {# Flash Messages #}
+    {% for label, messages in app.flashes %}
+        <div class="flash-messages">
+            {% for message in messages %}
+                <div class="flash-msg {{ label }}">
+                    <i class="fas {{ label == 'success' ? 'fa-check-circle' : (label == 'warning' ? 'fa-clock' : 'fa-exclamation-circle') }}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+
+    <main class="articles-main">
+        <div class="hero-banner">
+            <div class="container">
+                <div class="articles-header">
+                    <div class="hero-left">
+                        <h1><i class="fas fa-pen-fancy"></i> Espace Tuteur</h1>
+                        <p class="hero-subtitle">Gérez et publiez vos articles éducatifs pour la communauté</p>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-number">{{ blogs|length }}</span>
+                            <span class="hero-stat-label">Articles</span>
+                        </div>
+                        <div class="hero-stat-divider"></div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number" id="heroTotalLikes">{{ blogs|reduce((total, b) => total + b.likesCount, 0) }}</span>
+                            <span class="hero-stat-label">Likes</span>
+                        </div>
+                        <div class="hero-stat-divider"></div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-number" id="heroTotalComments">{{ blogs|reduce((total, b) => total + b.commentsCount, 0) }}</span>
+                            <span class="hero-stat-label">Commentaires</span>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="{{ path('app_blog_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Publier un article</a>
+                        <button type="button" class="tutor-notif-bell" id="tutorNotifBellBtn" aria-label="Notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="tutor-notif-badge" id="tutorNotifBadge" style="display:none;">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container articles-content">
+            <div class="articles-filters">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" data-filter="all">All Articles</button>
+                    <button class="filter-btn" data-filter="mathematics">Mathematics</button>
+                    <button class="filter-btn" data-filter="science">Science</button>
+                    <button class="filter-btn" data-filter="computer-science">Computer Science</button>
+                    <button class="filter-btn" data-filter="study-tips">Study Tips</button>
+                </div>
+                <div class="filter-search">
+                    <input type="text" placeholder="Search articles..." id="searchInput">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+
+            <div class="articles-grid" id="articlesGrid">
+                {% for blog in blogs %}
+                    <article class="article-card"
+                             data-category="{{ blog.category|lower|replace({' ': '-'}) }}"
+                             data-article-id="{{ blog.id }}">
+                        {% if blog.images and blog.images|length > 0 %}
+                            <div class="article-image">
+                                <img src="/uploads/images/{{ blog.images[0] }}"
+                                     alt="{{ blog.titre }}"
+                                     onerror="this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg'">
+                                {% if blog.publishedAt and date() < blog.publishedAt|date_modify('+7 days') %}
+                                    <span class="article-badge new-badge"><i class="fas fa-star"></i> Nouveau</span>
+                                {% elseif blog.likesCount >= 5 %}
+                                    <span class="article-badge popular-badge"><i class="fas fa-fire"></i> Populaire</span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="article-image">
+                                <img src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg"
+                                     alt="{{ blog.titre }}">
+                                {% if blog.publishedAt and date() < blog.publishedAt|date_modify('+7 days') %}
+                                    <span class="article-badge new-badge"><i class="fas fa-star"></i> Nouveau</span>
+                                {% elseif blog.likesCount >= 5 %}
+                                    <span class="article-badge popular-badge"><i class="fas fa-fire"></i> Populaire</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="article-content">
+                            <div class="article-meta">
+                                {% if app.user and app.user == blog.publisher %}
+                                    <span class="owner-badge article-owner">
+                                        <i class="fas fa-pen-nib"></i> Mon article
+                                    </span>
+                                {% endif %}
+                                <span class="article-category">
+                                    {{ blog.category ?? 'General' }}
+                                </span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="reading-time">
+                                        <i class="fas fa-clock"></i> {{ max(1, (blog.content|length / 1000)|round(0, 'ceil')) }} min
+                                    </span>
+                                    <span class="article-date">{{ blog.publishedAt|date('d/m/Y') }}</span>
+                                </div>
+                            </div>
+
+                            <h2 class="article-title" onclick="window.location.href='{{ path('app_blog_show', {id: blog.id}) }}'">
+                                {{ blog.titre }}
+                            </h2>
+
+                            <p class="article-excerpt">
+                                {{ blog.content|length > 150 ? blog.content|slice(0, 150) ~ '...' : blog.content }}
+                            </p>
+
+                            <div class="article-footer">
+                                <div class="author-info">
+                                    <div class="author-avatar">
+                                        {% if blog.publisher.fullName %}
+                                            {{ blog.publisher.fullName|slice(0, 2)|upper }}
+                                        {% else %}
+                                            {{ blog.publisher.email|slice(0, 2)|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <span class="author-name">
+                                        {% if blog.publisher.fullName %}
+                                            {{ blog.publisher.fullName }}
+                                        {% else %}
+                                            {{ blog.publisher.email|split('@')[0] }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                {# BOUTONS MODIFIER ET SUPPRIMER - seulement pour l'auteur #}
+                                {% if app.user and blog.publisher and app.user.id == blog.publisher.id %}
+                                <div class="article-actions">
+                                    <a href="{{ path('app_blog_edit', {id: blog.id}) }}"
+                                       class="edit-action-btn edit"
+                                       title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                        <span>Edit</span>
+                                    </a>
+
+                                    <form method="post"
+                                          action="{{ path('app_blog_delete', {id: blog.id}) }}"
+                                          onsubmit="return confirm('Supprimer cet article ?');"
+                                          style="display: inline; margin: 0;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
+                                        <button type="submit"
+                                                class="edit-action-btn delete"
+                                                title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                            <span>Supprimer</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            {# SECTION INTERACTIONS #}
+                            <div class="interactions-section">
+                                <div class="interaction-buttons">
+                                    {# Bouton Like #}
+                                    <form class="like-form" data-blog-id="{{ blog.id }}" method="post" action="{{ path('app_interaction_like', {id: blog.id}) }}" style="margin: 0;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('like' ~ blog.id) }}">
+                                        <button type="submit" class="interaction-btn like-btn"
+                                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Like</span>
+                                            <span class="count">{{ blog.likesCount }}</span>
+                                        </button>
+                                    </form>
+
+                                    {# Bouton Commentaires #}
+                                    <button class="interaction-btn comment-toggle-btn"
+                                            onclick="toggleComments({{ blog.id }})"
+                                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                                        <i class="fas fa-comment"></i>
+                                        <span>Comments</span>
+                                        <span class="count">{{ blog.commentsCount }}</span>
+                                    </button>
+                                </div>
+
+                                {# Section des commentaires #}
+                                <div id="comments-{{ blog.id }}" class="comments-section" style="display: none; margin-top: 8px; background: var(--bg-secondary); padding: 10px; border-radius: 10px;">
+                                    {# Formulaire d'ajout de commentaire #}
+                                    <form class="comment-form" data-blog-id="{{ blog.id }}" method="post" action="{{ path('app_interaction_comment', {id: blog.id}) }}"
+                                          style="margin-bottom: 8px;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('comment' ~ blog.id) }}">
+                                        <div style="display: flex; gap: 8px; align-items: center;">
+                                            <textarea name="comment"
+                                                      placeholder="Votre commentaire..."
+                                                      required
+                                                      style="flex: 1; padding: 8px 14px; border: 1px solid var(--border-color);
+                                                             border-radius: 10px; font-size: 12px; resize: none;
+                                                             height: 36px; font-family: inherit; background: var(--card-bg);
+                                                             color: var(--text-color); transition: border-color 0.2s ease;"
+                                                      onfocus="this.style.borderColor='var(--primary-color)'"
+                                                      onblur="this.style.borderColor='var(--border-color)'"></textarea>
+                                            <button type="submit"
+                                                    style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+                                                           color: white; border: none; padding: 8px 12px;
+                                                           border-radius: 10px; cursor: pointer; font-size: 12px; flex-shrink: 0;
+                                                           transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(67,97,238,0.3);">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    {# Liste des commentaires #}
+                                    <div class="comments-list" style="max-height: 180px; overflow-y: auto;">
+                                        {% if interactions[blog.id] is defined and interactions[blog.id].comments|length > 0 %}
+                                            <div style="font-size: 12px; color: var(--text-light); margin-bottom: 8px; font-weight: 600;">
+                                                {{ interactions[blog.id].comments|length }} commentaire{{ interactions[blog.id].comments|length > 1 ? 's' : '' }}
+                                            </div>
+                                            {% for comment in interactions[blog.id].comments %}
+                                                <div class="comment-item {{ app.user and app.user == comment.innteractor ? 'my-comment' : '' }}">
+                                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                                                        <div style="display: flex; gap: 8px; align-items: center; flex: 1;">
+                                                            <div style="width: 26px; height: 26px; border-radius: 8px;
+                                                                        background: linear-gradient(135deg, {{ app.user and app.user == comment.innteractor ? '#10b981, #059669' : '#667eea, #764ba2' }});
+                                                                        color: white; display: flex; align-items: center;
+                                                                        justify-content: center; font-weight: bold; font-size: 9px; flex-shrink: 0;">
+                                                                {% if comment.innteractor.fullName %}
+                                                                    {{ comment.innteractor.fullName|slice(0, 2)|upper }}
+                                                                {% else %}
+                                                                    {{ comment.innteractor.email|slice(0, 2)|upper }}
+                                                                {% endif %}
+                                                            </div>
+                                                            <div style="flex: 1; min-width: 0;">
+                                                                <div style="font-weight: 600; color: var(--primary-color); font-size: 12px; line-height: 1.2; display: flex; align-items: center; gap: 6px;">
+                                                                    {% if comment.innteractor.fullName %}
+                                                                        {{ comment.innteractor.fullName }}
+                                                                    {% else %}
+                                                                        {{ comment.innteractor.email|split('@')[0] }}
+                                                                    {% endif %}
+                                                                    {% if app.user and app.user == comment.innteractor %}
+                                                                        <span class="owner-badge comment-owner" style="font-size: 9px; padding: 1px 6px;">Vous</span>
+                                                                    {% endif %}
+                                                                </div>
+                                                                <div style="font-size: 10px; color: var(--text-light);">
+                                                                    {{ comment.createdAt|date('d/m/Y H:i') }}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {% if app.user and app.user == comment.innteractor %}
+                                                        <form class="delete-comment-form" method="post"
+                                                              action="{{ path('app_interaction_delete', {id: comment.id}) }}"
+                                                              style="margin: 0;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                                                            <button type="submit" class="delete-comment-btn" title="Supprimer" style="font-size: 10px; padding: 2px 8px;">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </form>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div style="color: var(--text-color); line-height: 1.5; font-size: 13px; margin-left: 34px; word-wrap: break-word;">
+                                                        {{ comment.comment }}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p style="text-align: center; color: var(--text-light); font-style: italic; font-size: 12px; padding: 10px 0;">
+                                                Aucun commentaire
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
+
+                {# Message si aucun article #}
+                {% if blogs is empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+                        <i class="fas fa-newspaper empty-float" style="font-size: 48px; color: var(--text-light); opacity: 0.4; margin-bottom: 15px; display: block;"></i>
+                        <h3 style="color: var(--text-color); margin-bottom: 8px; font-size: 18px;">Aucun article pour le moment</h3>
+                        <p style="color: var(--text-light); margin-bottom: 16px;">Commencez par publier votre premier article.</p>
+                        <a href="{{ path('app_blog_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Publier un article</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    {# === TUTOR NOTIFICATION SIDEBAR === #}
+    <div class="tutor-notif-overlay" id="tutorNotifOverlay"></div>
+    <div class="tutor-notif-sidebar" id="tutorNotifSidebar">
+        <div class="tutor-notif-sidebar-top">
+            <h2><i class="fas fa-bell"></i> Notifications</h2>
+            <button type="button" class="tutor-notif-sidebar-close" id="tutorNotifClose"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="tutor-notif-sidebar-content" id="tutorNotifContent">
+            <div style="padding: 24px; text-align: center; color: var(--text-light, #6b7280);"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>FAHIMNI - Plateforme educative</p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme and Navbar
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            body.classList.toggle('dark-theme', savedTheme === 'dark');
+            updateThemeIcon(savedTheme);
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const isDark = body.classList.toggle('dark-theme');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    updateThemeIcon(isDark ? 'dark' : 'light');
+                });
+            }
+
+            function updateThemeIcon(theme) {
+                if (themeToggle) {
+                    const icon = themeToggle.querySelector('i');
+                    if (icon) {
+                        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                    }
+                }
+            }
+
+            // Mobile menu
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const nav = document.querySelector('nav');
+            if (mobileMenuBtn && nav) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    nav.classList.toggle('active');
+                    this.querySelector('i').className = nav.classList.contains('active')
+                        ? 'fas fa-times' : 'fas fa-bars';
+                });
+            }
+
+            // Filtrage par categorie
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const articleCards = document.querySelectorAll('.article-card');
+            const searchInput = document.getElementById('searchInput');
+            const searchBtn = document.querySelector('.search-btn');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    const filterCategory = this.getAttribute('data-filter');
+                    if (searchInput) searchInput.value = '';
+
+                    articleCards.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        if (filterCategory === 'all' || cardCategory === filterCategory) {
+                            card.style.display = 'flex';
+                            card.style.animation = 'fadeIn 0.5s ease';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Recherche
+            function performSearch() {
+                const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                if (searchTerm !== '') {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    if (filterButtons[0]) filterButtons[0].classList.add('active');
+                }
+                articleCards.forEach(card => {
+                    const title = card.querySelector('.article-title')?.textContent.toLowerCase() || '';
+                    const excerpt = card.querySelector('.article-excerpt')?.textContent.toLowerCase() || '';
+                    const category = card.querySelector('.article-category')?.textContent.toLowerCase() || '';
+                    if (searchTerm === '' || title.includes(searchTerm) || excerpt.includes(searchTerm) || category.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                        card.style.animation = 'fadeIn 0.5s ease';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function(e) { e.preventDefault(); performSearch(); });
+            }
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } });
+                searchInput.addEventListener('input', performSearch);
+            }
+
+                // ===== AJAX : Like =====
+            document.querySelectorAll('form.like-form').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const blogId = form.dataset.blogId;
+                    const btn = form.querySelector('button[type="submit"]');
+                    const countEl = btn.querySelector('.count');
+                    btn.disabled = true;
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new FormData(form),
+                        credentials: 'same-origin',
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (countEl) countEl.textContent = data.likesCount;
+                            btn.style.opacity = data.liked ? '1' : '0.65';
+                            btn.querySelector('i').style.animation = 'heartBeat 0.6s ease';
+                            setTimeout(() => { if (btn.querySelector('i')) btn.querySelector('i').style.animation = ''; }, 700);
+                            showToast(data.message, 'success');
+                            // Mettre à jour le total hero
+                            const heroLikes = document.getElementById('heroTotalLikes');
+                            if (heroLikes) heroLikes.textContent = parseInt(heroLikes.textContent) + (data.liked ? 1 : -1);
+                        }
+                    })
+                    .catch(() => showToast('Erreur réseau', 'error'))
+                    .finally(() => { btn.disabled = false; });
+                });
+            });
+
+            // ===== AJAX : Commentaire =====
+            document.querySelectorAll('form.comment-form').forEach(function(form) {
+                // Ctrl+Entrée pour envoyer, Entrée seul = nouvelle ligne
+                const ta = form.querySelector('textarea[name="comment"]');
+                if (ta) {
+                    ta.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.preventDefault();
+                            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                        }
+                    });
+                }
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const blogId = form.dataset.blogId;
+                    const textarea = form.querySelector('textarea[name="comment"]');
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new FormData(form),
+                        credentials: 'same-origin',
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            textarea.value = '';
+                            // Mettre à jour le compteur de commentaires
+                            const card = form.closest('[data-article-id]');
+                            if (card) {
+                                const commentCountEl = card.querySelector('.comment-toggle-btn .count');
+                                if (commentCountEl) commentCountEl.textContent = data.commentsCount;
+                            }
+                            // Ajouter le commentaire dans la liste
+                            const commentsList = document.querySelector('#comments-' + blogId + ' .comments-list');
+                            if (commentsList) {
+                                const noComment = commentsList.querySelector('p[style*="italic"]');
+                                if (noComment) noComment.remove();
+                                const c = data.comment;
+                                const div = document.createElement('div');
+                                div.className = 'comment-item my-comment';
+                                div.style.animation = 'fadeInUp 0.3s ease';
+                                div.innerHTML = `
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                                        <div style="display:flex;gap:8px;align-items:center;flex:1;">
+                                            <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#10b981,#059669);color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:9px;flex-shrink:0;">${escHtml(c.initials)}</div>
+                                            <div style="flex:1;min-width:0;">
+                                                <div style="font-weight:600;color:var(--primary-color);font-size:12px;line-height:1.2;display:flex;align-items:center;gap:6px;">
+                                                    ${escHtml(c.author)}
+                                                    <span class="owner-badge comment-owner" style="font-size:9px;padding:1px 6px;">Vous</span>
+                                                </div>
+                                                <div style="font-size:10px;color:var(--text-light);">${escHtml(c.date)}</div>
+                                            </div>
+                                        </div>
+                                        <form class="delete-comment-form" data-comment-id="${c.id}" method="post" action="/interaction/comment/${c.id}/delete" style="margin:0;">
+                                            <input type="hidden" name="_token" value="">
+                                            <button type="submit" class="delete-comment-btn" title="Supprimer" style="font-size:10px;padding:2px 8px;"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    </div>
+                                    <div style="color:var(--text-color);line-height:1.5;font-size:13px;margin-left:34px;word-wrap:break-word;">${escHtml(c.text)}</div>`;
+                                commentsList.insertBefore(div, commentsList.firstChild);
+                                // Attacher l'événement AJAX sur le nouveau formulaire de suppression
+                                attachDeleteForm(div.querySelector('.delete-comment-form'), blogId);
+                                // Mettre à jour le compteur affiché
+                                const countLabel = commentsList.closest('.comments-section').querySelector('div[style*="margin-bottom: 8px"]');
+                                if (countLabel) {
+                                    const n = commentsList.querySelectorAll('.comment-item').length;
+                                    countLabel.textContent = n + ' commentaire' + (n > 1 ? 's' : '');
+                                }
+                            }
+                            showToast('Commentaire ajouté !', 'success');
+                            // Mettre à jour le total hero
+                            const heroComments = document.getElementById('heroTotalComments');
+                            if (heroComments) heroComments.textContent = parseInt(heroComments.textContent) + 1;
+                            // Fermer la section automatiquement
+                            const openSection = document.getElementById('comments-' + blogId);
+                            if (openSection) openSection.style.display = 'none';
+                        } else {
+                            showToast(data.message || 'Erreur', 'error');
+                        }
+                    })
+                    .catch(() => showToast('Erreur réseau', 'error'))
+                    .finally(() => { submitBtn.disabled = false; });
+                });
+            });
+
+            // ===== AJAX : Suppression commentaire =====
+            function attachDeleteForm(form, blogId) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!confirm('Supprimer ce commentaire ?')) return;
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new FormData(form),
+                        credentials: 'same-origin',
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            const item = form.closest('.comment-item');
+                            if (item) item.remove();
+                            // Mettre à jour le compteur de la carte
+                            const card = document.querySelector('[data-article-id="' + blogId + '"]');
+                            if (card) {
+                                const commentCountEl = card.querySelector('.comment-toggle-btn .count');
+                                if (commentCountEl) commentCountEl.textContent = data.commentsCount;
+                            }
+                            // Mettre à jour le total hero
+                            const heroComments = document.getElementById('heroTotalComments');
+                            if (heroComments) heroComments.textContent = Math.max(0, parseInt(heroComments.textContent) - 1);
+                            showToast('Commentaire supprimé', 'success');
+                        }
+                    })
+                    .catch(() => showToast('Erreur réseau', 'error'));
+                });
+            }
+
+            document.querySelectorAll('form.delete-comment-form').forEach(function(form) {
+                const blogId = form.closest('[data-article-id]')?.dataset.articleId;
+                attachDeleteForm(form, blogId);
+            });
+
+            // Fonction utilitaire : toast
+            function showToast(message, type) {
+                const container = document.querySelector('.flash-messages') || (() => {
+                    const c = document.createElement('div');
+                    c.className = 'flash-messages';
+                    document.body.appendChild(c);
+                    return c;
+                })();
+                const toast = document.createElement('div');
+                toast.className = 'flash-msg ' + type;
+                toast.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + '"></i> ' + escHtml(message);
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 3600);
+            }
+
+            // Échapper le HTML
+            function escHtml(str) {
+                return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+            }
+        });
+
+        // Afficher/cacher les commentaires
+        function toggleComments(blogId) {
+            const section = document.getElementById('comments-' + blogId);
+            if (section) {
+                section.style.display = (section.style.display === 'none' || section.style.display === '') ? 'block' : 'none';
+            }
+        }
+    </script>
+
+    {# === TUTOR NOTIFICATION JS === #}
+    <script>
+    (function() {
+        var bellBtn = document.getElementById('tutorNotifBellBtn');
+        var badge = document.getElementById('tutorNotifBadge');
+        var overlay = document.getElementById('tutorNotifOverlay');
+        var sidebar = document.getElementById('tutorNotifSidebar');
+        var closeBtn = document.getElementById('tutorNotifClose');
+        var content = document.getElementById('tutorNotifContent');
+
+        var countUrl = '{{ path('app_notifications_tutor_count') }}';
+        var listUrl = '{{ path('app_notifications_tutor_list') }}';
+        var markAllUrl = '{{ path('app_notifications_tutor_mark_all_read') }}';
+
+        function closeSidebar() {
+            if (overlay) { overlay.classList.remove('is-open'); }
+            if (sidebar) { sidebar.classList.remove('is-open'); sidebar.setAttribute('aria-hidden', 'true'); }
+        }
+
+        function openSidebar() {
+            if (overlay) overlay.classList.add('is-open');
+            if (sidebar) { sidebar.classList.add('is-open'); sidebar.setAttribute('aria-hidden', 'false'); }
+            loadNotifications();
+        }
+
+        function loadNotifications() {
+            content.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-light,#6b7280);"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+            fetch(listUrl, { credentials: 'same-origin' })
+                .then(function(r) { return r.text(); })
+                .then(function(html) {
+                    content.innerHTML = html;
+                    // Attach mark-all-read
+                    var markAllBtn = document.getElementById('tutorNotifMarkAllBtn');
+                    if (markAllBtn) {
+                        markAllBtn.addEventListener('click', function() {
+                            fetch(markAllUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                                .then(function() {
+                                    updateCount();
+                                    loadNotifications();
+                                });
+                        });
+                    }
+                    // Attach mark-read on click for individual items
+                    content.querySelectorAll('.tutor-notif-item').forEach(function(item) {
+                        item.addEventListener('click', function() {
+                            var type = item.getAttribute('data-type');
+                            var id = item.getAttribute('data-id');
+                            if (type === 'status' && id) {
+                                fetch('/notifications/tutor/mark-status-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            } else if (type === 'interaction' && id) {
+                                fetch('/notifications/mark-read/' + id, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            }
+                        });
+                    });
+                })
+                .catch(function() {
+                    content.innerHTML = '<p style="padding:16px;color:#ef4444;">Erreur de chargement.</p>';
+                });
+        }
+
+        function updateCount() {
+            fetch(countUrl, { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    var c = data.count || 0;
+                    if (c > 0) {
+                        badge.textContent = c > 99 ? '99+' : c;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(function() {});
+        }
+
+        if (bellBtn) {
+            bellBtn.addEventListener('click', function() {
+                if (sidebar && sidebar.classList.contains('is-open')) closeSidebar();
+                else openSidebar();
+            });
+        }
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+
+        // Initial count + poll every 30s
+        updateCount();
+        setInterval(updateCount, 30000);
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - FAHIMNI</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <a href="index.html"><h2>FAHIMNI</h2></a>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="student.html" class="nav-link active">Dashboard</a>
+                <a href="matching.html" class="nav-link">Find Tutors</a>
+                <a href="calendar.html" class="nav-link">Calendar</a>
+                <a href="messages.html" class="nav-link">Messages</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-main">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="welcome-section">
+                    <h1>Welcome back, John</h1>
+                    <p>Continue your learning journey with FAHIMNI</p>
+                </div>
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">24</div>
+                        <div class="stat-label">Sessions Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Active Tutors</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">92%</div>
+                        <div class="stat-label">Progress Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Upcoming Sessions -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Upcoming Sessions</h2>
+                        <a href="calendar.html" class="view-all-link">View Calendar</a>
+                    </div>
+                    <div class="sessions-list">
+                        <div class="session-card confirmed">
+                            <div class="session-time">
+                                <span class="session-date">Today</span>
+                                <span class="session-hours">2:00 PM - 3:00 PM</span>
+                            </div>
+                            <div class="session-info">
+                                <h3>Calculus Review</h3>
+                                <div class="tutor-info-small">
+                                    <div class="tutor-avatar-small">DR</div>
+                                    <span>Dr. Sarah Roberts</span>
+                                </div>
+                                <div class="session-details-small">
+                                    <span class="session-mode">💻 Online</span>
+                                    <span class="session-price">$45</span>
+                                </div>
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn btn-primary btn-small">Join Session</button>
+                                <button class="btn btn-secondary btn-small">Message</button>
+                            </div>
+                        </div>
+
+                        <div class="session-card confirmed">
+                            <div class="session-time">
+                                <span class="session-date">Tomorrow</span>
+                                <span class="session-hours">10:00 AM - 12:00 PM</span>
+                            </div>
+                            <div class="session-info">
+                                <h3>Chemistry Lab Prep</h3>
+                                <div class="tutor-info-small">
+                                    <div class="tutor-avatar-small">MJ</div>
+                                    <span>Prof. Mike Johnson</span>
+                                </div>
+                                <div class="session-details-small">
+                                    <span class="session-mode">🏫 In-Person</span>
+                                    <span class="session-price">$100</span>
+                                </div>
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn btn-secondary btn-small">Reschedule</button>
+                                <button class="btn btn-outline btn-small">Contact</button>
+                            </div>
+                        </div>
+
+                        <div class="session-card pending">
+                            <div class="session-time">
+                                <span class="session-date">Dec 16</span>
+                                <span class="session-hours">3:00 PM - 4:30 PM</span>
+                            </div>
+                            <div class="session-info">
+                                <h3>Algorithm Practice</h3>
+                                <div class="tutor-info-small">
+                                    <div class="tutor-avatar-small">AL</div>
+                                    <span>Alex Liu</span>
+                                </div>
+                                <div class="session-details-small">
+                                    <span class="session-mode">💻 Online</span>
+                                    <span class="session-price">$60</span>
+                                </div>
+                            </div>
+                            <div class="session-actions">
+                                <button class="btn btn-outline btn-small">Pending Confirmation</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Tutors -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>My Tutors</h2>
+                        <a href="matching.html" class="view-all-link">Find More</a>
+                    </div>
+                    <div class="tutors-grid-small">
+                        <div class="tutor-card-small">
+                            <div class="tutor-avatar">DR</div>
+                            <div class="tutor-info">
+                                <h3>Dr. Sarah Roberts</h3>
+                                <p>Mathematics</p>
+                                <div class="tutor-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span>4.9</span>
+                                </div>
+                            </div>
+                            <div class="tutor-actions-small">
+                                <button class="btn btn-primary btn-small">Book Session</button>
+                                <button class="btn btn-secondary btn-small">Message</button>
+                            </div>
+                        </div>
+
+                        <div class="tutor-card-small">
+                            <div class="tutor-avatar">MJ</div>
+                            <div class="tutor-info">
+                                <h3>Prof. Mike Johnson</h3>
+                                <p>Chemistry</p>
+                                <div class="tutor-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span>4.7</span>
+                                </div>
+                            </div>
+                            <div class="tutor-actions-small">
+                                <button class="btn btn-primary btn-small">Book Session</button>
+                                <button class="btn btn-secondary btn-small">Message</button>
+                            </div>
+                        </div>
+
+                        <div class="tutor-card-small">
+                            <div class="tutor-avatar">AL</div>
+                            <div class="tutor-info">
+                                <h3>Alex Liu</h3>
+                                <p>Computer Science</p>
+                                <div class="tutor-rating">
+                                    <span class="stars">★★★★★</span>
+                                    <span>4.8</span>
+                                </div>
+                            </div>
+                            <div class="tutor-actions-small">
+                                <button class="btn btn-primary btn-small">Book Session</button>
+                                <button class="btn btn-secondary btn-small">Message</button>
+                            </div>
+                        </div>
+
+                        <div class="tutor-card-small">
+                            <div class="tutor-avatar">EW</div>
+                            <div class="tutor-info">
+                                <h3>Emma Wilson</h3>
+                                <p>Physics</p>
+                                <div class="tutor-rating">
+                                    <span class="stars">★★★★☆</span>
+                                    <span>4.6</span>
+                                </div>
+                            </div>
+                            <div class="tutor-actions-small">
+                                <button class="btn btn-primary btn-small">Book Session</button>
+                                <button class="btn btn-secondary btn-small">Message</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Progress -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Learning Progress</h2>
+                        <select class="period-selector">
+                            <option value="week">This Week</option>
+                            <option value="month" selected>This Month</option>
+                            <option value="semester">This Semester</option>
+                        </select>
+                    </div>
+                    <div class="progress-overview">
+                        <div class="progress-card">
+                            <h3>Mathematics</h3>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span>85% Complete</span>
+                                <span>12 Sessions</span>
+                            </div>
+                        </div>
+                        <div class="progress-card">
+                            <h3>Chemistry</h3>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 70%"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span>70% Complete</span>
+                                <span>8 Sessions</span>
+                            </div>
+                        </div>
+                        <div class="progress-card">
+                            <h3>Computer Science</h3>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span>60% Complete</span>
+                                <span>4 Sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Reviews -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Rate Recent Sessions</h2>
+                        <span class="badge">2</span>
+                    </div>
+                    <div class="pending-reviews">
+                        <div class="review-request">
+                            <div class="session-info-review">
+                                <div class="tutor-avatar-small">DR</div>
+                                <div class="session-details-review">
+                                    <h4>Mathematics Session</h4>
+                                    <p>with Dr. Sarah Roberts</p>
+                                    <span>Dec 10, 2026</span>
+                                </div>
+                            </div>
+                            <div class="rating-section">
+                                <div class="star-rating" data-rating="0">
+                                    <span class="star" data-value="1">★</span>
+                                    <span class="star" data-value="2">★</span>
+                                    <span class="star" data-value="3">★</span>
+                                    <span class="star" data-value="4">★</span>
+                                    <span class="star" data-value="5">★</span>
+                                </div>
+                                <button class="btn btn-primary btn-small">Submit Rating</button>
+                            </div>
+                        </div>
+
+                        <div class="review-request">
+                            <div class="session-info-review">
+                                <div class="tutor-avatar-small">MJ</div>
+                                <div class="session-details-review">
+                                    <h4>Chemistry Lab Session</h4>
+                                    <p>with Prof. Mike Johnson</p>
+                                    <span>Dec 9, 2026</span>
+                                </div>
+                            </div>
+                            <div class="rating-section">
+                                <div class="star-rating" data-rating="0">
+                                    <span class="star" data-value="1">★</span>
+                                    <span class="star" data-value="2">★</span>
+                                    <span class="star" data-value="3">★</span>
+                                    <span class="star" data-value="4">★</span>
+                                    <span class="star" data-value="5">★</span>
+                                </div>
+                                <button class="btn btn-primary btn-small">Submit Rating</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommended Articles -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>Recommended for You</h2>
+                        <a href="articles.html" class="view-all-link">Browse All</a>
+                    </div>
+                    <div class="articles-grid-small">
+                        <div class="article-card-small">
+                            <div class="article-image-small">
+                                <img src="https://images.pexels.com/photos/6256066/pexels-photo-6256066.jpeg" alt="Calculus">
+                            </div>
+                            <div class="article-content-small">
+                                <h4>Mastering Calculus Derivatives</h4>
+                                <p>Essential techniques for understanding derivatives and their applications.</p>
+                                <span class="article-author">Dr. Sarah Roberts</span>
+                            </div>
+                        </div>
+
+                        <div class="article-card-small">
+                            <div class="article-image-small">
+                                <img src="https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg" alt="Chemistry">
+                            </div>
+                            <div class="article-content-small">
+                                <h4>Organic Chemistry Shortcuts</h4>
+                                <p>Quick methods to remember complex organic reactions and mechanisms.</p>
+                                <span class="article-author">Prof. Mike Johnson</span>
+                            </div>
+                        </div>
+
+                        <div class="article-card-small">
+                            <div class="article-image-small">
+                                <img src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg" alt="Programming">
+                            </div>
+                            <div class="article-content-small">
+                                <h4>Data Structures Made Simple</h4>
+                                <p>Understanding arrays, linked lists, and trees with practical examples.</p>
+                                <span class="article-author">Alex Liu</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="scripts/main.js"></script>
+    <script src="scripts/dashboard.js"></script>
+</body>
+</html>

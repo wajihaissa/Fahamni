@@ -1,0 +1,77 @@
+{# Message Input Modernisé - Zone d'envoi ou d'édition de message avec boutons d'action #}
+{% if compose_with is defined and compose_with %}
+    {# Mode premier message (brouillon) : envoi crée la conversation #}
+    <div class="message-input-area">
+        <form method="post" action="{{ path('app_messenger_send_first_message') }}" id="sendMessageForm" class="send-message-form" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('send_first_msg_' ~ compose_with.id) }}">
+            <input type="hidden" name="with" value="{{ compose_with.id }}">
+            <input type="file" name="attachments[]" id="attachmentsFirst" class="d-none" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx">
+            <div class="input-container">
+                <button type="button" class="input-action-btn" title="Pièce jointe" onclick="document.getElementById('attachmentsFirst').click()"><i class="fas fa-paperclip"></i></button>
+                <input type="text" name="content" class="message-input" id="messageInput" placeholder="Aa" maxlength="65535" autocomplete="off">
+                <div class="input-action-buttons">
+                    <button type="button" class="input-action-btn" title="Emoji"><i class="far fa-smile"></i></button>
+                </div>
+                <button type="submit" class="send-button" id="sendButton" title="Envoyer"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </form>
+    </div>
+{% elseif editing_message is defined and editing_message %}
+    {# Mode édition - style moderne (classes partagées avec le float) #}
+    <div class="message-input-area edit-message-form-area">
+        <div class="edit-message-form-wrap">
+            <p class="edit-message-form-label"><i class="fas fa-edit"></i> Modifier le message</p>
+            <form method="post" action="{{ path('app_messenger_edit_message', { convId: current_conversation.id, messageId: editing_message.id }) }}" class="edit-message-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('edit_msg_' ~ editing_message.id) }}">
+                <textarea name="content" rows="3" class="edit-message-form-textarea" required>{{ editing_message.content }}</textarea>
+                <div class="edit-message-form-actions">
+                    <button type="submit" class="edit-message-form-btn edit-message-form-submit"><i class="fas fa-check"></i> Enregistrer</button>
+                    <a href="{{ path('app_messenger_show', { id: current_conversation.id }) }}" class="edit-message-form-btn edit-message-form-cancel"><i class="fas fa-times"></i> Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% else %}
+    {# Mode envoi normal #}
+    <div class="message-input-area">
+        <form method="post" action="{{ path('app_messenger_send_message', { id: current_conversation.id }) }}" id="sendMessageForm" class="send-message-form" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('send_msg_' ~ current_conversation.id) }}">
+            <input type="hidden" name="reply_to" id="replyToInput" value="">
+            <input type="file" name="attachments[]" id="attachmentsConv" class="d-none" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx">
+            
+            {# Barre de prévisualisation de réponse #}
+            <div class="reply-preview-bar" id="replyPreviewBar">
+                <span class="reply-preview-text" id="replyPreviewText"></span>
+                <button type="button" class="reply-preview-cancel" id="replyPreviewCancel">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            {# Container d'input avec boutons #}
+            <div class="input-container">
+                <button type="button" class="input-action-btn" title="Pièce jointe" onclick="document.getElementById('attachmentsConv').click()"><i class="fas fa-paperclip"></i></button>
+                
+                {# Input de message #}
+                <input type="text" 
+                       name="content" 
+                       class="message-input" 
+                       id="messageInput" 
+                       placeholder="Aa" 
+                       maxlength="65535"
+                       autocomplete="off">
+                
+                {# Boutons d'actions à droite #}
+                <div class="input-action-buttons">
+                    <button type="button" class="input-action-btn" title="Emoji">
+                        <i class="far fa-smile"></i>
+                    </button>
+                </div>
+                
+                {# Bouton d'envoi #}
+                <button type="submit" class="send-button" id="sendButton" title="Envoyer">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+{% endif %}

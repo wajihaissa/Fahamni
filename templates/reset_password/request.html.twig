@@ -1,0 +1,58 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Reset Password - FAHIMNI{% endblock %}
+
+{% block content %}
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Reset Password</h1>
+                    <p>Enter your email to receive a password reset link</p>
+                </div>
+
+                {% for flash_error in app.flashes('reset_password_error') %}
+                    <div class="alert alert-danger" style="margin-bottom:1rem;padding:12px;border-radius:8px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">
+                        {{ flash_error }}
+                    </div>
+                {% endfor %}
+
+                {{ form_start(requestForm, {'attr': {'class': 'auth-form'}}) }}
+                    <div class="form-group">
+                        {{ form_label(requestForm.email, 'Email Address') }}
+                        {{ form_widget(requestForm.email, {'attr': {'placeholder': 'Enter your email', 'class': 'form-control'}}) }}
+                        {{ form_errors(requestForm.email) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">Send Reset Link</button>
+                {{ form_end(requestForm) }}
+
+                <div class="auth-footer">
+                    <p>Remember your password? <a href="{{ path('app_login') }}">Sign in here</a></p>
+                </div>
+            </div>
+
+            <div class="auth-side">
+                <div class="auth-side-content">
+                    <h2>Password Security</h2>
+                    <p>We take your account security seriously. Reset your password to maintain a strong and unique password.</p>
+                    <div class="auth-features">
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Secure Reset Link</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Link Expires in 1 Hour</span>
+                        </div>
+                        <div class="auth-feature">
+                            <span class="feature-icon">OK</span>
+                            <span>Account Protection</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
